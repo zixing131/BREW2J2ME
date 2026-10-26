@@ -2,7 +2,7 @@ package bio.original;
 import java.io.IOException;
 
 /** Original geometry/material/frame descriptors, with a portable Java software rasterizer. */
-public final class OriginalRenderer {
+public final class OriginalRenderer implements OriginalSky.Sink {
     public static final class Picture {
         public final int width,height;public final int[] pixels;
         public Picture(int w,int h,int[] p){width=w;height=h;pixels=p;}
@@ -27,6 +27,7 @@ public final class OriginalRenderer {
     private int worldTicks,worldZoom;
     private final double[] rowDistance;
     private final int[] rowFog;
+    private Images backgroundImages;
     public OriginalRenderer(int w,int h,byte[] metadata,int[][] tiles,int[] atlas){
         width=w;height=h;pixels=new int[w*h];depth=new int[w*h];rowDistance=new double[h];rowFog=new int[h];this.metadata=metadata;this.tiles=tiles;this.atlas=atlas;
         spriteBase=8;int p=8+36*Binary.i32(metadata,4);boxBase=p+4;p+=4+32*Binary.i32(metadata,p);actorBase=p+4;
@@ -72,9 +73,9 @@ public final class OriginalRenderer {
         if(light&&(!blink||(worldTicks&4)!=0))return rgb;
         return OriginalMaterials.fog(rgb,Binary.u16(l.header,16),amount);
     }
-    public void render(OriginalLevel l,int x,int y,int angle){try{prepare(l,null);world(l,x,y,angle,1);}catch(IOException e){throw new RuntimeException(e.toString());}}
+    public void render(OriginalLevel l,int x,int y,int angle){try{backgroundImages=null;prepare(l,null);world(l,x,y,angle,1);}catch(IOException e){throw new RuntimeException(e.toString());}}
     public void render(OriginalSession session,Images images)throws IOException{
-        OriginalPlayer p=session.player;OriginalCombat c=session.combat;worldTicks=c.ticks;prepare(session.level,images);
+        OriginalPlayer p=session.player;OriginalCombat c=session.combat;worldTicks=c.ticks;backgroundImages=images;prepare(session.level,images);
         int x=p.x,y=p.y;
         if(p.current>=0){session.data.resolve(p,p.current,c.weapon);int base=session.data.effectBase+116*c.weapon[11];
             int shot=Math.max(0,(c.weapon[1]&255)-c.cooldown);
@@ -89,15 +90,33 @@ public final class OriginalRenderer {
             int[] a=session.combat.actors[i];sprite(images,actorBase+84*session.combat.type(i),a[OriginalCombat.X],a[OriginalCombat.Y],a[OriginalCombat.STATE],session);
         }
     }
-    private void world(OriginalLevel l,int x,int y,int angle,int zoom){
+    public void rectangle(int x,int y,int w,int h,int flags,int first,int last){
+        for(int yy=Math.max(0,y);yy<Math.min(height,y+h);yy++){
+            int color=OriginalMaterials.rgb((flags&4)!=0?OriginalSky.gradient(first,last,yy-y,h):first);
+            for(int xx=Math.max(0,x);xx<Math.min(width,x+w);xx++)pixels[yy*width+xx]=color;
+        }
+    }
+    public void image(int id,int x,int y,int w,int h,int flags,int tint)throws IOException{
+        Picture picture=backgroundImages.get(id);
+        for(int yy=Math.max(0,y);yy<Math.min(height,y+h);yy++)for(int xx=Math.max(0,x);xx<Math.min(width,x+w);xx++){
+            int sx=xx-x;if((flags&2)!=0)sx=picture.width-1-sx;
+            int color=picture.pixels[(yy-y)*picture.width+sx];if((color>>>24)==0)continue;
+            if((flags&16)!=0)color=OriginalMaterials.fog(color,tint&65535,tint>>>16);
+            pixels[yy*width+xx]=color;
+        }
+    }
+    private void world(OriginalLevel l,int x,int y,int angle,int zoom)throws IOException{
         viewX=x;viewY=y;worldZoom=zoom;camera=new OriginalCamera(width,height,zoom);
         double dx=OriginalTrig.cos(angle)/65536.0,dy=OriginalTrig.sin(angle)/65536.0,proj=camera.focal,mid=camera.horizon;
         double eye=OriginalCamera.EYE,ceiling=(l.header[11]&255)*32;
-        for(int i=0;i<depth.length;i++)depth[i]=Integer.MAX_VALUE;
+        int background=OriginalMaterials.rgb(Binary.u16(l.header,16));
+        for(int i=0;i<depth.length;i++){depth[i]=Integer.MAX_VALUE;pixels[i]=background;}
+        if(backgroundImages!=null)OriginalSky.visit(l,width,height,angle,zoom,worldTicks,backgroundImages,this);
+        int groundTop=height-OriginalSky.floorRows(height,zoom),ceilingBottom=OriginalSky.ceilingRows(l,height,zoom);
         for(int row=0;row<height;row++){rowDistance[row]=(row<mid?ceiling-eye:eye)*proj/(Math.abs(row-mid)+.5);rowFog[row]=OriginalMaterials.fogAmount(l,rowDistance[row],zoom);}
         for(int col=0;col<width;col++){
             double side=(col-width/2)/proj,rx=dx-dy*side,ry=dy+dx*side;
-            for(int row=0;row<height;row++){double d=rowDistance[row];pixels[row*width+col]=floor(l,(int)(x+rx*d),(int)(y+ry*d),row<mid,rowFog[row]);}
+            for(int row=0;row<height;row++)if(row>=groundTop||row<ceilingBottom){double d=rowDistance[row];pixels[row*width+col]=floor(l,(int)(x+rx*d),(int)(y+ry*d),row<mid,rowFog[row]);}
             int hits=0;
             for(int i=0;i<segmentCount;i++){
                 int[] s=segments[i];double ax=s[0]-x,ay=s[1]-y,sx=s[2]-s[0],sy=s[3]-s[1],cross=rx*sy-ry*sx;

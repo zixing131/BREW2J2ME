@@ -88,6 +88,21 @@ public final class OriginalSystemsTest {
         in=fixture(args[0],"arm-material");int materials=in.readInt();int[] atlas=new int[2048];for(int i=0;i<atlas.length;i++)atlas[i]=OriginalMaterials.rgb(in.readUnsignedShort());
         for(int i=0;i<materials;i++){int packed=in.readInt();for(int y=0;y<32;y++)for(int x=0;x<32;x++)check(OriginalMaterials.compose(packed,x,y,atlas)==in.readUnsignedShort(),"ARM material "+i+" pixel "+x+","+y);}in.close();
         System.out.println("PASS original ARM material composition: "+materials+" complete RGB565 tiles");
+        final java.util.Vector skyCalls=new java.util.Vector();
+        OriginalRenderer.Images skyImages=new OriginalRenderer.Images(){public OriginalRenderer.Picture get(int id){return id==1400?new OriginalRenderer.Picture(100,100,null):new OriginalRenderer.Picture(43,41,null);}};
+        OriginalSky.Sink skySink=new OriginalSky.Sink(){
+            public void rectangle(int x,int y,int w,int h,int flags,int a,int b){skyCalls.addElement(new int[]{0,x,y,w,h,flags,a,b});}
+            public void image(int id,int x,int y,int w,int h,int flags,int tint){skyCalls.addElement(new int[]{id,x,y,w,h,flags,tint});}
+        };
+        in=fixture(args[0],"arm-sky");int skyCases=in.readInt();
+        for(int i=0;i<skyCases;i++){
+            OriginalLevel skyLevel=new OriginalLevel(0,resources.read(in.readInt()));int sw=in.readInt(),sh=in.readInt(),angle=in.readInt(),zoom=in.readInt(),ticks=in.readInt();
+            check(OriginalSky.floorRows(sh,zoom)==in.readInt(),"ARM ground clip band "+i);
+            check(OriginalSky.ceilingRows(skyLevel,sh,zoom)==in.readInt(),"ARM ceiling clip band "+i);
+            skyCalls.removeAllElements();OriginalSky.visit(skyLevel,sw,sh,angle,zoom,ticks,skyImages,skySink);
+            int count=in.readInt();check(count==skyCalls.size(),"ARM sky draw count "+i);
+            for(int j=0;j<count;j++){int[] actual=(int[])skyCalls.elementAt(j);int fields=in.readInt();check(fields==actual.length,"ARM sky command length");for(int k=0;k<fields;k++)check(actual[k]==in.readInt(),"ARM sky command "+i+":"+j+":"+k);}
+        }in.close();System.out.println("PASS original ARM sky: "+skyCases+" complete background command streams");
         byte[] radar=OriginalTest.read(new File(args[0],"arm-radar.bin"));int[][] coords={OriginalRadar.EXITS,OriginalRadar.DESTINATIONS,OriginalRadar.OBJECTIVES};int offset=0;
         for(int a=0;a<coords.length;a++)for(int i=0;i<coords[a].length;i++){check(coords[a][i]==Binary.u16(radar,offset),"Original radar coordinates");offset+=2;}
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");

@@ -57,6 +57,9 @@ public final class DesktopCanvasTest {
   s.vm.dialogMode=3;s.vm.textId=6033;capture(c,"dialogue-hint");
   OriginalSession chapter=new OriginalSession(s.data,c);chapter.tick(0);field("session").set(c,chapter);capture(c,"chapter-intro");
   field("session").set(c,s);s.vm.action.kind=0;s.vm.running=false;
+  OriginalSession outdoor=new OriginalSession(s.data,c);outdoor.load(3,27*32+16,2*32+16,90);field("session").set(c,outdoor);
+  for(int i=0;i<sizes.length;i++){field("touchConfigured").setBoolean(c,false);c.resizeTest(sizes[i][0],sizes[i][1]);capture(c,"outdoor-"+sizes[i][0]+"x"+sizes[i][1]);}
+  field("session").set(c,s);
   for(int i=0;i<sizes.length;i++){
    int w=sizes[i][0],h=sizes[i][1];c.resizeTest(w,h);field("screen").setInt(c,1);field("selection").setInt(c,1);capture(c,"menu-"+w+"x"+h);
    ScreenLayout l=(ScreenLayout)field("layout").get(c);for(int row=0;row<6;row++)check(l.mainMenuHit(l.width/2,l.mainMenuTop()+row*l.mainMenuStep()+15,1)==row,"Original menu hit geometry");

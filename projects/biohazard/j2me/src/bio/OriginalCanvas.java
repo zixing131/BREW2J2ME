@@ -20,6 +20,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private OriginalSession session;
     private OriginalRenderer renderer;
     private final Hashtable pictures=new Hashtable();
+    private final OriginalFlash[] flashes=new OriginalFlash[5];
     private OriginalRenderer.Picture cover;
     private int screen=COVER,selection,input,lastText=-1,dialogPage,dialogLines,dialogRows=5,returnScreen=MENU,shopSlot,offerItem,offerReturn,saveReturn=PAUSE,pendingSlot;
     private int pointerKey=-1,pointerRow=-1,lastDialogEvent=-1,lastDialogPc=-1;
@@ -317,6 +318,13 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             else {int period=bio.original.Binary.i32(data.scene,base+20);if(input!=0&&period>0)phase=c.ticks%period;off=base+24+phase*4;}
             int wx=W/2+ui(bio.original.Binary.s16(data.scene,off)),wy=H-layout.touchHeight-ui(weapon.height)+ui(bio.original.Binary.s16(data.scene,off+2));
             int ww=ui(weapon.width),wh=ui(weapon.height);
+            if(c.zoom==0&&c.cooldown>0&&shotFrame==0&&data.scene[base+4]==0&&data.scene[base+5]==0){
+                int id=OriginalFlash.maskId(data.scene,base,c.shots),index=id-4111;
+                if(index>=0&&index<flashes.length){
+                    if(flashes[index]==null)flashes[index]=new OriginalFlash(Binary.read("/effects/"+id+".bin"));
+                    flashes[index].draw(frame,W,H,get(4101),W/2+Binary.s16(data.scene,base+8),H-layout.touchHeight-weapon.height+Binary.s16(data.scene,base+10));
+                }
+            }
             if(c.weapon[11]==0&&c.cooldown>0&&shotFrame<bio.original.Binary.i32(data.scene,base+56)){
                 int height=weapon.height-5*bio.original.Binary.s16(data.scene,off+2)/2+20;
                 wh=ui(height);if(height>weapon.height)ww=ui(height*weapon.width/weapon.height);

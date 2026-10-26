@@ -29,7 +29,10 @@ class AssetTest(unittest.TestCase):
         with self.assertRaises(ValueError):m.decode_bitmap(raw,3,1,0x10,0xf81f)
     def test_unknown_format_not_silent(self):
         with self.assertRaises(ValueError):m.decode_bitmap(bytes(8),1,1,0x42,0)
-    def test_special_effect_explicitly_unresolved(self):
+    def test_alpha_mask_is_not_color_bitmap(self):
         self.assertIsNone(m.decode_bitmap(bytes(4),1,1,0x11,0))
+        raw=bytes(4)+bytes([0,1,31,0])
+        self.assertEqual(m.alpha_mask(raw,1,1),struct.pack('<HH',1,1)+raw)
+        with self.assertRaises(ValueError):m.alpha_mask(bytes(4)+bytes([0,1,33,0]),1,1)
 
 if __name__=='__main__':unittest.main()

@@ -1472,7 +1472,7 @@
       "color_key": 0,
       "gzip_bytes": 748,
       "decoded_bytes": 2196,
-      "status": "unresolved-special-effect"
+      "status": "alpha-mask"
     },
     {
       "id": 4112,
@@ -1483,7 +1483,7 @@
       "color_key": 0,
       "gzip_bytes": 594,
       "decoded_bytes": 1732,
-      "status": "unresolved-special-effect"
+      "status": "alpha-mask"
     },
     {
       "id": 4113,
@@ -1494,7 +1494,7 @@
       "color_key": 0,
       "gzip_bytes": 779,
       "decoded_bytes": 2236,
-      "status": "unresolved-special-effect"
+      "status": "alpha-mask"
     },
     {
       "id": 4114,
@@ -1505,7 +1505,7 @@
       "color_key": 0,
       "gzip_bytes": 778,
       "decoded_bytes": 2640,
-      "status": "unresolved-special-effect"
+      "status": "alpha-mask"
     },
     {
       "id": 4115,
@@ -1516,7 +1516,7 @@
       "color_key": 0,
       "gzip_bytes": 653,
       "decoded_bytes": 2640,
-      "status": "unresolved-special-effect"
+      "status": "alpha-mask"
     },
     {
       "id": 4201,

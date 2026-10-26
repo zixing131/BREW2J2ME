@@ -29,7 +29,7 @@ def decode_bitmap(raw, width, height, flags, color_key):
     if raw[:4 * height] != bytes(4 * height):
         raise ValueError('unexpected nonzero row workspace')
     if flags == 0x11:
-        return None  # Five special effects: format not yet established.
+        return None  # Alpha masks are exported separately, never treated as color images.
     if flags not in (0, 0x10, 0x20, 0x30):
         raise ValueError('unrecognized bitmap flags')
     if flags & 0x10:
@@ -54,9 +54,22 @@ def decode_bitmap(raw, width, height, flags, color_key):
     return png(width, height, rgba)
 
 
+def alpha_mask(raw, width, height):
+    """0x11: row pointers workspace, left/count bytes, then 0..32 opacity samples."""
+    if len(raw) < 6 * height or raw[:4 * height] != bytes(4 * height):
+        raise ValueError('invalid alpha workspace')
+    left, counts = raw[4*height:5*height], raw[5*height:6*height]
+    if any(x+n > width for x,n in zip(left,counts)):
+        raise ValueError('alpha span exceeds width')
+    end = 6*height + sum(counts)
+    if len(raw) != (end+3)&~3 or any(x > 32 for x in raw[6*height:end]):
+        raise ValueError('invalid alpha samples')
+    return struct.pack('<HH', width, height) + raw
+
+
 def extract(source, output, raw_output):
-    images, audio = output / 'images', output / 'audio'
-    for path in (images, audio, raw_output / 'mbx', raw_output / 'images'):
+    images, audio, effects = output / 'images', output / 'audio', output / 'effects'
+    for path in (images, audio, effects, raw_output / 'mbx', raw_output / 'images'):
         path.mkdir(parents=True, exist_ok=True)
     manifest = {'sources': {}, 'images': [], 'resources': []}
     for name in ('bin.dat', 'map.hkm', 'mbxres.bin', 'save.dat', 'shenghua.mod'):
@@ -100,16 +113,18 @@ def extract(source, output, raw_output):
         raw = gzip.decompress(data[start + 16:start + 16 + length])
         (raw_output / 'images' / ('%d.bin' % rid)).write_bytes(raw)
         encoded = decode_bitmap(raw, width, height, flags, key)
+        if flags == 0x11:
+            (effects / ('%d.bin' % rid)).write_bytes(alpha_mask(raw, width, height))
         if encoded:
             (images / ('%d.png' % rid)).write_bytes(encoded)
         manifest['images'].append({'id': rid, 'offset': start, 'width': width, 'height': height,
             'flags': flags, 'color_key': key, 'gzip_bytes': length, 'decoded_bytes': len(raw),
-            'status': 'png' if encoded else 'unresolved-special-effect'})
+            'status': 'png' if encoded else 'alpha-mask'})
     (output / 'image-index.txt').write_text('\n'.join(str(x['id']) for x in manifest['images'] if x['status'] == 'png') + '\n')
     (output / 'NOTICE.txt').write_text('原作版权所有：北京魔百创娱。资源提取：B站阿拉雷叔；手机提供：B站圣莫尼卡；技术支持：Youtube Krz One。\n本目录图像/音乐由用户提供的 BREW 文件转换，不是新绘制素材。\n', encoding='utf-8')
     (raw_output / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n')
     converted = sum(x['status'] == 'png' for x in manifest['images'])
-    print('%d/%d images decoded; %d mbx records; ARM image extracted' % (converted, n, len(manifest['resources'])))
+    print('%d PNGs + %d alpha masks; %d mbx records; ARM image extracted' % (converted, n-converted, len(manifest['resources'])))
     return manifest
 
 

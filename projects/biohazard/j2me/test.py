@@ -31,9 +31,10 @@ with zipfile.ZipFile(jar) as z:
     assert classes and all(n.startswith('bio/') for n in classes)
     for name in classes:
         data=z.read(name);assert struct.unpack_from('>H',data,6)[0]==45,(name,'not old Java bytecode')
-    for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/original/OriginalAnimation.class','bio/original/OriginalMaterials.class','bio/original/OriginalDialogue.class','bio/original/OriginalSky.class','bio/OriginalCanvas.class'):
+    for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/original/OriginalAnimation.class','bio/original/OriginalMaterials.class','bio/original/OriginalDialogue.class','bio/original/OriginalSky.class','bio/original/OriginalFlash.class','bio/OriginalCanvas.class'):
         assert b'StackMap' in z.read(name),(name,'CLDC StackMap absent')
     assert len([n for n in z.namelist() if n.endswith('.png')])==210
     assert len([n for n in z.namelist() if n.startswith('original/') and n.endswith('.bin')])==37
+    assert len([n for n in z.namelist() if n.startswith('effects/') and n.endswith('.bin')])==5
     assert b'OriginalCanvas' in z.read('bio/BioMIDlet.class')
 print('PASS: JAR/JAD byte size, class version 45, CLDC StackMap presence, 210 PNGs, no bundled API classes')

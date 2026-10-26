@@ -44,6 +44,12 @@ public final class DesktopCanvasTest {
   ScreenLayout scopeLayout=(ScreenLayout)field("layout").get(c);check(((int[])field("frame").get(c))[(scopeLayout.hud+20)*scopeLayout.width+scopeLayout.width-1]==0,"Scope masks outside original radius");
   c.keyReleased(53);c.keyPressed(53);tick(c);c.keyReleased(53);check(sniper.combat.shots==1,"Second sniper press shoots");
   field("session").set(c,s);
+  field("touchConfigured").setBoolean(c,false);c.resizeTest(176,220);field("screen").setInt(c,2);s.vm.running=false;s.vm.action.kind=0;
+  s.player.current=0;s.data.resolve(s.player,0,s.combat.weapon);s.combat.cooldown=s.combat.weapon[1]&255;s.combat.shots=1;s.combat.zoom=0;
+  capture(c,"weapon-muzzle");int[] muzzlePixels=(int[])((int[])field("frame").get(c)).clone();
+  s.combat.cooldown--;capture(c,"weapon-after-muzzle");
+  check(!Arrays.equals(muzzlePixels,(int[])field("frame").get(c)),"Shot frame changes rendered flash and recoil");
+  check(((OriginalFlash[])field("flashes").get(c))[OriginalFlash.maskId(s.data.scene,s.data.effectBase+116*s.combat.weapon[11],1)-4111]!=null,"Production firing loads original alpha mask");
   for(int i=0;i<sizes.length;i++){
    int w=sizes[i][0],h=sizes[i][1];field("touchConfigured").setBoolean(c,false);c.resizeTest(w,h);field("screen").setInt(c,2);
    s.vm.action.kind=4;s.vm.dialogMode=2;s.vm.speaker=6020;s.vm.textId=6040;

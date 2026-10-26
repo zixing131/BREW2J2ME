@@ -103,6 +103,14 @@ public final class OriginalSystemsTest {
             int count=in.readInt();check(count==skyCalls.size(),"ARM sky draw count "+i);
             for(int j=0;j<count;j++){int[] actual=(int[])skyCalls.elementAt(j);int fields=in.readInt();check(fields==actual.length,"ARM sky command length");for(int k=0;k<fields;k++)check(actual[k]==in.readInt(),"ARM sky command "+i+":"+j+":"+k);}
         }in.close();System.out.println("PASS original ARM sky: "+skyCases+" complete background command streams");
+        in=fixture(args[0],"arm-flash");int flashCases=in.readInt();int[] flashColor=new int[2400];
+        for(int i=0;i<flashColor.length;i++)flashColor[i]=OriginalMaterials.rgb(in.readUnsignedShort());
+        OriginalRenderer.Picture flashPicture=new OriginalRenderer.Picture(60,40,flashColor);
+        for(int i=0;i<flashCases;i++){
+            int id=in.readInt(),w=in.readInt(),h=in.readInt(),x=in.readInt(),y=in.readInt(),bg=in.readInt();int[] dest=new int[w*h];Arrays.fill(dest,OriginalMaterials.rgb(bg));
+            OriginalFlash flash=new OriginalFlash(OriginalTest.read(new File(root.getParentFile(),"effects/"+id+".bin")));flash.draw(dest,w,h,flashPicture,x,y);
+            for(int j=0;j<dest.length;j++)check(OriginalMaterials.pack(dest[j])==in.readUnsignedShort(),"ARM flash "+i+" pixel "+j);
+        }in.close();System.out.println("PASS original ARM flash: "+flashCases+" complete clipped frames");
         byte[] radar=OriginalTest.read(new File(args[0],"arm-radar.bin"));int[][] coords={OriginalRadar.EXITS,OriginalRadar.DESTINATIONS,OriginalRadar.OBJECTIVES};int offset=0;
         for(int a=0;a<coords.length;a++)for(int i=0;i<coords[a].length;i++){check(coords[a][i]==Binary.u16(radar,offset),"Original radar coordinates");offset+=2;}
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");

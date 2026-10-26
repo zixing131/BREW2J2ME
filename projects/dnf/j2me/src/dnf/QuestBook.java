@@ -32,6 +32,7 @@ public final class QuestBook {
     public int choiceOffset(int id,int choice){for(int i=0;i<4;i++){int p=213+3*i;if(value(id,p+2)>0&&choice--==0)return p;}return -1;}
     public boolean available(int id,Campaign c){
         if(!supported(id)||c.state[id]!=0)return false;
+        int job=SkillTree.questJob(id);if(job>=0){if(id<=434){if(c.job!=0)return false;for(int q=423;q<=434;q++)if(c.state[q]==1&&SkillTree.questJob(q)!=job)return false;}else if(c.job!=job)return false;}
         for(int i=0;i<3;i++){int p=165+i*5,type=value(id,p),arg=value(id,p+1),v=word(id,p+2);
             if(type==1&&(v>=c.state.length||c.state[v]!=arg))return false;
             if(type==2&&c.level<arg)return false;if(type==3&&c.bag.count(arg,v)<value(id,p+4))return false;}
@@ -52,12 +53,13 @@ public final class QuestBook {
             else if(type==5){if(c.gold<a)return false;}
             else if(type==7||type==15){if(c.kills[id*3+i]==0)return false;}
             else if(type==12){if(b>=c.state.length||c.state[b]!=a)return false;}
+            else if(type==17){if(c.trialPoints<a)return false;}
             else if(type==13){if(c.level<a)return false;}
             else return false;
         }return true;
     }
-    public static boolean supported(int id){if(id==7||id==8||id==213)return true;for(int i=2;i<MAIN.length;i++)if(MAIN[i]==id)return true;return false;}
-    public static String title(int id){return titles!=null&&id>=0&&id<titles.length?titles[id]:"任务 "+id;}
+    public static boolean supported(int id){if(id>=423&&id<=462)return true;if(id==7||id==8||id==213)return true;for(int i=2;i<MAIN.length;i++)if(MAIN[i]==id)return true;return false;}
+    public static String title(int id){if(id>=423&&id<=462){int j=SkillTree.questJob(id);return SkillTree.JOBS[id<=434?j:j+4]+(id<=434?"转职":"觉醒")+" · "+(id<=434?(id-423)%3+1:(id-435)%7+1);}return titles!=null&&id>=0&&id<titles.length?titles[id]:"任务 "+id;}
     public int[] contact(int id,boolean turnin){for(int j=0;j<npcs.length;j++){int[] ids=turnin?returns[j]:offers[j];for(int i=0;i<ids.length;i++)if(ids[i]==id){int[] m=maps[npcs[j][1]];return new int[]{m[0],m[1],npcs[j][0]};}}return new int[]{-1,1,-1};}
     public String description(int id,Campaign c){String s="";for(int i=0;i<3;i++){int p=180+6*i,t=value(id,p),a=word(id,p+1),b=word(id,p+3),n=value(id,p+5);String v="";
         if(t==1)v=c.bag.items.name(a,b)+"："+c.bag.count(a,b)+" / "+n;
@@ -65,6 +67,8 @@ public final class QuestBook {
         else if(t==3)v="击败 "+MonsterData.name(a+1)+"（"+Adventure.difficultyName(n)+"）："+c.kills[id*3+i]+" / "+b;
         else if(t==5)v="支付金币："+c.gold+" / "+a;
         else if(t==7)v="在 "+a+" 秒内通关"+Adventure.zoneName(b)+(c.kills[id*3+i]>0?"（完成）":"");
+        else if(t==12)v="与导师交谈，确认职业道路";
+        else if(t==17)v="死亡之塔积分："+c.trialPoints+" / "+a;
         else if(t==15)v="护送克莱尔安全离开地下城"+(c.kills[id*3+i]>0?"（完成）":"");
         if(v.length()>0)s+=(s.length()>0?"\n":"")+v;
     }int[] where=contact(id,true);return s+(s.length()>0?"\n":"")+"交付："+npcName(where[2])+" · "+Adventure.townName(where[0]);}

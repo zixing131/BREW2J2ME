@@ -59,7 +59,7 @@ public final class GameplayTest {
         stones.campaign.bag.add(17,12,1);stones.useItem(17,12);check(stones.campaign.level==2&&stones.campaign.xp==398&&stones.maxHp==87,"experience book uses native one-level threshold");
         stones.hp=stones.maxHp;stones.campaign.bag.add(13,26,1);stones.useItem(13,26);check(stones.campaign.bag.count(13,26)==0,"coin may be used at full health");
         stones.campaign.level=60;stones.campaign.bag.add(17,11,1);stones.useItem(17,11);check(stones.campaign.bag.count(17,11)==1,"max-level XP book not wasted");
-        ByteArrayOutputStream legacy=new ByteArrayOutputStream();stones.campaign.write(new DataOutputStream(legacy));byte[] v3=legacy.toByteArray(),v2=Arrays.copyOf(v3,v3.length-8-103);v2[3]=2;
+        ByteArrayOutputStream legacy=new ByteArrayOutputStream();stones.campaign.write(new DataOutputStream(legacy));byte[] v3=legacy.toByteArray(),v2=Arrays.copyOf(v3,v3.length-8-103-7);v2[3]=2;
         Campaign old=Campaign.read(new DataInputStream(new ByteArrayInputStream(v2)));check(old.permanentHp==0&&old.permanentMp==0&&old.bag.count(17,11)==1,"exact Campaign v2 layout migrates without losing inventory");
         check(MonsterData.name(25).equals("落雷凯诺")&&MonsterData.name(187).equals("玛丽"),"original early and final enemy names translated");
         // Original type-5 condition is a loan, not an availability requirement.

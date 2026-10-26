@@ -1,6 +1,11 @@
 package dnf;
 /** Original ARM field rules; independent execution fixtures in field-*-arm.csv. */
 public final class FieldRules {
+    // binary.mod 0x1402fa4: STR, INT, VIT, SPI, base HP/level, base MP/level.
+    private static final int[][] GROWTH={{2,2,2,2,15,10},{3,2,3,2,20,20},{2,4,2,4,15,25},{4,2,4,2,25,15},{3,3,3,3,25,15}};
+    public static int attribute(int job,int level,int index){return (level*GROWTH[SkillTree.family(job)][index])&65535;}
+    public static int classHp(int job,int level,int vitality,int flat,int permanent){return 8*(attribute(job,level,2)+vitality)+level*GROWTH[SkillTree.family(job)][4]+flat+permanent;}
+    public static int classMp(int job,int level,int spirit,int flat,int permanent){return 3*(attribute(job,level,3)+spirit)+level*GROWTH[SkillTree.family(job)][5]+20+flat+permanent;}
     // binary.mod 0x1402042: eight groups of ten dungeon ids.
     private static final int[] REGIONS={0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,0,0,0,0,0,1,2,3,4,5,9,6,8,7,41,21,22,23,24,25,26,27,42,0,0,28,29,30,31,32,33,34,43,0,0,12,45,13,14,17,15,16,19,18,44,35,0,0,0,0,0,0,0,0,0,36,0,0,0,0,0,0,0,0,0};
     public static int region(int zone){if(zone==0)return 0;for(int i=10;i<REGIONS.length;i++)if(REGIONS[i]==zone)return i/10;return 0;}

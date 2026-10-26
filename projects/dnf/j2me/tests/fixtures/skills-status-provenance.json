@@ -1,0 +1,17 @@
+{
+  "binary_sha256": "45bb74b218f8b88a6a434de4532e95b96f8d7febe1b4931fb217d1450fc4860a",
+  "executed": [
+    "0x6ea60",
+    "0x7adf0",
+    "0x73044",
+    "0x75074",
+    "0x71c4c",
+    "0x79e14",
+    "0x79c88"
+  ],
+  "scope": "Explicit regeneration: native skill effect dispatch, negative status init and replacement.\nHost resource IO/allocator shims; effect-loader capture after native hero loading.\nClass growth isolates armor mastery with explicit zero-contribution shims.\n",
+  "growth_shims": {
+    "0x77094": "zero HP armor mastery contribution",
+    "0x77144": "zero MP armor mastery contribution"
+  }
+}

@@ -36,7 +36,7 @@ public final class CampaignTest {
             int key=0;if(nearest>=0){Battle.Enemy e=b.enemies[nearest];int dx=e.x-b.player.x,dy=e.y-b.player.y;
                 if(Math.abs(dy)>3)key=dy>0?Session.DOWN:Session.UP;
                 else if(Math.abs(dx)>37)key=dx>0?Session.RIGHT:Session.LEFT;
-                else {if(b.player.hero.animation.clip==0||b.player.hero.animation.clip==2){b.tick(dx<0?Session.LEFT:Session.RIGHT,30);b.skill(1);b.attack();}else b.attack();}}
+                else {if(b.player.hero.animation.clip==0||b.player.hero.animation.clip==2){b.tick(dx<0?Session.LEFT:Session.RIGHT,30);b.skill(b.ghostCooldown==0?1:0);b.attack();}else b.attack();}}
             b.tick(key,30);
         }
         check(b.hp>0&&b.living()==0,"real input clears room "+b.field+"/"+b.stage+" hp="+b.hp+" living="+b.living()+" ticks="+ticks);
@@ -78,7 +78,7 @@ public final class CampaignTest {
         check(c.kills[21]==10&&c.kills[24]==4&&c.book.complete(7,c)&&c.book.complete(8,c),"original zero-based quest monster indices and capped counts");
         b.startDungeon();b.hp=0;byte[] dead=b.encode();b=Battle.decode(new Session(),dead);b.attack();b.tick(0,30);check(b.hp==b.maxHp&&b.zone==0&&b.campaign.state[7]==1,"death recovery preserves quest progress");
         byte[] corrupt=b.encode();corrupt[corrupt.length-12]^=1;boolean rejected=false;try{Battle.decode(new Session(),corrupt);}catch(IOException e){rejected=true;}check(rejected,"campaign corruption detected");
-        Battle legacy=new Battle(new Session());legacy.enter(79,1,20,1,272,366);ByteArrayOutputStream suffix=new ByteArrayOutputStream();DataOutputStream suffixOut=new DataOutputStream(suffix);legacy.campaign.write(suffixOut);suffixOut.writeUTF("");suffixOut.writeInt(-1);suffixOut.writeInt(0);suffixOut.writeInt(0);suffixOut.flush();byte[] modern=legacy.encode(),old=new byte[modern.length-suffix.size()];System.arraycopy(modern,0,old,0,old.length-4);old[3]=0x31;int hash=Campaign.checksum(old,old.length-4);for(int i=0;i<4;i++)old[old.length-4+i]=(byte)(hash>>>(24-8*i));Battle migrated=Battle.decode(new Session(),old);check(migrated.field==79&&migrated.campaign.state[0]==2,"0.3 DNB1 migration remains playable");
+        byte[] old=java.nio.file.Files.readAllBytes(new File("tests/fixtures/battle-dnb1-layout.dnb").toPath());Battle migrated=Battle.decode(new Session(),old);check(migrated.field==79&&migrated.campaign.state[0]==2,"DNB1 layout migration remains playable");
         System.out.println("PASS campaign "+checks+" checks; real town route, quests, full dungeon, boss, death and saves");
     }
 }

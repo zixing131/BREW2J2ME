@@ -61,7 +61,7 @@ public final class CanvasTest {
         c.keyPressed(Canvas.KEY_NUM1);c.keyPressed(Canvas.KEY_NUM1);for(int i=0;i<m.entries.length;i++)if(m.entries[i]==101)m.selected=i;finishMenuDetail(c);check(b.campaign.bag.equipped(0,101),"canvas equips crafted weapon");
         c.keyPressed(Canvas.KEY_NUM0);c.suspend();Method resume=DnfCanvas.class.getDeclaredMethod("resumeStory",String.class);resume.setAccessible(true);resume.invoke(c,"dnf-campaign-slot-"+get(c,"slot"));b=(Battle)get(c,"battle");check(b.campaign.bag.equipped(0,101)&&b.campaign.gold==800,"RMS restores equipment and transaction balances");
         b.campaign.skillPoints=100;b.campaign.totalSkillPoints=Math.max(100,b.campaign.totalSkillPoints);
-        c.keyPressed(Canvas.KEY_NUM9);c.keyPressed(Canvas.KEY_NUM1);check(((GameMenu)get(c,"gameMenu")).tab==5,"skill training reachable");paint(c,"skills-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);paint(c,"skill-detail-"+w+"x"+h);finishMenuDetail(c);check(b.campaign.skillRanks[6]==2&&b.campaign.skillPoints==90,"Canvas trains upper slash once for native10 SP");c.keyPressed(Canvas.KEY_NUM1);paint(c,"mainline-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM1);paint(c,"adventure-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM0);
+        c.keyPressed(Canvas.KEY_NUM9);c.keyPressed(Canvas.KEY_NUM1);c.keyPressed(Canvas.KEY_NUM1);m=(GameMenu)get(c,"gameMenu");for(int i=0;i<m.entries.length;i++)if(m.entries[i]==6)m.selected=i;check(((GameMenu)get(c,"gameMenu")).tab==5,"skill training reachable");paint(c,"skills-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);paint(c,"skill-detail-"+w+"x"+h);finishMenuDetail(c);check(b.campaign.skillRanks[6]==2&&b.campaign.skillPoints==90,"Canvas trains upper slash once for native10 SP");c.keyPressed(Canvas.KEY_NUM1);paint(c,"mainline-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM1);paint(c,"adventure-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM0);
         // A dialogue interrupt must preserve the partially defeated room, including after RMS reload.
         b.startDungeon(9,0);b.enter(25,1,9,0,180,200);check(b.enemies.length>0,"native preboss room populated");b.enemies[0].hp=1;b.campaign.runMillis=12345;
         Method start=DnfCanvas.class.getDeclaredMethod("startStory",Integer.TYPE);start.setAccessible(true);start.invoke(c,Integer.valueOf(20));c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM5);b=(Battle)get(c,"battle");check(b!=null&&b.enemies[0].hp==1&&b.campaign.runMillis==12345,"DNS4 preserves suspended enemy and run timer");
@@ -87,6 +87,10 @@ public final class CanvasTest {
         c.keyPressed(Canvas.KEY_NUM5);paint(c,"permanent-item-"+w+"x"+h);finishMenuDetail(c);check(b.maxHp==hp+25&&b.campaign.bag.count(17,3)==0,"permanent stone usable through actual paginated menu");
         c.keyPressed(Canvas.KEY_NUM0);c.suspend();Method resume=DnfCanvas.class.getDeclaredMethod("resumeStory",String.class);resume.setAccessible(true);resume.invoke(c,"dnf-campaign-slot-"+get(c,"slot"));b=(Battle)get(c,"battle");
         check(b.campaign.permanentHp==25&&b.maxHp==hp+25&&((Integer)get(c,"currentMusic")).intValue()==14,"RMS reload preserves stone and restarts correct field track");
+    }
+    private static void classUI(DnfCanvas c,int w,int h)throws Exception {
+        Battle b=new Battle(new Session());b.enter(0,1,0,0,180,250);b.campaign.job=6;b.campaign.level=60;b.campaign.skillRanks[47]=1;b.level=60;b.refreshStats();b.hp=b.maxHp;b.mp=b.maxMp;set(c,"battle",b);set(c,"progress",b.campaign);set(c,"menu",Integer.valueOf(-3));c.keyPressed(Canvas.KEY_NUM9);c.keyPressed(Canvas.KEY_NUM1);c.keyPressed(Canvas.KEY_NUM1);GameMenu m=(GameMenu)get(c,"gameMenu");check(m.tab==5&&m.entries.length==32,"full ghost class catalog in Canvas");
+        for(int i=0;i<m.entries.length;i++)if(m.entries[i]==47)m.selected=i;paint(c,"class-tree-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);paint(c,"class-detail-"+w+"x"+h);c.keyPressed(Canvas.KEY_POUND);check(b.campaign.bindings[0]==47,"Canvas binds awakened skill");c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM0);paint(c,"class-touch-"+w+"x"+h);c.suspend();Method resume=DnfCanvas.class.getDeclaredMethod("resumeStory",String.class);resume.setAccessible(true);resume.invoke(c,"dnf-campaign-slot-"+get(c,"slot"));b=(Battle)get(c,"battle");check(b.campaign.job==6&&b.campaign.bindings[0]==47,"class and binding survive Canvas RMS");
     }
     private static void run(int w,int h)throws Exception{
         Canvas.testWidth=w;Canvas.testHeight=h;DnfCanvas c=new DnfCanvas(new DnfMIDlet());
@@ -146,7 +150,7 @@ public final class CanvasTest {
             int resource=audio.resources[0];audio.resources[0]=65534;audio.preview(0);check(audio.error.indexOf("Missing audio resource")>=0,"missing primary audio reports failure");audio.resources[0]=resource;
             Manager.fail=true;audio.preview(0);check(audio.error.length()>0,"unsupported codec safely reported");Manager.fail=false;
             set(c,"menu",Integer.valueOf(5));set(c,"selected",Integer.valueOf(2));c.keyPressed(Canvas.KEY_NUM5);check(audio.volume==25,"third setting changes volume");
-            battleUI(c,w,h);campaignUI(c,w,h);economyUI(c,w,h);fieldAudioUI(c,w,h);
+            battleUI(c,w,h);campaignUI(c,w,h);economyUI(c,w,h);fieldAudioUI(c,w,h);classUI(c,w,h);
         }finally{c.stop();((Thread)get(c,"thread")).join(2000);check(!((Thread)get(c,"thread")).isAlive(),"canvas thread terminates");}
     }
     public static void main(String[] args)throws Exception{

@@ -21,6 +21,7 @@ public final class OriginalSystemsTest {
     public static void main(String[] args)throws Exception{
         final File root=new File(args[1]);resources=new OriginalSession.Resources(){public byte[] read(int id)throws IOException{try{return OriginalTest.read(new File(root,id+".bin"));}catch(Exception e){throw new IOException(e.toString());}}};
         data=new OriginalData(resources.read(15000),resources.read(51000));check(data.weaponCount==13&&data.shopCount==12,"Original tables");
+        effects(args[0]);
         DataInputStream in=fixture(args[0],"arm-weapon");int n=in.readInt();OriginalPlayer p=new OriginalPlayer(data);p.count=1;p.current=0;int[] resolved=new int[12];
         for(int i=0;i<n;i++){in.readFully(p.slots,0,8);data.resolve(p,0,resolved);for(int j=0;j<12;j++)check(resolved[j]==in.readInt(),"ARM weapon "+i+" field "+j);}in.close();
         in=fixture(args[0],"arm-combat-math");n=in.readInt();for(int i=0;i<n;i++){int x=in.readInt(),y=in.readInt(),num=in.readInt();check(OriginalMath.angle(x,y)==in.readInt(),"ARM angle "+i);check(OriginalMath.sqrt(num)==in.readInt(),"ARM sqrt "+i);}in.close();
@@ -155,5 +156,33 @@ public final class OriginalSystemsTest {
         byte[] radar=OriginalTest.read(new File(args[0],"arm-radar.bin"));int[][] coords={OriginalRadar.EXITS,OriginalRadar.DESTINATIONS,OriginalRadar.OBJECTIVES};int offset=0;
         for(int a=0;a<coords.length;a++)for(int i=0;i<coords[a].length;i++){check(coords[a][i]==Binary.u16(radar,offset),"Original radar coordinates");offset+=2;}
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");
+    }
+    static void effects(String fixtures)throws Exception{
+        DataInputStream in=fixture(fixtures,"arm-effects");int[] actual=new int[12];int n=in.readInt();
+        for(int i=0;i<n;i++){
+            int kind=in.readInt(),scale=in.readInt(),cx=in.readInt(),cy=in.readInt(),phase=in.readInt();
+            OriginalEffects.sprite(kind==4?60:25,kind==4?237:25,scale,kind==4?phase:0,cx,cy,actual);
+            for(int j=0;j<6;j++)check(actual[j]==in.readInt(),"ARM effect sprite "+i+" component "+j);
+        }
+        n=in.readInt();for(int i=0;i<n;i++){
+            int age=in.readInt(),x1=in.readInt(),y1=in.readInt(),x2=in.readInt(),y2=in.readInt(),w1=in.readInt(),w2=in.readInt();
+            OriginalEffects.tracer(x1,y1,x2,y2,w1,w2,actual);
+            for(int tri=0;tri<2;tri++){for(int j=0;j<6;j++)check(actual[tri*6+j]==in.readInt(),"ARM tracer triangle");check(OriginalEffects.tracerColor(age)==in.readInt(),"ARM tracer color");}
+        }
+        n=in.readInt();for(int i=0;i<n;i++){int angle=in.readInt();check(OriginalEffects.muzzleX(700,angle)==in.readInt(),"ARM muzzle X "+angle);check(OriginalEffects.muzzleY(400,angle)==in.readInt(),"ARM muzzle Y "+angle);}in.close();
+        OriginalSession s=arena();s.player.addWeapon(2);s.player.current=0;s.player.slots[7]=20;s.combat.aim();s.combat.fire();s.combat.tick(0);
+        check(s.combat.tracers[0][0]==1&&s.combat.tracers[0][1]==1,"Gun fires first visible tracer age 1");
+        check(s.combat.soundShot==1,"Actual pistol shot emits sound event");
+        s.combat.fireRequested=false;for(int i=2;i<=3;i++){s.combat.tick(0);check(s.combat.tracers[0][1]==i,"Tracer visible age "+i);}s.combat.tick(0);check(s.combat.tracers[0][0]==0,"Tracer expires on fourth tick");
+        s=arena();s.player.addWeapon(1);s.combat.fire();s.combat.tick(0);check(s.combat.tracers[0][0]==0,"Axe has no gun tracer");
+        check(s.combat.soundShot==-1,"Axe never emits gunshot");
+        s=arena();int[] b=s.combat.projectiles[0];b[0]=1;b[1]=800;b[2]=400;b[3]=0;b[5]=500;b[6]=16;b[7]=5;s.combat.projectileKinds[0]=2;s.combat.tick(0);
+        check(b[1]==816&&s.combat.tracers[0][2]==800&&s.combat.tracers[0][4]==816,"Visible enemy projectile emits movement trail");
+        s.combat.actors[0][OriginalCombat.FLASH]=3;s.combat.hurt=2;s.level.resetCollision();s.combat.rebuildOccupancy();byte[] saved=SaveCodec.encode(s,123,8);
+        OriginalSession restored=SaveCodec.decode(saved,data,resources);check(Arrays.equals(saved,SaveCodec.encode(restored,123,8)),"V3 snapshot preserves hit, hurt, projectile kind and moving trail");
+        OriginalSession legacy=SaveCodec.decode(OriginalTest.read(new File(fixtures,"snapshot-v2.bin")),data,resources);check(legacy.player.money==456&&legacy.saveSequence==8,"Existing V2 fixture remains readable");
+        int[] pixels={0x123456,0xffffff,0xffffff,0x123456};OriginalEffects.hurt(pixels,1,2,3);
+        check(pixels[0]==0x123456&&pixels[3]==0x123456&&pixels[1]==OriginalMaterials.fog(0xffffff,0xf800,24),"Hurt tint is 24/32 and only touches viewport");
+        System.out.println("PASS original ARM effects: 105 sprite draws, 18 triangles, 360 muzzle offsets; combat lifetimes and V2/V3 snapshots");
     }
 }

@@ -3,7 +3,7 @@ import java.io.*;
 
 /** Versioned J2ME snapshot; embeds the original 856-byte record without changing it. */
 public final class SaveCodec {
-    private static final int MAGIC=0x42494f33,VERSION=2;
+    private static final int MAGIC=0x42494f33,VERSION=3;
     public static int crc(byte[] b,int len){int c=-1;for(int i=0;i<len;i++){c^=b[i]&255;for(int j=0;j<8;j++)c=(c>>>1)^((c&1)!=0?0xedb88320:0);}return ~c;}
     private static void ints(DataOutputStream o,int[] a)throws IOException{for(int i=0;i<a.length;i++)o.writeInt(a[i]);}
     private static void readInts(DataInputStream in,int[] a)throws IOException{for(int i=0;i<a.length;i++)a[i]=in.readInt();}
@@ -18,6 +18,7 @@ public final class SaveCodec {
         o.writeInt(c.actors.length);for(int i=0;i<c.actors.length;i++)ints(o,c.actors[i]);for(int i=0;i<40;i++)ints(o,c.projectiles[i]);
         boolean narrating=v.action.kind==17&&v.narration!=null;o.writeBoolean(narrating);
         if(narrating){OriginalNarration n=v.narration;ints(o,new int[]{n.frame,n.position,n.endTicks});o.writeBoolean(n.finished);o.writeBoolean(n.active);}
+        ints(o,c.projectileKinds);for(int i=0;i<c.tracers.length;i++)ints(o,c.tracers[i]);
         o.flush();byte[] body=bytes.toByteArray();o.writeInt(crc(body,body.length));o.flush();return bytes.toByteArray();
     }
     public static OriginalSession decode(byte[] b,OriginalData data,OriginalSession.Resources resources)throws IOException{
@@ -40,6 +41,13 @@ public final class SaveCodec {
             if(v.narration==null)throw new IOException("Narration state without action");OriginalNarration n=v.narration;
             n.frame=in.readInt();n.position=in.readInt();n.endTicks=in.readInt();n.finished=in.readBoolean();n.active=in.readBoolean();
             if(n.frame<0||n.position<0||n.position>n.message.length()||n.endTicks<0||n.endTicks>18)throw new IOException("Narration position");
+        }
+        if(version>=3){
+            readInts(in,c.projectileKinds);for(int i=0;i<c.projectileKinds.length;i++)if(c.projectileKinds[i]<0||c.projectileKinds[i]>255)throw new IOException("Projectile kind");
+            for(int i=0;i<c.tracers.length;i++){int[] t=c.tracers[i];readInts(in,t);
+                if(t[0]<0||t[0]>1||t[1]<0||t[1]>3)throw new IOException("Tracer state");
+                for(int j=2;j<6;j++)if(t[j]<-32768||t[j]>32767)throw new IOException("Tracer coordinate");
+            }
         }
         if(in.available()!=0)throw new IOException("Trailing snapshot data");
         if(c.target< -1||c.target>=c.actors.length||c.cooldown<0||c.reload<0)throw new IOException("Combat state");c.rebuildOccupancy();return s;

@@ -10,6 +10,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private static final int COVER=0,MENU=1,PLAY=2,PAUSE=3,INFO=4,ERROR=5,SAVE=6,LOAD=7,SUPPLY=8,INVENTORY=9,UPGRADE=10,PREMIUM=11,OFFER=12,OVERWRITE=13,PREMIUM_WEAPONS=14,SETTINGS=15;
     private final BioMIDlet app;
     private final OriginalAudio audio=new OriginalAudio();
+    private final SupplementalAudio sounds=new SupplementalAudio();
     private ScreenLayout layout;
     private int W,H;
     private int[] frame,scaled,atlas;
@@ -59,6 +60,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private void syncAudio(){
         boolean menu=screen==COVER||screen==MENU||(screen==SETTINGS&&settingsReturn==MENU)||(screen==INFO&&returnScreen==MENU)||(screen==LOAD&&saveReturn==MENU);
         audio.update(screen==ERROR?0:menu?30000:30001,active&&running);
+        if(screen!=PLAY||!active||!running)sounds.close();
     }
     private void newGame(){try{session=new OriginalSession(data,this);hint.clear();lastText=-1;dialogPage=0;gps=false;open(PLAY);}catch(Exception e){fail(e);}}
     public void run(){
@@ -70,6 +72,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         // A render/update tick is not a new BREW EVT_KEY. The original combat
         // latch itself continues firing on a hit; sniper zoom needs a second press.
         hint.tick(W);session.tick(input);
+        sounds.tick(session.combat);
         if(session.combat.pendingNotice>0){showHint(session.combat.pendingNotice);session.combat.pendingNotice=0;}
         if(session.vm.pendingNotice>0){showHint(session.vm.pendingNotice);session.vm.pendingNotice=0;}
         syncDialogue();
@@ -80,10 +83,10 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         OriginalVM v=session.vm;
         if(lastText!=v.textId||lastDialogEvent!=v.event||lastDialogPc!=v.pc){lastText=v.textId;lastDialogEvent=v.event;lastDialogPc=v.pc;dialogPage=0;}
     }
-    private void fail(Exception e){clearInput();screen=ERROR;audio.close();info="游戏运行失败，请返回主菜单重试。";e.printStackTrace();}
+    private void fail(Exception e){clearInput();screen=ERROR;audio.close();sounds.close();info="游戏运行失败，请返回主菜单重试。";e.printStackTrace();}
     synchronized void activate(){active=true;clearInput();syncAudio();}
-    synchronized void suspend(){if(active&&session!=null){autosave();if(screen==PLAY)open(PAUSE);}active=false;clearInput();audio.close();}
-    synchronized void shutdown(){if(session!=null)autosave();active=false;running=false;audio.close();}
+    synchronized void suspend(){if(active&&session!=null){autosave();if(screen==PLAY)open(PAUSE);}active=false;clearInput();audio.close();sounds.close();}
+    synchronized void shutdown(){if(session!=null)autosave();active=false;running=false;audio.close();sounds.close();}
     protected void hideNotify(){suspend();}
     protected void showNotify(){activate();}
     private void autosave(){if(session==null||session.player.hp<=0)return;try{OriginalSaves.save(3,session);}catch(Exception e){notice="自动保存失败，请手动保存";}}
@@ -163,11 +166,12 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             if(selection==0)newGame();else if(selection==1)records(false,false);else if(selection==5)app.quit();
             else if(selection==2)settings(MENU);
             else if(selection==3)info("游戏帮助",text.get(7009),MENU);
-            else info("游戏关于","3D生化启示录$n版本 0.3.9$n$n"+text.get(7007)+"$n$n按数字键或屏幕按键操作。",MENU);
+            else info("游戏关于","3D生化启示录$n版本 0.3.10$n$n"+text.get(7007)+"$n$n按数字键或屏幕按键操作。",MENU);
         }else if(screen==SETTINGS){
             if(selection==0){touch=!touch;touchConfigured=true;}
             else if(selection==1)touchConfigured=false;
-            else audio.setEnabled(!audio.enabled());
+            else if(selection==2)audio.setEnabled(!audio.enabled());
+            else sounds.setEnabled(!sounds.enabled());
             resize();syncAudio();
         }else if(screen==PAUSE){
             if(selection==0){if(session.player.hp<=0)records(false,false);else open(PLAY);}else if(selection==1){if(session.player.hp>0)records(true,false);else notice="请载入记录或开始新游戏";}else if(selection==2)records(false,false);
@@ -193,7 +197,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             else notice=session.player.premiumFailure(offerItem);
         }
     }
-    private int count(){return screen==MENU?6:screen==SETTINGS?3:screen==PAUSE?10:screen==SAVE?3:screen==LOAD?4:screen==SUPPLY?6:screen==INVENTORY?session.player.count:screen==UPGRADE?5:screen==PREMIUM?6:screen==PREMIUM_WEAPONS?5:0;}
+    private int count(){return screen==MENU?6:screen==SETTINGS?4:screen==PAUSE?10:screen==SAVE?3:screen==LOAD?4:screen==SUPPLY?6:screen==INVENTORY?session.player.count:screen==UPGRADE?5:screen==PREMIUM?6:screen==PREMIUM_WEAPONS?5:0;}
     private boolean originalShop(){return screen==PREMIUM||screen==PREMIUM_WEAPONS||screen==SUPPLY;}
     private int shopStep(){return screen==PREMIUM?25:35;}
     private int listStep(){return screen==SAVE||screen==LOAD?44:screen==INVENTORY?36:28;}
@@ -217,7 +221,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private String item(int i){
         OriginalPlayer p=session==null?null:session.player;
         if(screen==MENU)return text.get(8900+i);
-        if(screen==SETTINGS)return i==0?"屏幕按键："+(touch?"开启":"关闭"):i==1?"自动设置":"游戏音乐："+(audio.enabled()?"开启":"关闭");
+        if(screen==SETTINGS)return i==0?"屏幕按键："+(touch?"开启":"关闭"):i==1?"自动设置":i==2?"游戏音乐："+(audio.enabled()?"开启":"关闭"):"战斗音效："+(sounds.enabled()?"开启":"关闭");
         if(screen==PAUSE){String[] a={"继续游戏","保存记录","载入记录","武器改装","随身商店","短代商城","药品 "+p.medicines,"隐身 "+bio.original.Binary.u16(p.global,44),"返回主菜单","游戏设置"};return a[i];}
         if(screen==SAVE||screen==LOAD)return slotName(i)+"  "+savePart(i,false);
         if(screen==SUPPLY)return text.get(9250+i)+" "+OriginalPlayer.PRICES[i]+"金";
@@ -332,7 +336,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     }
     private String menuSummary(){
         if(notice.length()>0)return notice;
-        if(screen==SETTINGS)return selection==0?"确定后开启或关闭屏幕按键":selection==1?"小屏按键关闭，大屏自动开启":audio.unavailable()?"当前设备无法播放音乐":"开启或关闭游戏音乐";
+        if(screen==SETTINGS)return selection==0?"确定后开启或关闭屏幕按键":selection==1?"小屏按键关闭，大屏自动开启":selection==3?"枪声与敌人声音，可单独关闭":audio.unavailable()?"当前设备无法播放音乐":"开启或关闭游戏音乐";
         if(screen==SAVE)return "选择位置保存当前游戏记录";
         if(screen==LOAD)return "选择记录，继续未完成的任务";
         if(screen==INVENTORY)return "确定装备武器，并进入改装";
@@ -449,8 +453,8 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             if(c.reload>0){int full=Math.max(1,c.weapon[5]&255);wy+=ui(weapon.height)*(full-Math.abs(full-2*c.reload))/full;}
             if(c.zoom==0)blit(weapon,wx,wy,ww,wh);
         }
-        reticle();hud();quickButtons();
-        if(gps)map();if(c.hurt>0){rect(0,layout.hud,3,H-layout.hud,0xdd0000);rect(W-3,layout.hud,3,H-layout.hud,0xdd0000);}
+        reticle();OriginalEffects.hurt(frame,W*layout.hud,renderer.pixels.length,c.hurt);hud();quickButtons();
+        if(gps)map();
         OriginalVM v=session.vm;if(v.overlayAmount>0)shade(v.overlayColor,v.overlayAmount);
         if(v.action.kind==1||v.action.kind==2){int n=v.action.duration;shade(v.fadeColor,n<=0?0:32*(v.action.kind==1?v.action.frame:n-v.action.frame)/n);}
         if(touch&&!v.busy())touchControls();

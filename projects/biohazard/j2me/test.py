@@ -22,7 +22,7 @@ subprocess.run([str(java_executable(jdk,'java')),'-cp',str(out),'bio.original.Or
 subprocess.run([str(java_executable(jdk,'java')),'-cp',str(out),'bio.original.OriginalSystemsTest',str(root/'tests/fixtures'),str(root/'resources/original'),str(root.parent/'originals/1073745158/save.dat')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(out),'bio.original.OriginalPreview',str(root/'build/extracted/mbx'),str(root/'resources'),str(root/'build/original-preview.png')],check=True)
 desktop=root/'build/desktop-tests';desktop.mkdir(exist_ok=True)
-subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(desktop)]+list(map(str,original))+list(map(str,(root/'tests/midp').rglob('*.java')))+[str(root/'src/bio/OriginalCanvas.java'),str(root/'src/bio/OriginalSaves.java'),str(root/'src/bio/OriginalAudio.java'),str(root/'tests/OriginalAudioTest.java'),str(root/'tests/DesktopCanvasTest.java')],check=True)
+subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(desktop)]+list(map(str,original))+list(map(str,(root/'tests/midp').rglob('*.java')))+[str(root/'src/bio/OriginalCanvas.java'),str(root/'src/bio/OriginalSaves.java'),str(root/'src/bio/OriginalAudio.java'),str(root/'src/bio/SupplementalAudio.java'),str(root/'tests/OriginalAudioTest.java'),str(root/'tests/DesktopCanvasTest.java')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.OriginalAudioTest'],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.DesktopCanvasTest',str(root/'build/ui-previews')],check=True)
 jar=root/'dist/BiohazardDemo.jar';jad=(root/'dist/BiohazardDemo.jad').read_text()
@@ -32,7 +32,7 @@ with zipfile.ZipFile(jar) as z:
     assert classes and all(n.startswith('bio/') for n in classes)
     for name in classes:
         data=z.read(name);assert struct.unpack_from('>H',data,6)[0]==45,(name,'not old Java bytecode')
-    for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/original/OriginalAnimation.class','bio/original/OriginalMaterials.class','bio/original/OriginalDialogue.class','bio/original/OriginalSky.class','bio/original/OriginalFlash.class','bio/original/OriginalNarration.class','bio/original/OriginalNotice.class','bio/OriginalCanvas.class'):
+    for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/original/OriginalAnimation.class','bio/original/OriginalMaterials.class','bio/original/OriginalDialogue.class','bio/original/OriginalSky.class','bio/original/OriginalFlash.class','bio/original/OriginalNarration.class','bio/original/OriginalNotice.class','bio/original/OriginalEffects.class','bio/OriginalAudio.class','bio/SupplementalAudio.class','bio/OriginalCanvas.class'):
         assert b'StackMap' in z.read(name),(name,'CLDC StackMap absent')
     manifest=z.read('META-INF/MANIFEST.MF').decode('utf-8')
     for field in ('MIDlet-Icon: /icon.png','MIDlet-1: 3D生化启示录,/icon.png,bio.BioMIDlet'):
@@ -42,5 +42,9 @@ with zipfile.ZipFile(jar) as z:
     assert len([n for n in z.namelist() if n.endswith('.png')])==211
     assert len([n for n in z.namelist() if n.startswith('original/') and n.endswith('.bin')])==37
     assert len([n for n in z.namelist() if n.startswith('effects/') and n.endswith('.bin')])==5
+    assert len([n for n in z.namelist() if n.startswith('sfx/') and n.endswith('.wav')])==7
+    for source in (root/'assets/sfx').iterdir():
+        if source.is_file():assert z.read('sfx/'+source.name)==source.read_bytes(),source.name
+    for id in (30000,30001):assert z.read('audio/%d.mid'%id).startswith(b'MThd')
     assert b'OriginalCanvas' in z.read('bio/BioMIDlet.class')
-print('PASS: JAR/JAD byte size, class version 45, CLDC StackMap, original MIF icon in both manifests, 211 PNGs, no bundled API classes')
+print('PASS: JAR/JAD byte size, class version 45, CLDC StackMap, original MIF icon, 211 PNGs, 2 MIDI + 7 licensed WAVs, no bundled API classes')

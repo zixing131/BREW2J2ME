@@ -161,8 +161,31 @@ public final class DesktopCanvasTest {
   for(int level=1;level<=16;level++){OriginalSession levelSession=new OriginalSession(s.data,c);levelSession.load(level,80,80,0);field("session").set(c,levelSession);field("screen").setInt(c,2);capture(c,"level-"+level);
    byte[] snapshot=SaveCodec.encode(levelSession,1L,1);check(Arrays.equals(snapshot,SaveCodec.encode(SaveCodec.decode(snapshot,s.data,c),1L,1)),"Every level save roundtrip "+level);
   }
+  combatEffects(c,s.data);
   hints(c,s.data);
   chineseShop(c,s.data);
   System.out.println("PASS production Canvas/RMS via desktop adapters: "+checks+" assertions; previews "+output);
+ }
+ static void combatEffects(OriginalCanvas c,OriginalData data)throws Exception{
+  OriginalSession s=new OriginalSession(data,c);s.vm.running=false;s.vm.action.kind=0;s.player.x=912;s.player.y=80;s.player.angle=90;s.player.addWeapon(2);
+  for(int i=0;i<s.combat.actors.length;i++){s.combat.actors[i][OriginalCombat.X]=912;s.combat.actors[i][OriginalCombat.Y]=40;}
+  field("session").set(c,s);field("screen").setInt(c,2);((OriginalNotice)field("hint").get(c)).clear();
+  int[] a=s.combat.actors[0];a[OriginalCombat.Y]=128;a[OriginalCombat.STATE]=0;
+  int[][] sizes={{240,320},{320,240},{360,640}};
+  for(int k=0;k<sizes.length;k++){
+   int w=sizes[k][0],h=sizes[k][1];field("touchConfigured").setBoolean(c,false);c.resizeTest(w,h);
+   OriginalRenderer r=(OriginalRenderer)field("renderer").get(c);a[OriginalCombat.FLASH]=0;r.render(s,c);int[] base=r.pixels.clone();
+   for(int phase=4;phase>=1;phase--){a[OriginalCombat.FLASH]=phase;r.render(s,c);check(!Arrays.equals(base,r.pixels),"Hit effect visibly renders phase "+phase+" at "+w+"x"+h);capture(c,"combat-hit-"+phase+"-"+w+"x"+h);}
+   a[OriginalCombat.FLASH]=0;
+   int[] b=s.combat.projectiles[0];b[0]=1;b[1]=912;b[2]=108;
+   for(int kind=1;kind<=2;kind++){s.combat.projectileKinds[0]=kind;r.render(s,c);check(!Arrays.equals(base,r.pixels),"Original projectile image "+kind+" visible");capture(c,"combat-projectile-"+kind+"-"+w+"x"+h);}
+   s.combat.projectileKinds[0]=0;r.render(s,c);check(Arrays.equals(base,r.pixels),"Variant zero remains invisible");b[0]=0;
+   int[] t=s.combat.tracers[0];t[0]=1;t[2]=908;t[3]=100;t[4]=912;t[5]=128;
+   for(int age=1;age<=3;age++){t[1]=age;r.render(s,c);check(!Arrays.equals(base,r.pixels),"Visible original tracer age "+age);capture(c,"combat-tracer-"+age+"-"+w+"x"+h);}t[0]=0;
+   capture(c,"combat-base-"+w+"x"+h);int[] untinted=((int[])field("frame").get(c)).clone();s.combat.hurt=3;capture(c,"combat-hurt-"+w+"x"+h);
+   int[] tinted=(int[])field("frame").get(c);ScreenLayout layout=(ScreenLayout)field("layout").get(c);
+   for(int i=0;i<layout.width*layout.hud;i++)check(tinted[i]==untinted[i],"Hurt leaves HUD unchanged");
+   int at=(layout.hud+15)*layout.width+layout.width/2;check(tinted[at]==OriginalMaterials.fog(untinted[at],0xf800,24),"Production red overlay covers view center");s.combat.hurt=0;
+  }
  }
 }

@@ -1,0 +1,24 @@
+Supplemental sounds for the J2ME port, NOT original BREW game audio.
+Retrieved 2026-10-26. These derived WAV files may be redistributed with the game.
+
+pistol.wav, rifle.wav, shotgun.wav, sniper.wav
+Gunshot Sounds by Tabasco / Vincent Sevedge, copyright (c) 2009 Vincent Sevedge.
+Source page: https://opengameart.org/content/gunshot-sounds
+Archive: https://opengameart.org/sites/default/files/sounds.zip
+The page labels the package CC0, but sounds/creativecommons.txt in the actual
+archive specifies Creative Commons Attribution 3.0 Unported. To honor that
+notice, these files are distributed with attribution under CC BY 3.0:
+https://creativecommons.org/licenses/by/3.0/
+Changes: isolated a single shot, gain reduced to 70%, high/low-pass filtering, short fades,
+converted to 11025 Hz mono 16-bit PCM. No endorsement is implied.
+
+zombie-attack.wav, zombie-hit.wav, zombie-death.wav
+Zombies Sound Pack by artisticdude, created for Summoning Wars.
+Source page: https://opengameart.org/content/zombies-sound-pack
+Archive: https://opengameart.org/sites/default/files/zombies.zip
+License: CC0 1.0 Universal https://creativecommons.org/publicdomain/zero/1.0/
+Changes: gain reduced to 70%, high/low-pass filtering, short fades, converted to 11025 Hz mono PCM16.
+The event labels are port adaptations, not original file names.
+
+manifest.json records original member names, SHA256, trims and resulting hashes.
+tools/prepare_sfx.py regenerates the files from the original downloaded archives.

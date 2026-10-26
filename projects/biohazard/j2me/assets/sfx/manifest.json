@@ -1,0 +1,65 @@
+[
+  {
+    "file": "pistol.wav",
+    "archive": "guns.zip",
+    "member": "sounds/cz.wav",
+    "source_sha256": "4a8594b3cf3f2bfe49497c4a9ae6301b5c7000f21c7cbcb6650df8f594fce713",
+    "start": 0.245,
+    "seconds": 0.5,
+    "sha256": "a3e941e9bca9c8b281ca64542e628f5d04a17ec4d0b671935c66aa86d42abfa4"
+  },
+  {
+    "file": "rifle.wav",
+    "archive": "guns.zip",
+    "member": "sounds/sks.wav",
+    "source_sha256": "236b1fbc029dd44efe930c9a75d383a92b2ae72b69a78b44830e449e83da61a4",
+    "start": 0.345,
+    "seconds": 0.45,
+    "sha256": "6589e922f93d201cd712bce8cb82968bdc5710b488563ae60017909d6a4f2c39"
+  },
+  {
+    "file": "shotgun.wav",
+    "archive": "guns.zip",
+    "member": "sounds/shotty.wav",
+    "source_sha256": "2e4b51fafbc93ea2b9aa0cf2428d6bad6cfa79817f2d0d7aa38c64dc97afa02f",
+    "start": 0.08,
+    "seconds": 0.6,
+    "sha256": "3a4cbe16cb95ef2263a6ab9b340116c10a31ec0d1211da5c86451d78ee404fc3"
+  },
+  {
+    "file": "sniper.wav",
+    "archive": "guns.zip",
+    "member": "sounds/mosin.wav",
+    "source_sha256": "ece6fff8f3b21aa8bc41943c0293d3fab6a553db33dd2427a388838324a39719",
+    "start": 0.445,
+    "seconds": 0.7,
+    "sha256": "8b04dab559b416440f0786f9c3a6070e0740de736343715cb7d567818220d279"
+  },
+  {
+    "file": "zombie-attack.wav",
+    "archive": "zombies.zip",
+    "member": "zombies/zombie-1.wav",
+    "source_sha256": "dad8280256985cadc5745f407c53ebdcf428d55e6369a70847e5b83d60e98c17",
+    "start": 0,
+    "seconds": 0.854,
+    "sha256": "a3ffec3f4250a7eb250e3251f5b99010644dd29c217decdae7df2723e0a60cf5"
+  },
+  {
+    "file": "zombie-hit.wav",
+    "archive": "zombies.zip",
+    "member": "zombies/zombie-5.wav",
+    "source_sha256": "6920b559f953d19737f65a9da5b31f7bb3e1421c48552f52d7a57399d507574b",
+    "start": 0,
+    "seconds": 0.5,
+    "sha256": "65e93d689711c383ef27bf2c28422eefbe961754ebaf08cd5cc4dbce05a93985"
+  },
+  {
+    "file": "zombie-death.wav",
+    "archive": "zombies.zip",
+    "member": "zombies/zombie-24.wav",
+    "source_sha256": "3776a39a471c215f26115290837012084fc07f37e20b4808ce76f5dafe98f2fb",
+    "start": 0,
+    "seconds": 0.333,
+    "sha256": "7ba528e274869656428755e870bd69cfb03dfbccafad91c7824f2a1111150aeb"
+  }
+]

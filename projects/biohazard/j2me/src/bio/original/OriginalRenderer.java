@@ -30,6 +30,7 @@ public final class OriginalRenderer implements OriginalSky.Sink {
     private final int[] rowFog;
     private Images backgroundImages;
     private int[] labelBand;
+    private final int[] effectRect=new int[6],effectPoint=new int[4],effectEnd=new int[4],effectTriangles=new int[12];
     public OriginalRenderer(int w,int h,byte[] metadata,int[][] tiles,int[] atlas){
         width=w;height=h;pixels=new int[w*h];depth=new int[w*h];rowDistance=new double[h];rowFog=new int[h];this.metadata=metadata;this.tiles=tiles;this.atlas=atlas;
         spriteBase=8;int p=8+36*Binary.i32(metadata,4);boxBase=p+4;p+=4+32*Binary.i32(metadata,p);actorBase=p+4;
@@ -93,6 +94,52 @@ public final class OriginalRenderer implements OriginalSky.Sink {
         }
         for(int i=0;i<session.combat.actors.length;i++){
             int[] a=session.combat.actors[i];sprite(images,actorBase+84*session.combat.type(i),a[OriginalCombat.X],a[OriginalCombat.Y],a[OriginalCombat.STATE],session);
+            if(a[OriginalCombat.FLASH]>0){
+                int descriptor=actorBase+84*c.type(i);
+                effectSprite(images,4201,a[OriginalCombat.X],a[OriginalCombat.Y],metadata[descriptor+6]&255,a[OriginalCombat.FLASH],session);
+            }
+        }
+        for(int i=0;i<c.projectiles.length;i++){int[] b=c.projectiles[i];if(b[0]!=0&&c.projectileKinds[i]!=0)effectSprite(images,c.projectileKinds[i]==1?2501:2502,b[1],b[2],10,0,session);}
+        for(int i=0;i<c.tracers.length;i++)if(c.tracers[i][0]!=0)tracer(c.tracers[i],p.angle);
+    }
+    /** 0x48A0 integer camera projection at original height 180 (45 map units). */
+    private boolean effectPoint(int x,int y,int angle,int scale,int[] out){
+        int dx=4*(x-viewX),dy=4*(y-viewY),cs=OriginalTrig.cos(angle)>>8,sn=OriginalTrig.sin(angle)>>8;
+        int d=(dx*cs+dy*sn)>>8;if(d<=0||d>=4000)return false;int focal=(int)camera.focal;
+        out[0]=width/2+(((dy*cs-dx*sn)>>8)*focal)/d;
+        out[1]=height-((((10+(height>>1))<<8)-focal*(30<<8)/d)>>8);
+        out[2]=((scale*focal/10)<<8)/Math.max(1,OriginalMath.distance(dx,dy));out[3]=d;
+        return true;
+    }
+    private void effectSprite(Images images,int id,int x,int y,int scale,int flash,OriginalSession s)throws IOException{
+        if(!effectPoint(x,y,s.player.angle,scale,effectPoint))return;
+        Picture image=images.get(id);if(image==null)return;
+        OriginalEffects.sprite(image.width,image.height,effectPoint[2],flash,effectPoint[0],effectPoint[1],effectRect);
+        int left=effectRect[0],top=effectRect[1],w=effectRect[2],h=effectRect[3],dist=effectPoint[3]*64;
+        int fog=flash==0?0:OriginalMaterials.fogAmount(s.level,effectPoint[3]/4.0,worldZoom);
+        for(int yy=Math.max(0,top);yy<Math.min(height,top+h);yy++)for(int xx=Math.max(0,left);xx<Math.min(width,left+w);xx++){
+            int at=yy*width+xx;if(dist>depth[at])continue;
+            int sx=(int)((long)(xx-left)*image.width/w),sy=effectRect[4]+(int)((long)(yy-top)*effectRect[5]/h),color=image.pixels[sy*image.width+sx];
+            if((color>>>24)!=0){pixels[at]=OriginalMaterials.fog(color,Binary.u16(s.level.header,16),fog);depth[at]=dist;}
+        }
+    }
+    private void tracer(int[] t,int angle){
+        if(!effectPoint(t[2],t[3],angle,10,effectPoint)||!effectPoint(t[4],t[5],angle,10,effectEnd))return;
+        int spread=t[1]*8*(int)camera.focal/3,w1=spread/effectPoint[3],w2=spread/effectEnd[3];
+        OriginalEffects.tracer(effectPoint[0],effectPoint[1],effectEnd[0],effectEnd[1],w1,w2,effectTriangles);
+        int color=OriginalMaterials.rgb(OriginalEffects.tracerColor(t[1])),dist=Math.min(effectPoint[3],effectEnd[3])*64;
+        triangle(effectTriangles,0,color,dist);triangle(effectTriangles,6,color,dist);
+    }
+    /** Portable clipped rasterization; original geometry/color, per-pixel world depth. */
+    private void triangle(int[] a,int off,int color,int dist){
+        int ax=a[off],ay=a[off+1],bx=a[off+2],by=a[off+3],cx=a[off+4],cy=a[off+5];
+        long area=(long)(bx-ax)*(cy-ay)-(long)(by-ay)*(cx-ax);if(area==0)return;
+        int left=Math.max(0,Math.min(ax,Math.min(bx,cx))),right=Math.min(width-1,Math.max(ax,Math.max(bx,cx)));
+        int top=Math.max(0,Math.min(ay,Math.min(by,cy))),bottom=Math.min(height-1,Math.max(ay,Math.max(by,cy)));
+        for(int y=top;y<=bottom;y++)for(int x=left;x<=right;x++){
+            long p=(long)(bx-ax)*(y-ay)-(long)(by-ay)*(x-ax),q=(long)(cx-bx)*(y-by)-(long)(cy-by)*(x-bx),r=(long)(ax-cx)*(y-cy)-(long)(ay-cy)*(x-cx);
+            if(area>0?p<0||q<0||r<0:p>0||q>0||r>0)continue;int at=y*width+x;
+            if(dist<=depth[at]){pixels[at]=color;depth[at]=dist;}
         }
     }
     private void objectLabel(Labels labels,int id,int x,int y,int angle){

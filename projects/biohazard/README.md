@@ -1,12 +1,13 @@
 # 3D生化启示录
 
-BREW原逻辑到J2ME的移植项目。当前版本0.3.1；战斗、物品、商店、存档与多分辨率接入，仍需完整关卡/真机验证。不是完整原光栅器逐帧等价实现。
+BREW原逻辑到J2ME的移植项目。当前版本0.3.2；恢复原相机、界面动画布局、商店分类、雷达与地面材质混合，仍需完整关卡/真机验证。不是完整原光栅器逐帧等价实现。
 
 - [当前状态](docs/03-development-status.md)
 - [运行、按键与J2ME实现](j2me/README.md)
 - [首次评估](docs/01-feasibility.md)
 - [资源格式](docs/02-resource-formats.md)
 - [战斗/存档/尺寸适配证据](docs/05-combat-save-resolution-port.md)
+- [视频对照与0.3.2修正](docs/06-video-fidelity.md)
 - [原始输入说明](originals/README.md)
 
 从仓库根目录：

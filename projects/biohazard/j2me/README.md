@@ -1,6 +1,6 @@
 # 3D生化启示录 — J2ME原逻辑移植
 
-版本 **0.3.1**。默认入口运行原地图、剧情、武器/敌人参数；本轮接入战斗、物品、武器升级、商店、持久存档和多分辨率触控，修复医院“安静”墙贴镜像。完整证据和仍未复刻的内容见 [0.3移植记录](../docs/05-combat-save-resolution-port.md)。
+版本 **0.3.2**。默认入口运行原地图、剧情、武器/敌人参数；本轮恢复原相机、精灵比例、界面动画布局、商店分类、雷达标记和地面材质混合。证据和未完成范围见 [视频对照记录](../docs/06-video-fidelity.md)；战斗、存档、触屏基础见 [0.3移植记录](../docs/05-combat-save-resolution-port.md)。
 
 ## 运行
 
@@ -29,6 +29,8 @@ bash "$KEMULATOR_HOME/kemulator.sh" \
 
 系统菜单：继续、保存、载入、武器/升级、物品商店、超级商店、药品、隐身、主菜单。选择背包武器会装备并进入该武器升级页。菜单页脚支持点击返回/上下/确认。
 
+狙击枪第一次按下开镜，第二次按下射击；持续按住不会被每个游戏更新帧重复解释为新按键。原战斗状态机仍可在命中后继续攻击。原商店保留左侧确认、右侧返回，点击上/下箭头翻动列表。
+
 “继续游戏”打开三个手动记录及一个自动记录，显示关卡、HP和时间。手动覆盖需确认；暂停/后台/退出尝试自动保存，死亡不覆盖自动存档。各槽保留两次有效快照，最近记录损坏时回退。旧演示记录不复用。原856字节save.dat已验证格式转换，但没有手机文件选择导入界面。
 
 超级商店明确标为 **OFFLINE / NO SMS**：不发送短信，确认后应用原道具和限购逻辑。普通商店仍按原价格扣游戏金币。GPS/超级武器等购买记录随存档保存。
@@ -42,6 +44,7 @@ python3 test.py
 # 可选：执行原ARM重新生成差分期望，需要Python unicorn
 python3 tools/reverse/arm_oracle.py
 python3 tools/reverse/combat_oracle.py
+python3 tools/reverse/material_oracle.py
 ```
 
 也可从仓库根目录执行 `python3 tools/project.py test biohazard`，它会先构建。公共工具链配置见 [根说明](../../../README.md)。
@@ -57,4 +60,4 @@ python3 tools/reverse/combat_oracle.py
 - `OriginalRenderer` / `ScreenLayout`：原墙面/盒体/对象/敌人素材绘制与尺寸布局。
 - `OriginalVM` / `OriginalMotion` / `ScriptAction`：原事件和运动逻辑。
 
-还没有完成16关逐步人工通关、原版逐帧画面对照和真机性能验证。部分地面材质混合、特效、原UI美术、音频仍待完整恢复；随机服务和光栅器是Java适配，不能声称全程序逐指令等价。旧GameCanvas/GameState/RayRenderer/SaveStore只保留作历史样例，默认MIDlet不使用。
+还没有完成16关逐步人工通关、原版逐帧画面对照和真机性能验证。部分特效、对话表现、室外天空和音频仍待完整恢复；随机服务和光栅器是Java适配，不能声称全程序逐指令等价。旧GameCanvas/GameState/RayRenderer/SaveStore只保留作历史样例，默认MIDlet不使用。

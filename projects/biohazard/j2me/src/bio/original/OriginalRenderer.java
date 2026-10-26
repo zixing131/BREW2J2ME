@@ -23,8 +23,12 @@ public final class OriginalRenderer {
     private double[] hitDistance,hitU;
     private int viewX,viewY;
     private OriginalCamera camera;
+    private int[][] floorTiles;
+    private int worldTicks,worldZoom;
+    private final double[] rowDistance;
+    private final int[] rowFog;
     public OriginalRenderer(int w,int h,byte[] metadata,int[][] tiles,int[] atlas){
-        width=w;height=h;pixels=new int[w*h];depth=new int[w*h];this.metadata=metadata;this.tiles=tiles;this.atlas=atlas;
+        width=w;height=h;pixels=new int[w*h];depth=new int[w*h];rowDistance=new double[h];rowFog=new int[h];this.metadata=metadata;this.tiles=tiles;this.atlas=atlas;
         spriteBase=8;int p=8+36*Binary.i32(metadata,4);boxBase=p+4;p+=4+32*Binary.i32(metadata,p);actorBase=p+4;
         p+=4+84*Binary.i32(metadata,p);p+=4+116*Binary.i32(metadata,p);descriptorBase=p+8;
     }
@@ -33,6 +37,8 @@ public final class OriginalRenderer {
     public static double textureU(double u,int flags){return (flags&1)==0?1-u:u;}
     private void prepare(OriginalLevel l,Images images)throws IOException{
         if(prepared==l&&(images==null||preparedBoxes))return;
+        floorTiles=new int[l.palette.length][1024];
+        for(int i=0;i<floorTiles.length;i++)for(int y=0;y<32;y++)for(int x=0;x<32;x++)floorTiles[i][y*32+x]=OriginalMaterials.rgb(OriginalMaterials.compose(l.palette[i],x,y,atlas));
         int n=l.surfaceCount+(images==null?0:l.boxCount*4);segments=new int[n][8];textures=new Picture[n];segmentCount=n;
         hitIndex=new int[n];hitDistance=new double[n];hitU=new double[n];
         Picture[] composed=new Picture[(metadata.length-descriptorBase)/16];
@@ -58,14 +64,17 @@ public final class OriginalRenderer {
         }
         prepared=l;preparedBoxes=images!=null;
     }
-    private int floor(OriginalLevel l,int x,int y,boolean ceiling){
-        if(x<0||y<0||x>=l.width*32||y>=l.height*32)return 0x16191b;byte[] layer=ceiling?l.layer1:l.layer0;if(layer==null)return 0x242627;
-        int index=layer[y/32*l.width+x/32]&255;if(index>=l.palette.length)return 0x242627;int packed=l.palette[index],tile=packed&255;
-        if(tile*1024+1023>=atlas.length)return 0x242627;int rgb=atlas[tile*1024+(y&31)*32+(x&31)];if((packed>>>24)>=13)rgb=(rgb>>1)&0x7f7f7f;return rgb;
+    private int floor(OriginalLevel l,int x,int y,boolean ceiling,int amount){
+        byte[] layer=ceiling?l.layer1:l.layer0;if(layer==null)return 0x242627;
+        int index=x<0||y<0||x>=l.width*32||y>=l.height*32?(ceiling?1:0):layer[y/32*l.width+x/32]&255;
+        if(index>=l.palette.length)return 0x242627;int base=l.palette[index]&255,rgb=floorTiles[index][(y&31)*32+(x&31)];
+        boolean light=base>=7&&base<=10,blink=base==7||base==9;
+        if(light&&(!blink||(worldTicks&4)!=0))return rgb;
+        return OriginalMaterials.fog(rgb,Binary.u16(l.header,16),amount);
     }
     public void render(OriginalLevel l,int x,int y,int angle){try{prepare(l,null);world(l,x,y,angle,1);}catch(IOException e){throw new RuntimeException(e.toString());}}
     public void render(OriginalSession session,Images images)throws IOException{
-        OriginalPlayer p=session.player;OriginalCombat c=session.combat;prepare(session.level,images);
+        OriginalPlayer p=session.player;OriginalCombat c=session.combat;worldTicks=c.ticks;prepare(session.level,images);
         int x=p.x,y=p.y;
         if(p.current>=0){session.data.resolve(p,p.current,c.weapon);int base=session.data.effectBase+116*c.weapon[11];
             int shot=Math.max(0,(c.weapon[1]&255)-c.cooldown);
@@ -81,13 +90,14 @@ public final class OriginalRenderer {
         }
     }
     private void world(OriginalLevel l,int x,int y,int angle,int zoom){
-        viewX=x;viewY=y;camera=new OriginalCamera(width,height,zoom);
+        viewX=x;viewY=y;worldZoom=zoom;camera=new OriginalCamera(width,height,zoom);
         double dx=OriginalTrig.cos(angle)/65536.0,dy=OriginalTrig.sin(angle)/65536.0,proj=camera.focal,mid=camera.horizon;
         double eye=OriginalCamera.EYE,ceiling=(l.header[11]&255)*32;
         for(int i=0;i<depth.length;i++)depth[i]=Integer.MAX_VALUE;
+        for(int row=0;row<height;row++){rowDistance[row]=(row<mid?ceiling-eye:eye)*proj/(Math.abs(row-mid)+.5);rowFog[row]=OriginalMaterials.fogAmount(l,rowDistance[row],zoom);}
         for(int col=0;col<width;col++){
             double side=(col-width/2)/proj,rx=dx-dy*side,ry=dy+dx*side;
-            for(int row=0;row<height;row++){double d=(row<mid?ceiling-eye:eye)*proj/(Math.abs(row-mid)+.5);pixels[row*width+col]=floor(l,(int)(x+rx*d),(int)(y+ry*d),row<mid);}
+            for(int row=0;row<height;row++){double d=rowDistance[row];pixels[row*width+col]=floor(l,(int)(x+rx*d),(int)(y+ry*d),row<mid,rowFog[row]);}
             int hits=0;
             for(int i=0;i<segmentCount;i++){
                 int[] s=segments[i];double ax=s[0]-x,ay=s[1]-y,sx=s[2]-s[0],sy=s[3]-s[1],cross=rx*sy-ry*sx;
@@ -99,10 +109,11 @@ public final class OriginalRenderer {
             for(int k=0;k<hits;k++){
                 int i=hitIndex[k];int[] s=segments[i];Picture tex=textures[i];if(tex==null||tex.width<1||tex.height<1)continue;double d=hitDistance[k];
                 int top=(int)camera.heightY(d,s[5]),bottom=(int)camera.groundY(d),dist=(int)(d*256);
+                int fog=OriginalMaterials.fogAmount(l,d,zoom);
                 int tx=Math.min(tex.width-1,Math.max(0,(int)(textureU(hitU[k],s[4])*tex.width)));
                 for(int row=Math.max(0,top);row<=bottom&&row<height;row++){
                     int ty=(int)((row-top)*d*tex.height/(proj*s[5]));if(ty<0||ty>=tex.height)continue;int rgb=tex.pixels[ty*tex.width+tx];
-                    if((rgb>>>24)!=0){int at=row*width+col;pixels[at]=rgb;depth[at]=dist;}
+                    if((rgb>>>24)!=0){int at=row*width+col;pixels[at]=OriginalMaterials.fog(rgb,Binary.u16(l.header,16),fog);depth[at]=dist;}
                 }
             }
         }
@@ -118,9 +129,10 @@ public final class OriginalRenderer {
         double anchor=metadata[descriptor+7]!=0?camera.heightY(d,(s.level.header[11]&255)*32):camera.groundY(d);
         int left=(int)(width/2+side*proj/d-Binary.s16(metadata,descriptor+8)*scale),top=(int)(anchor-Binary.s16(metadata,descriptor+10)*scale);
         int dw=Math.max(1,(int)(image.width*scale)),dh=Math.max(1,(int)(fh*scale)),dist=(int)(d*256);
+        int fog=OriginalMaterials.fogAmount(s.level,d,worldZoom)*(100-(metadata[descriptor+5]&255))/100;
         for(int yy=Math.max(0,top);yy<top+dh&&yy<height;yy++)for(int xx=Math.max(0,left);xx<left+dw&&xx<width;xx++){
             int at=yy*width+xx;if(dist>=depth[at])continue;int tx=(int)((long)(xx-left)*image.width/dw);if(mirror)tx=image.width-1-tx;
-            int ty=(int)((long)(yy-top)*fh/dh);int rgb=image.pixels[(frame*fh+ty)*image.width+tx];if((rgb>>>24)!=0){pixels[at]=rgb;depth[at]=dist;}
+            int ty=(int)((long)(yy-top)*fh/dh);int rgb=image.pixels[(frame*fh+ty)*image.width+tx];if((rgb>>>24)!=0){pixels[at]=OriginalMaterials.fog(rgb,Binary.u16(s.level.header,16),fog);depth[at]=dist;}
         }
     }
 }

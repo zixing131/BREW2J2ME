@@ -31,7 +31,7 @@ with zipfile.ZipFile(jar) as z:
     assert classes and all(n.startswith('bio/') for n in classes)
     for name in classes:
         data=z.read(name);assert struct.unpack_from('>H',data,6)[0]==45,(name,'not old Java bytecode')
-    for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/OriginalCanvas.class'):
+    for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/original/OriginalAnimation.class','bio/original/OriginalMaterials.class','bio/OriginalCanvas.class'):
         assert b'StackMap' in z.read(name),(name,'CLDC StackMap absent')
     assert len([n for n in z.namelist() if n.endswith('.png')])==210
     assert len([n for n in z.namelist() if n.startswith('original/') and n.endswith('.bin')])==37

@@ -75,6 +75,11 @@ public final class OriginalSystemsTest {
         check(animation.frame(7,0).length==2&&animation.frame(7,0)[0][5]==4,"Original cover reflected continuation");
         check(animation.frame(6,1)[0][1]==-13&&animation.frame(6,1)[1][0]==5001,"Original selected menu shift and arrow");
         check(animation.frame(3,9)[0][0]==6005&&animation.frame(3,9)[0][3]==90,"Original gun icon order and scale");
+        in=fixture(args[0],"arm-material");int materials=in.readInt();int[] atlas=new int[2048];for(int i=0;i<atlas.length;i++)atlas[i]=OriginalMaterials.rgb(in.readUnsignedShort());
+        for(int i=0;i<materials;i++){int packed=in.readInt();for(int y=0;y<32;y++)for(int x=0;x<32;x++)check(OriginalMaterials.compose(packed,x,y,atlas)==in.readUnsignedShort(),"ARM material "+i+" pixel "+x+","+y);}in.close();
+        System.out.println("PASS original ARM material composition: "+materials+" complete RGB565 tiles");
+        byte[] radar=OriginalTest.read(new File(args[0],"arm-radar.bin"));int[][] coords={OriginalRadar.EXITS,OriginalRadar.DESTINATIONS,OriginalRadar.OBJECTIVES};int offset=0;
+        for(int a=0;a<coords.length;a++)for(int i=0;i<coords[a].length;i++){check(coords[a][i]==Binary.u16(radar,offset),"Original radar coordinates");offset+=2;}
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");
     }
 }

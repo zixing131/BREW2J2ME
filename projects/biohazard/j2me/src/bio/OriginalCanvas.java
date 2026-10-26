@@ -128,7 +128,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             if(selection==0)newGame();else if(selection==1)records(false,false);else if(selection==5)app.quit();
             else if(selection==2){touch=!touch;touchConfigured=true;resize();info("TOUCH "+(touch?"ON":"OFF")+"$nAUTO RESOLUTION$n"+getWidth()+"x"+getHeight()+"$nSelect settings again to toggle.",MENU);}
             else if(selection==3)info("2/8 MOVE 4/6 TURN$n1/3 STRAFE 5 FIRE$n7 WEAPON 0 MEDICINE$n9 GPS # PREMIUM$n* SYSTEM / BACK$nSave/load in SYSTEM.$nTouch: HUD and bottom keys.$nPremium: OFFLINE, no SMS.",MENU);
-            else info("3D生化启示录$nJ2ME ARM PORT 0.3$nOriginal maps, scripts,$nweapon/enemy tables.$nJava renderer / RMS adapter.",MENU);
+            else info("3D生化启示录$nJ2ME ARM PORT 0.3.2$nOriginal maps, scripts,$nweapon/enemy tables.$nJava renderer / RMS adapter.",MENU);
         }else if(screen==PAUSE){
             if(selection==0){if(session.player.hp<=0)records(false,false);else open(PLAY);}else if(selection==1){if(session.player.hp>0)records(true,false);else notice="LOAD A SAVE OR START NEW GAME";}else if(selection==2)records(false,false);
             else if(selection==3)open(INVENTORY);else if(selection==4)open(SUPPLY);else if(selection==5)open(PREMIUM);
@@ -290,7 +290,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             if(c.reload>0){int full=Math.max(1,c.weapon[5]&255);wy+=ui(weapon.height)*(full-Math.abs(full-2*c.reload))/full;}
             if(c.zoom==0)blit(weapon,wx,wy,ww,wh);
         }
-        hud();reticle();quickButtons();
+        reticle();hud();quickButtons();
         if(gps)map();if(c.hurt>0){rect(0,layout.hud,3,H-layout.hud,0xdd0000);rect(W-3,layout.hud,3,H-layout.hud,0xdd0000);}
         OriginalVM v=session.vm;if(v.overlayAmount>0)shade(v.overlayColor,v.overlayAmount);
         if(v.action.kind==1||v.action.kind==2){int n=v.action.duration;shade(v.fadeColor,n<=0?0:32*(v.action.kind==1?v.action.frame:n-v.action.frame)/n);}
@@ -313,17 +313,28 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             label("$T00001$S000000"+ammo,0,ui(46),ui(95),0x00ff00);}
         radar();
     }
-    private void radar(){
+    private void radar()throws IOException{
         int cx=W-ui(30),cy=ui(23),radius=Math.max(1,ui(20));circle(cx,cy,ui(23),0);circle(cx,cy,ui(22),0xffffff);circle(cx,cy,ui(21),0);
         int cs=OriginalTrig.cos(session.player.angle),sn=OriginalTrig.sin(session.player.angle),stride=session.level.width*2;
         for(int yy=-radius;yy<=radius;yy++)for(int xx=-radius;xx<=radius;xx++)if(xx*xx+yy*yy<=radius*radius){
             double dx=xx/layout.uiScale,dy=yy/layout.uiScale;
-            int gx=(int)Math.floor(session.player.x/16.0+(-cs*dy-sn*dx)/65536.0*2/3),gy=(int)Math.floor(session.player.y/16.0+(-sn*dy+cs*dx)/65536.0*2/3),color=0;
+            int gx=(int)Math.floor(session.player.x/16+(-cs*dy-sn*dx)/65536.0*2/3),gy=(int)Math.floor(session.player.y/16+(-sn*dy+cs*dx)/65536.0*2/3),color=0;
             if(gx>=0&&gy>=0&&gx<stride&&gy<session.level.height*2){int bits=session.level.collision[gy*stride+gx];color=(bits&4)!=0?0xff0000:(bits&2)!=0?rgb565(512):(bits&1)!=0?rgb565(0x4408):rgb565(0x4648);}
             rect(cx+xx,cy+yy,1,1,color);}
+        int level=session.player.level-1,progress=Math.min(35,session.player.variables[1]&255);
+        radarMarker(2104,OriginalRadar.EXITS[4*level],OriginalRadar.EXITS[4*level+1],cx,cy);
+        radarMarker(2104,OriginalRadar.EXITS[4*level+2],OriginalRadar.EXITS[4*level+3],cx,cy);
+        radarMarker(2103,OriginalRadar.DESTINATIONS[2*level],OriginalRadar.DESTINATIONS[2*level+1],cx,cy);
+        if(OriginalRadar.OBJECTIVES[3*progress]==level)radarMarker(2102,OriginalRadar.OBJECTIVES[3*progress+1],OriginalRadar.OBJECTIVES[3*progress+2],cx,cy);
         line(cx,cy,cx,cy-ui(20),0xffff00);circle(cx,cy,Math.max(1,ui(2)),0xffff00);
         int compass=cx-ui(25);circle(compass,cy,ui(10),0);circle(compass,cy,ui(9),0xffffff);circle(compass,cy,ui(8),0);
         int dx=ui(7)*cs/65536,dy=ui(7)*sn/65536;line(compass,cy,compass+dx,cy+dy,0xff0000);line(compass,cy,compass-dx,cy-dy,0x00ff00);
+    }
+    private void radarMarker(int image,int x,int y,int cx,int cy)throws IOException{
+        if(x==0||y==0)return;int dx=2*x-session.player.x/16,dy=2*y-session.player.y/16,cs=OriginalTrig.cos(session.player.angle),sn=OriginalTrig.sin(session.player.angle);
+        int sx=((cs*dy-sn*dx)>>16)/2,sy=((-sn*dy-cs*dx)>>16)/2,d=3*OriginalMath.distance(dx,dy)/2;
+        if(d>20){sx=20*sx/d;sy=20*sy/d;}
+        OriginalRenderer.Picture p=get(image);blit(p,cx+3*sx+2-p.width/4,cy+3*sy+2-p.height/4,p.width/2,p.height/2);
     }
     private int quickHit(int x,int y){
         int top=H-layout.touchHeight-ui(84),step=Math.max(1,ui(21));
@@ -335,6 +346,14 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private void reticle()throws IOException{
         OriginalPlayer p=session.player;OriginalCombat c=session.combat;if(p.current<0)return;
         OriginalCamera camera=new OriginalCamera(W,layout.viewHeight,c.zoom!=0?2:1);int cy=layout.hud+(int)camera.horizon,cx=W/2;
+        if(data.e(c.weapon[11],4)!=0){
+            if(c.zoom==1){
+                // 0xD7A8: fixed 80-pixel scope radius in the original logical view.
+                for(int y=layout.hud;y<H;y++)for(int x=0;x<W;x++)if((x-cx)*(x-cx)+(y-cy)*(y-cy)>6400)frame[y*W+x]=0;
+                OriginalRenderer.Picture scope=get(4304);blit(scope,cx-scope.width/2,cy-scope.height/2,scope.width,scope.height);
+            }
+            return;
+        }
         if(c.target>=0&&c.targetMode!=0){int[] a=c.actors[c.target];double cs=OriginalTrig.cos(p.angle)/65536.0,sn=OriginalTrig.sin(p.angle)/65536.0;
             double dx=a[OriginalCombat.X]-p.x,dy=a[OriginalCombat.Y]-p.y,d=dx*cs+dy*sn;
             if(d>0){cy=layout.hud+(int)camera.heightY(d,45);cx+=(int)((cs*dy-sn*dx)*camera.focal/d);}}

@@ -40,7 +40,9 @@ public final class DesktopCanvasTest {
   OriginalSession sniper=new OriginalSession(s.data,c);sniper.vm.running=false;sniper.vm.action.kind=0;sniper.player.variables[0]=2;sniper.player.x=700;sniper.player.y=400;sniper.player.addWeapon(6);sniper.player.slots[7]=3;
   for(int i=0;i<sniper.combat.actors.length;i++){sniper.combat.actors[i][OriginalCombat.HP]=0;sniper.combat.actors[i][OriginalCombat.STATE]=2;}sniper.combat.rebuildOccupancy();
   field("session").set(c,sniper);field("screen").setInt(c,2);c.keyPressed(53);for(int i=0;i<8;i++)tick(c);
-  check(sniper.combat.zoom==1&&sniper.combat.shots==0,"Holding first sniper press only zooms");c.keyReleased(53);c.keyPressed(53);tick(c);c.keyReleased(53);check(sniper.combat.shots==1,"Second sniper press shoots");
+  check(sniper.combat.zoom==1&&sniper.combat.shots==0,"Holding first sniper press only zooms");capture(c,"sniper-zoom");
+  ScreenLayout scopeLayout=(ScreenLayout)field("layout").get(c);check(((int[])field("frame").get(c))[(scopeLayout.hud+20)*scopeLayout.width+scopeLayout.width-1]==0,"Scope masks outside original radius");
+  c.keyReleased(53);c.keyPressed(53);tick(c);c.keyReleased(53);check(sniper.combat.shots==1,"Second sniper press shoots");
   field("session").set(c,s);
   for(int i=0;i<sizes.length;i++){
    int w=sizes[i][0],h=sizes[i][1];c.resizeTest(w,h);field("screen").setInt(c,1);field("selection").setInt(c,1);capture(c,"menu-"+w+"x"+h);

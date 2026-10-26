@@ -25,8 +25,8 @@ final class OriginalSaves {
     }
     static String description(int slot,OriginalData data,OriginalSession.Resources resources){
         try{OriginalSession s=load(slot,data,resources);java.util.Calendar c=java.util.Calendar.getInstance();c.setTime(new java.util.Date(s.savedAt));
-            return "L"+s.player.level+" HP"+s.player.hp+" "+(c.get(java.util.Calendar.MONTH)+1)+"/"+c.get(java.util.Calendar.DAY_OF_MONTH)+" "+c.get(java.util.Calendar.HOUR_OF_DAY)+":"+two(c.get(java.util.Calendar.MINUTE));
-        }catch(Exception e){return "EMPTY / NO VALID SAVE";}
+            return "第"+s.player.level+"关$n生命"+s.player.hp+"  "+(c.get(java.util.Calendar.MONTH)+1)+"/"+c.get(java.util.Calendar.DAY_OF_MONTH)+" "+two(c.get(java.util.Calendar.HOUR_OF_DAY))+":"+two(c.get(java.util.Calendar.MINUTE));
+        }catch(Exception e){return "未保存$n没有游戏记录";}
     }
     private static String two(int n){return n<10?"0"+n:""+n;}
 }

@@ -32,8 +32,8 @@ def main():
         if p.stem not in ('30000','30001'):shutil.copyfile(p,original/p.name)
     cp=str(API/'cldc11.jar')+os.pathsep+str(API/'midp21.jar')
     run([java_executable(JDK,'javac'),'-encoding','UTF-8','-source','1.3','-target','1.1','-bootclasspath',cp,'-d',classes]+sorted((ROOT/'src').rglob('*.java')))
-    manifest=('Manifest-Version: 1.0\r\nMIDlet-Name: Biohazard J2ME Port\r\nMIDlet-Version: 0.3.7\r\n'
-        'MIDlet-Vendor: BREW Preservation Study\r\nMIDlet-1: Biohazard Port,,bio.BioMIDlet\r\n'
+    manifest=('Manifest-Version: 1.0\r\nMIDlet-Name: Biohazard J2ME Port\r\nMIDlet-Version: 0.3.8\r\n'
+        'MIDlet-Vendor: BREW Preservation Study\r\nMIDlet-1: 3D生化启示录,/icon.png,bio.BioMIDlet\r\nMIDlet-Icon: /icon.png\r\n'
         'MicroEdition-Configuration: CLDC-1.1\r\nMicroEdition-Profile: MIDP-2.0\r\n\r\n')
     source=BUILD/'unverified.jar'
     with zipfile.ZipFile(source,'w',zipfile.ZIP_DEFLATED) as z:

@@ -43,6 +43,44 @@ public final class DesktopCanvasTest {
   c.resizeTest(320,240);check(!field("touch").getBoolean(c),"Automatic landscape QVGA has no keypad");
   c.resizeTest(360,640);check(field("touch").getBoolean(c),"Automatic high resolution enables keypad");
  }
+ static void buy(OriginalCanvas c,int category)throws Exception{
+  field("screen").setInt(c,11);field("selection").setInt(c,category);key(c,53);check(screen(c)==12,"Category opens purchase confirmation "+category);key(c,53);
+ }
+ static void chineseShop(OriginalCanvas c,OriginalData data)throws Exception{
+  OriginalSession s=new OriginalSession(data,c);field("session").set(c,s);s.vm.running=false;s.player.variables[0]=2;
+  c.resizeTest(240,320);field("touchConfigured").setBoolean(c,false);c.resizeTest(240,320);
+  for(int category=1;category<=5;category++){buy(c,category);check(screen(c)==11,"Mall purchase succeeds "+category);check(((String)field("notice").get(c)).indexOf("购买成功")>=0,"Chinese receipt");capture(c,"purchase-category-"+category);}
+  check(s.player.infiniteAmmo&&s.player.global[46]==1,"Ammo/GPS entitlements applied");
+  check(Binary.u16(s.player.global,44)==1&&s.player.maxHp==100&&s.player.hp==100&&s.player.money==5000,"Invisibility/life/currency effects applied");
+  buy(c,2);buy(c,3);buy(c,5);check(Binary.u16(s.player.global,44)==2&&s.player.maxHp==200&&s.player.money==10000,"Consumable, life and currency remain purchasable");
+  buy(c,4);check(screen(c)==12&&((String)field("notice").get(c)).indexOf("已购买")>=0,"Owned permanent item has explicit Chinese feedback");capture(c,"purchase-already-owned");key(c,48);
+  for(int i=0;i<5;i++){
+   field("screen").setInt(c,11);field("selection").setInt(c,0);key(c,53);check(screen(c)==14,"Super weapons submenu");field("selection").setInt(c,i);key(c,53);check(screen(c)==12,"Each super gun has a purchase page");key(c,53);
+   check(screen(c)==14&&s.player.current==s.player.premiumSlot&&(s.player.slots[8*s.player.current]&255)==9+i,"Each super gun becomes equipped "+i);
+   for(int stat=0;stat<5;stat++)check((s.player.slots[8*s.player.current+2+stat]&255)==data.maxUpgrade(s.player.slots[8*s.player.current+1]&255,stat),"Super gun has original maximum upgrades");
+  }
+  field("selection").setInt(c,0);key(c,53);key(c,53);check((s.player.slots[8*s.player.current]&255)==9,"Previously purchased gun can be equipped again");
+  OriginalSession saved=OriginalSaves.load(3,data,c);check(saved.player.infiniteAmmo&&saved.player.global[46]==1&&saved.player.maxHp==200&&saved.player.money==10000&&Binary.u16(saved.player.global,44)==2&&(saved.player.slots[8*saved.player.current]&255)==9,"Purchase effects survive production RMS auto-save");
+  check(OriginalSaves.description(3,data,c).indexOf("生命")>=0&&!OriginalSaves.description(3,data,c).contains("HP"),"Chinese save description");
+  int[][] sizes={{176,220},{240,320},{320,240},{360,640},{640,360}};
+  for(int k=0;k<sizes.length;k++){
+   int w=sizes[k][0],h=sizes[k][1];field("touchConfigured").setBoolean(c,false);c.resizeTest(w,h);
+   int[] screens={3,6,7,9,10,15};
+   for(int j=0;j<screens.length;j++){
+    field("screen").setInt(c,screens[j]);field("selection").setInt(c,0);field("shopSlot").setInt(c,0);field("notice").set(c,"");capture(c,"chinese-"+screens[j]+"-"+w+"x"+h);
+    Method shown=OriginalCanvas.class.getDeclaredMethod("shown"),top=OriginalCanvas.class.getDeclaredMethod("listTop"),step=OriginalCanvas.class.getDeclaredMethod("listStep"),hit=OriginalCanvas.class.getDeclaredMethod("menuHit",Integer.TYPE,Integer.TYPE);
+    shown.setAccessible(true);top.setAccessible(true);step.setAccessible(true);hit.setAccessible(true);
+    int rows=((Integer)shown.invoke(c)).intValue(),y=((Integer)top.invoke(c)).intValue(),dy=((Integer)step.invoke(c)).intValue();ScreenLayout layout=(ScreenLayout)field("layout").get(c);
+    check(y>=52&&y+rows*dy<=layout.height-60,"Menu rows clear title and footer at "+w+"x"+h);
+    for(int row=0;row<rows;row++)check(((Integer)hit.invoke(c,new Object[]{new Integer(layout.width/2),new Integer(y+row*dy+dy/2)})).intValue()==row,"Painted row and pointer target agree");
+   }
+   field("screen").setInt(c,1);field("selection").setInt(c,3);key(c,53);capture(c,"chinese-help-"+w+"x"+h);key(c,48);
+   field("selection").setInt(c,4);key(c,53);capture(c,"chinese-about-"+w+"x"+h);key(c,48);
+   field("screen").setInt(c,13);field("pendingSlot").setInt(c,0);capture(c,"chinese-overwrite-"+w+"x"+h);
+   field("screen").setInt(c,11);field("selection").setInt(c,2);key(c,53);capture(c,"chinese-purchase-"+w+"x"+h);
+   if(k==3){c.pointerPressed(w-15,h-10);c.pointerReleased(w-15,h-10);check(screen(c)==11&&Binary.u16(s.player.global,44)==3,"High-resolution touch confirmation buys item");}
+  }
+ }
  public static void main(String[] args)throws Exception{
   output=new File(args[0]);output.mkdirs();OriginalCanvas c=new OriginalCanvas(new BioMIDlet());field("running").setBoolean(c,false);field("active").setBoolean(c,false);check(screen(c)==0,"Canvas initialized");
   check(!field("touch").getBoolean(c),"QVGA starts with touch disabled");c.pointerPressed(100,100);c.pointerReleased(100,100);check(screen(c)==0,"Disabled touch ignores cover tap");
@@ -124,6 +162,7 @@ public final class DesktopCanvasTest {
    byte[] snapshot=SaveCodec.encode(levelSession,1L,1);check(Arrays.equals(snapshot,SaveCodec.encode(SaveCodec.decode(snapshot,s.data,c),1L,1)),"Every level save roundtrip "+level);
   }
   hints(c,s.data);
+  chineseShop(c,s.data);
   System.out.println("PASS production Canvas/RMS via desktop adapters: "+checks+" assertions; previews "+output);
  }
 }

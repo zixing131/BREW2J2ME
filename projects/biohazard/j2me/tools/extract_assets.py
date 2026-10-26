@@ -67,11 +67,36 @@ def alpha_mask(raw, width, height):
     return struct.pack('<HH', width, height) + raw
 
 
+def mif_icon(data):
+    """Original MIF main icon: embedded 26x26, uncompressed 24-bit Windows BMP."""
+    offset = 140
+    if data[offset:offset+2] != b'BM':
+        raise ValueError('MIF main icon missing')
+    size, pixels = u32(data, offset+2), u32(data, offset+10)
+    header, width, height, planes, bits, compression = struct.unpack_from('<IiiHHI', data, offset+14)
+    if (header, width, height, planes, bits, compression) != (40, 26, 26, 1, 24, 0):
+        raise ValueError('Unexpected MIF icon format')
+    stride = (width*3+3)&~3
+    if pixels < 54 or pixels+stride*height > size or offset+size > len(data):
+        raise ValueError('Truncated MIF icon')
+    rgba = bytearray()
+    for y in range(height):
+        for x in range(width):
+            p = offset+pixels+(height-1-y)*stride+x*3
+            b, g, r = data[p:p+3]
+            rgba.extend((r, g, b, 255))
+    return png(width, height, rgba)
+
+
 def extract(source, output, raw_output):
     images, audio, effects = output / 'images', output / 'audio', output / 'effects'
     for path in (images, audio, effects, raw_output / 'mbx', raw_output / 'images'):
         path.mkdir(parents=True, exist_ok=True)
     manifest = {'sources': {}, 'images': [], 'resources': []}
+    mif = (source.parent / (source.name+'.mif')).read_bytes()
+    (output / 'icon.png').write_bytes(mif_icon(mif))
+    manifest['icon'] = {'source': source.name+'.mif', 'offset': 140, 'width': 26, 'height': 26,
+                        'sha256': hashlib.sha256(mif).hexdigest()}
     for name in ('bin.dat', 'map.hkm', 'mbxres.bin', 'save.dat', 'shenghua.mod'):
         data = (source / name).read_bytes()
         manifest['sources'][name] = {'size': len(data), 'sha256': hashlib.sha256(data).hexdigest()}

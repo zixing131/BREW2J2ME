@@ -36,11 +36,21 @@ public final class OriginalPlayer {
         money-=cost;slots[at]=(byte)(old+1);return true;
     }
     /** Offline replacement for the retired billing callback, applies original 0x1293C effects. */
+    public String premiumFailure(int item){
+        if(item<0||item>=data.shopCount)return "商品不存在";
+        int p=2+20*item,flags=Binary.u16(data.weapons,p+14);
+        if(((flags&2)!=0&&infiniteAmmo)||((flags&16)!=0&&global[46]!=0))return "已购买，无需重复购买";
+        if((flags&4)!=0&&Binary.u16(global,44)==65535)return "隐身能源已满";
+        if((flags&32)!=0&&maxHp>500000)return "生命值已达上限";
+        if((flags&64)!=0&&money>Integer.MAX_VALUE-5000*(data.weapons[p+10]&255))return "金钱已达上限";
+        if((flags&256)!=0&&(data.weaponIndex(data.weapons[p+16]&255)<0||(premiumSlot<0&&count>=32)))return "武器已满，无法购买";
+        return "";
+    }
     public boolean grantPremium(int item){
-        if(item<0||item>=data.shopCount)return false;int p=2+20*item,flags=Binary.u16(data.weapons,p+14);
-        int limit=data.weapons[p+6]&255;if(limit>0&&(global[4+item]&255)>=limit)return false;
-        if((flags&256)!=0&&(data.weaponIndex(data.weapons[p+16]&255)<0||(premiumSlot<0&&count>=32)))return false;
-        int variable=data.weapons[p+7]&255;variables[variable]++;
+        if(premiumFailure(item).length()>0)return false;int p=2+20*item,flags=Binary.u16(data.weapons,p+14);
+        // Offline shop: consumables, life upgrades and weapon replacements remain purchasable.
+        // Permanent ammo/GPS entitlements are idempotent; effects still follow 0x1293C.
+        int variable=data.weapons[p+7]&255;variables[variable]=(byte)Math.min(255,(variables[variable]&255)+1);
         if((flags&2)!=0){infiniteAmmo=true;global[47]=1;}
         if((flags&4)!=0)put16(global,44,Binary.u16(global,44)+1);
         if((flags&32)!=0){maxHp*=2;hp=maxHp;put32(global,0,maxHp);}
@@ -55,7 +65,7 @@ public final class OriginalPlayer {
             for(int i=0;i<5;i++)slots[at+2+i]=(byte)data.maxUpgrade(index,i);slots[at+7]=0;
             global[56]=1;global[57]++;variables[82]=global[57];System.arraycopy(slots,at,global,48,8);current=premiumSlot;
         }
-        global[4+item]++;global[24+item]=0;return true;
+        global[4+item]=(byte)Math.min(255,(global[4+item]&255)+1);global[24+item]=0;return true;
     }
     public byte[] brewSave(){
         byte[] b=new byte[856];System.arraycopy(header,0,b,0,8);int p=8;

@@ -33,8 +33,13 @@ with zipfile.ZipFile(jar) as z:
         data=z.read(name);assert struct.unpack_from('>H',data,6)[0]==45,(name,'not old Java bytecode')
     for name in ('bio/original/OriginalMotion.class','bio/original/OriginalVM.class','bio/original/OriginalAnimation.class','bio/original/OriginalMaterials.class','bio/original/OriginalDialogue.class','bio/original/OriginalSky.class','bio/original/OriginalFlash.class','bio/original/OriginalNarration.class','bio/original/OriginalNotice.class','bio/OriginalCanvas.class'):
         assert b'StackMap' in z.read(name),(name,'CLDC StackMap absent')
-    assert len([n for n in z.namelist() if n.endswith('.png')])==210
+    manifest=z.read('META-INF/MANIFEST.MF').decode('utf-8')
+    for field in ('MIDlet-Icon: /icon.png','MIDlet-1: 3D生化启示录,/icon.png,bio.BioMIDlet'):
+        assert field in manifest and field in jad
+    assert z.read('icon.png').startswith(b'\x89PNG\r\n\x1a\n')
+    assert struct.unpack_from('>II',z.read('icon.png'),16)==(26,26)
+    assert len([n for n in z.namelist() if n.endswith('.png')])==211
     assert len([n for n in z.namelist() if n.startswith('original/') and n.endswith('.bin')])==37
     assert len([n for n in z.namelist() if n.startswith('effects/') and n.endswith('.bin')])==5
     assert b'OriginalCanvas' in z.read('bio/BioMIDlet.class')
-print('PASS: JAR/JAD byte size, class version 45, CLDC StackMap presence, 210 PNGs, no bundled API classes')
+print('PASS: JAR/JAD byte size, class version 45, CLDC StackMap, original MIF icon in both manifests, 211 PNGs, no bundled API classes')

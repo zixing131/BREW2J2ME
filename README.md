@@ -26,7 +26,7 @@ BREW/
 | 项目 | 目标 | 状态 |
 |---|---|---|
 | [3D生化启示录](projects/biohazard/README.md) (`biohazard`) | J2ME CLDC1.1/MIDP2.0 | 0.3.1，核心系统已接入，完整还原进行中 |
-| [DNF 鬼剑士（韩国 WIPI）](projects/dnf/README.md) (`dnf`) | J2ME CLDC1.1/MIDP2.0 | 0.1.0，原场景与动作试玩；剧情与战斗移植进行中 |
+| [DNF 鬼剑士（韩国 WIPI）](projects/dnf/README.md) (`dnf`) | J2ME CLDC1.1/MIDP2.0 | 0.2.0，原开场链、中文剧情/日记、原包声音；主线战斗仍在移植 |
 
 ## 快速开始
 

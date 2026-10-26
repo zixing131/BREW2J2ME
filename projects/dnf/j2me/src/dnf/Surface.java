@@ -6,6 +6,10 @@ public final class Surface {
     private static final int[] TINT={0,65535,31727,0,65504,64480,63488,63519,2016,30751,2047,31};
     public Surface(int w,int h){this.w=w;this.h=h;pixels=new int[w*h];}
     public void clear(int color){for(int i=0;i<pixels.length;i++)pixels[i]=color;}
+    public void rect(int x,int y,int width,int height,int color,int weight){
+        int x0=Math.max(0,x),y0=Math.max(0,y),x1=Math.min(w,x+width),y1=Math.min(h,y+height);
+        for(int yy=y0;yy<y1;yy++)for(int xx=x0;xx<x1;xx++){int p=yy*w+xx;pixels[p]=weight==0?color:blend(color,pixels[p],weight);}
+    }
     public static int blend(int source,int dest,int weight){
         return ((((source&0xf81f)*(32-weight)+(dest&0xf81f)*weight)>>>5)&0xf81f)
             |((((source&0x7e0)*(32-weight)+(dest&0x7e0)*weight)>>>5)&0x7e0);

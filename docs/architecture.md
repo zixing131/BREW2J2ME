@@ -59,4 +59,4 @@ flowchart LR
 
 ## WIPI 项目
 
-`projects/dnf` 接入同一项目入口，原始程序为 ARM/WIPI Clet。`Actor/Animation/World/Surface` 解释原角色、动作、地图并完成软件绘制，`DnfCanvas` 处理 MIDP 输入与中文适配菜单，`SaveData` 定义独立试玩记录。它不依赖 biohazard 的业务代码。平台差异和未恢复逻辑保留在 DNF 项目文档，公共工具不猜测 BREW/WIPI 资源格式。
+`projects/dnf` 接入同一项目入口，原始程序为 ARM/WIPI Clet。`Actor/Animation/World/Surface` 解释原角色、动作、地图并完成软件绘制，`DnfCanvas` 处理 MIDP 输入与中文适配菜单，`SaveData` 定义独立试玩记录。`Story`解释原ANI时间轴，`NativeText`在物理分辨率上排版中文，`Audio`管理原包SMAF转换后的MMAPI播放；中文目录保留原文key，构建强制覆盖。标题/四槽开场记录与开发试玩记录隔离，未实现的任务分支不伪造完成。它不依赖 biohazard 的业务代码。平台差异和未恢复逻辑保留在 DNF 项目文档，公共工具不猜测 BREW/WIPI 资源格式。

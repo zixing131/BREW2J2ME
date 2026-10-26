@@ -8,8 +8,10 @@ public final class Session {
     public int x,y,speed=2,touchMode,combo;
     public boolean mirror,actionViewer;
     private int queued=-1;
+    private Reactions reactions;
+    private int sound=-1;
     public void load(int id)throws IOException {
-        Assets a=new Assets();World w=new World(id,a);Actor h=new Actor(0,a);
+        Assets a=new Assets();World w=new World(id,a);Actor h=new Actor(0,a);if(reactions==null)reactions=new Reactions();sound=-1;
         world=w;hero=h;int[] p=w.start();x=p[0];y=p[1];mirror=false;combo=0;queued=-1;actionViewer=false;
     }
     public void restore(SaveData save)throws IOException {
@@ -38,10 +40,12 @@ public final class Session {
             }else if(a.clip==2)a.start(0);
         }
         int old=a.clip;a.tick();
+        if(a.active&&a.elapsed==0)sound=reactions.sound(a.current().fields[5]&255,false);
         if(actionViewer&&a.active&&a.nextOverride==255)a.nextOverride=a.clip;
         if(!a.active&&!actionViewer)a.start(0);
         if(old!=a.clip&&queued==a.clip)queued=-1;
     }
+    public int takeSound(){int value=sound;sound=-1;return value;}
     public void draw(Surface surface){
         int cx=Math.max(0,Math.min(world.width-surface.w,x-surface.w/2));
         int cy=Math.max(0,Math.min(world.height-surface.h,y-surface.h*2/3));

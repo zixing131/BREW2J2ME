@@ -1,0 +1,137 @@
+{
+  "decoder": "ffmpeg version 7.1.1 Copyright (c) 2000-2025 the FFmpeg developers",
+  "tracks": [
+    {
+      "resource": 0,
+      "track": 1,
+      "samples": 3494,
+      "sha256": "809eaf76ad8e89dfbfcdf796756e7f034dc58c564d01d60ab80c28c6f86f7abe"
+    },
+    {
+      "resource": 0,
+      "track": 2,
+      "samples": 3974,
+      "sha256": "0323a81a7c9dec741b4ab32cada2f3686ad755108772c452a348ae63fd650c7d"
+    },
+    {
+      "resource": 0,
+      "track": 3,
+      "samples": 5888,
+      "sha256": "f4e8b0c7ab6524df2664c19c933e8043dbd9fc1cacfced312500afc473548918"
+    },
+    {
+      "resource": 0,
+      "track": 4,
+      "samples": 6298,
+      "sha256": "abf0d383074ff6be39fbf118fad48fd764b4e001e84b6340c8ba89b734d6a1c0"
+    },
+    {
+      "resource": 0,
+      "track": 5,
+      "samples": 3974,
+      "sha256": "9502f36f22e79e8ebec8e5c1c58c6a921f1b4bb8c8d2d9c828a620dfbba78205"
+    },
+    {
+      "resource": 0,
+      "track": 6,
+      "samples": 3116,
+      "sha256": "e75f3449d5a8a973ff0a5004c095be01dd9bdd7bfa2be318909876ed5e5d3050"
+    },
+    {
+      "resource": 0,
+      "track": 7,
+      "samples": 3224,
+      "sha256": "6df7ab316da2617b74543f3d9f43ae6d23c79d06c92268270f84e9a5e06fdf7a"
+    },
+    {
+      "resource": 0,
+      "track": 8,
+      "samples": 6352,
+      "sha256": "248aa4317e4d26d4bfdf397aed597f9a2e28ed62f5e55a2d10a8fd9d7ecfb451"
+    },
+    {
+      "resource": 0,
+      "track": 9,
+      "samples": 10098,
+      "sha256": "45c00fdd869d7542a6be70b6ae093bdebec0649fcb2d3698242c92645e3a0af4"
+    },
+    {
+      "resource": 0,
+      "track": 10,
+      "samples": 9768,
+      "sha256": "64eaf721a55d6092d79effeebc028868baf04c97c33132c4af0a1e59416f7403"
+    },
+    {
+      "resource": 0,
+      "track": 12,
+      "samples": 2602,
+      "sha256": "1ee69e07d0d846d3fb43f6cc47e546ddbf9f4db7fea76714568e38abaf30801b"
+    },
+    {
+      "resource": 0,
+      "track": 13,
+      "samples": 3252,
+      "sha256": "a25af5bf231c04e66165b26fd34837a854ca9cc0ce5622d8cae78c1f1b08f460"
+    },
+    {
+      "resource": 0,
+      "track": 14,
+      "samples": 3418,
+      "sha256": "c28dfdbaedc3a5ac589a5614bb4227861389649e00c87cef17ef1cb49c0ea8b9"
+    },
+    {
+      "resource": 1,
+      "track": 0,
+      "samples": 9796,
+      "sha256": "0fd4d9202a5d6e951312cdce4651f144c755c5be0b6cb439c0e6dcf40e06dafa"
+    },
+    {
+      "resource": 10,
+      "track": 0,
+      "samples": 3902,
+      "sha256": "13f9d40ebb67994cd56e9cbc64f81d069c6ea037fdf679289d0494cac1420048"
+    },
+    {
+      "resource": 11,
+      "track": 0,
+      "samples": 5612,
+      "sha256": "01ea1b22bae6572897ddc7a5fb379f5f1e9a67eb14d677eadd5562df942cfafd"
+    },
+    {
+      "resource": 3,
+      "track": 0,
+      "samples": 10240,
+      "sha256": "af91b7f78321494f717b49369547a9c9dcf5404435aa3771b285aab99a11b6fe"
+    },
+    {
+      "resource": 4,
+      "track": 0,
+      "samples": 11368,
+      "sha256": "c4bc7fd07fe18f9b79a5235a28a9f3f663dbf635e2ba8438d5de7575ee79b5a8"
+    },
+    {
+      "resource": 5,
+      "track": 0,
+      "samples": 6072,
+      "sha256": "9317b6c7d30a484f2b35f5c07f54d56bb1c336076289d3b00f287348080937dd"
+    },
+    {
+      "resource": 6,
+      "track": 0,
+      "samples": 6124,
+      "sha256": "2d2ae639ca632ae9b23040df33bff17dd06cf28bec707cd5fb7b2195fe528fde"
+    },
+    {
+      "resource": 7,
+      "track": 0,
+      "samples": 7392,
+      "sha256": "ba38f7504ee59982d05f18eac25f9e01a4e70337ac793f3c4d3099d9162ab4ca"
+    },
+    {
+      "resource": 9,
+      "track": 0,
+      "samples": 6400,
+      "sha256": "7804b8444f999da71a10f318c69181373677bbb3fe27208d23c23191be53b495"
+    }
+  ]
+}

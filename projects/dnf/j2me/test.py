@@ -25,10 +25,12 @@ def main():
     jad=(ROOT/'dist/DnfGhostKnight.jad').read_text();assert 'MIDlet-Jar-Size: '+str(jar.stat().st_size) in jad
     provenance=json.loads((ROOT/'tests/fixtures/provenance.json').read_text())
     assert hashlib.sha256((ROOT.parent/'originals/0002E1A1.jar').read_bytes()).hexdigest()==provenance['source_sha256']
+    subprocess.run([sys.executable,str(ROOT/'tests/test_content.py')],check=True,cwd=ROOT)
     target=ROOT/'build/test-classes';target.mkdir(exist_ok=True)
-    sources=[p for p in (ROOT/'src').rglob('*.java') if p.name not in ('DnfCanvas.java','DnfMIDlet.java')]+[ROOT/'tests/PortTest.java']
+    sources=[p for p in (ROOT/'src').rglob('*.java') if p.name not in ('DnfCanvas.java','DnfMIDlet.java','Audio.java','NativeText.java')]+[ROOT/'tests/PortTest.java',ROOT/'tests/StoryTest.java']
     subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(target)]+[str(p) for p in sources],check=True,cwd=ROOT)
     subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(target)+os.pathsep+str(jar),'dnf.PortTest'],check=True,cwd=ROOT)
+    subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(target)+os.pathsep+str(jar),'dnf.StoryTest'],check=True,cwd=ROOT)
     ui=ROOT/'build/ui-classes';ui.mkdir(exist_ok=True)
     subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(ui)]+[str(p) for p in sorted((ROOT/'src').rglob('*.java'))+sorted((ROOT/'tests/midp').rglob('*.java'))+[ROOT/'tests/CanvasTest.java']],check=True,cwd=ROOT)
     subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(ui)+os.pathsep+str(jar),'dnf.CanvasTest'],check=True,cwd=ROOT)

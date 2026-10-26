@@ -32,11 +32,21 @@ public final class DesktopCanvasTest {
    x=(l.width-3)*l.scale;y=3;c.pointerPressed(x,y);c.pointerReleased(x,y);check(screen(c)==3,"Touch HUD pause");capture(c,"system-"+w+"x"+h);int previous=field("selection").getInt(c);c.pointerPressed(w*5/8,h-10);c.pointerReleased(w*5/8,h-10);check(field("selection").getInt(c)==previous+1,"Touch menu scroll");field("selection").setInt(c,0);key(c,53);check(screen(c)==2,"Resume from system");
   }
   toggleTouch(c);check(!field("touch").getBoolean(c),"Settings disable high-resolution touch");c.resizeTest(360,640);check(!field("touch").getBoolean(c),"Manual preference survives rotation");
-  c.resizeTest(240,320);toggleTouch(c);field("screen").setInt(c,8);s.player.money=500;field("selection").setInt(c,0);key(c,53);check(s.player.medicines==1&&s.player.money==380,"Canvas supply purchase");capture(c,"supply-240x320");c.pointerPressed(10,310);c.pointerReleased(10,310);check(screen(c)==3,"Touch menu back");
-  field("screen").setInt(c,11);capture(c,"premium-240x320");field("selection").setInt(c,3);key(c,53);capture(c,"premium-confirm");key(c,53);check(s.player.global[46]==1,"Offline GPS grant through UI");
+  c.resizeTest(240,320);toggleTouch(c);field("screen").setInt(c,8);s.player.money=500;field("selection").setInt(c,0);key(c,53);check(s.player.medicines==1&&s.player.money==380,"Canvas supply purchase");capture(c,"supply-240x320");c.pointerPressed(200,310);c.pointerReleased(200,310);check(screen(c)==3,"Touch menu back");
+  field("screen").setInt(c,11);field("selection").setInt(c,0);capture(c,"premium-240x320");key(c,53);check(screen(c)==14,"Original premium weapon category");capture(c,"premium-weapons");key(c,48);check(screen(c)==11,"Back to six premium categories");field("selection").setInt(c,4);key(c,53);capture(c,"premium-confirm");key(c,53);check(s.player.global[46]==1,"Offline GPS grant through UI");
   field("screen").setInt(c,9);field("selection").setInt(c,0);key(c,53);capture(c,"upgrade-240x320");
   field("screen").setInt(c,3);field("selection").setInt(c,1);key(c,53);capture(c,"records-240x320");key(c,53);check(screen(c)==13,"Overwrite requires confirmation");key(c,48);check(screen(c)==6,"Cancel overwrite");
   field("screen").setInt(c,1);field("selection").setInt(c,1);key(c,53);capture(c,"load-240x320");key(c,53);check(screen(c)==2&&((OriginalSession)field("session").get(c)).player.money==111,"Continue loads RMS record");
+  OriginalSession sniper=new OriginalSession(s.data,c);sniper.vm.running=false;sniper.vm.action.kind=0;sniper.player.variables[0]=2;sniper.player.x=700;sniper.player.y=400;sniper.player.addWeapon(6);sniper.player.slots[7]=3;
+  for(int i=0;i<sniper.combat.actors.length;i++){sniper.combat.actors[i][OriginalCombat.HP]=0;sniper.combat.actors[i][OriginalCombat.STATE]=2;}sniper.combat.rebuildOccupancy();
+  field("session").set(c,sniper);field("screen").setInt(c,2);c.keyPressed(53);for(int i=0;i<8;i++)tick(c);
+  check(sniper.combat.zoom==1&&sniper.combat.shots==0,"Holding first sniper press only zooms");c.keyReleased(53);c.keyPressed(53);tick(c);c.keyReleased(53);check(sniper.combat.shots==1,"Second sniper press shoots");
+  field("session").set(c,s);
+  for(int i=0;i<sizes.length;i++){
+   int w=sizes[i][0],h=sizes[i][1];c.resizeTest(w,h);field("screen").setInt(c,1);field("selection").setInt(c,1);capture(c,"menu-"+w+"x"+h);
+   ScreenLayout l=(ScreenLayout)field("layout").get(c);for(int row=0;row<6;row++)check(l.mainMenuHit(l.width/2,l.mainMenuTop()+row*l.mainMenuStep()+15,1)==row,"Original menu hit geometry");
+   field("screen").setInt(c,11);capture(c,"premium-"+w+"x"+h);
+  }
   for(int level=1;level<=16;level++){OriginalSession levelSession=new OriginalSession(s.data,c);levelSession.load(level,80,80,0);field("session").set(c,levelSession);field("screen").setInt(c,2);capture(c,"level-"+level);
    byte[] snapshot=SaveCodec.encode(levelSession,1L,1);check(Arrays.equals(snapshot,SaveCodec.encode(SaveCodec.decode(snapshot,s.data,c),1L,1)),"Every level save roundtrip "+level);
   }

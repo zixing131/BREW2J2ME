@@ -7,8 +7,9 @@ public final class OriginalCamera {
     public static final double EYE=210.0/4;
     public final double unit,focal,horizon;
     public OriginalCamera(int width,int height,int zoom){
-        // Preserve the native 176x173 view; extra aspect ratio reveals more world.
-        unit=Math.min(width/176.0,height/173.0);
+        // Original 0x17200 takes the actual viewport dimensions, but 0x17858 keeps
+        // the focal length constant. Integer enlargement happens in Canvas only.
+        unit=1;
         focal=170*unit*zoom;
         horizon=(height+1)/2-10*unit;
     }

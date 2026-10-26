@@ -69,8 +69,12 @@ public final class OriginalSystemsTest {
         // A wall 100 map units away projects through a 400-unit original depth.
         check(camera.horizon==77&&camera.focal==170,"Native ARM camera initialization");
         check(camera.groundY(100)==166.25&&Math.abs(camera.heightY(100,96)-3.05)<.00001,"Original wall projection in map units");
-        check(new OriginalCamera(352,346,1).focal==340,"Uniform camera scaling");
+        check(new OriginalCamera(240,273,1).focal==170,"ARM keeps focal length on QVGA");
         check(new OriginalCamera(176,173,2).focal==340,"Original sniper focal doubling");
+        OriginalAnimation animation=new OriginalAnimation(resources.read(20000));
+        check(animation.frame(7,0).length==2&&animation.frame(7,0)[0][5]==4,"Original cover reflected continuation");
+        check(animation.frame(6,1)[0][1]==-13&&animation.frame(6,1)[1][0]==5001,"Original selected menu shift and arrow");
+        check(animation.frame(3,9)[0][0]==6005&&animation.frame(3,9)[0][3]==90,"Original gun icon order and scale");
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");
     }
 }

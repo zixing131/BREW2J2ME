@@ -3,12 +3,12 @@ import java.io.*;
 
 /** Versioned J2ME snapshot; embeds the original 856-byte record without changing it. */
 public final class SaveCodec {
-    private static final int MAGIC=0x42494f33,VERSION=1;
+    private static final int MAGIC=0x42494f33,VERSION=2;
     public static int crc(byte[] b,int len){int c=-1;for(int i=0;i<len;i++){c^=b[i]&255;for(int j=0;j<8;j++)c=(c>>>1)^((c&1)!=0?0xedb88320:0);}return ~c;}
     private static void ints(DataOutputStream o,int[] a)throws IOException{for(int i=0;i<a.length;i++)o.writeInt(a[i]);}
     private static void readInts(DataInputStream in,int[] a)throws IOException{for(int i=0;i<a.length;i++)a[i]=in.readInt();}
     public static byte[] encode(OriginalSession s,long time,int sequence)throws IOException{
-        s.player.validate();ByteArrayOutputStream bytes=new ByteArrayOutputStream();DataOutputStream o=new DataOutputStream(bytes);
+        s.player.validate();s.ensureNarration();ByteArrayOutputStream bytes=new ByteArrayOutputStream();DataOutputStream o=new DataOutputStream(bytes);
         o.writeInt(MAGIC);o.writeInt(VERSION);o.writeLong(time);o.writeInt(sequence);o.write(s.player.brewSave());
         o.writeInt(s.player.maxHp);o.writeBoolean(s.player.invisible);o.writeInt(s.player.invisibilityTicks);o.writeBoolean(s.player.infiniteAmmo);
         OriginalVM v=s.vm;ints(o,new int[]{v.event,v.pc,v.textId,v.speaker,v.dialogMode,v.overlayColor,v.overlayAmount,v.fadeColor,v.unsupported,v.transitionLevel,v.transitionX,v.transitionY,v.transitionAngle,v.cellX,v.cellY,v.offer});
@@ -16,12 +16,14 @@ public final class SaveCodec {
         ScriptAction a=v.action;ints(o,new int[]{a.kind,a.frame,a.duration,a.targetAngle,a.direction,a.startX,a.startY,a.targetX,a.targetY,a.x,a.y,a.angle,a.renderFlags});
         OriginalCombat c=s.combat;ints(o,new int[]{c.ticks,c.randomState,c.cooldown,c.reload,c.switchFrame,c.nextSlot,c.zoom,c.target,c.targetMode,c.targetDistance,c.shots,c.hurt,c.pendingEvent});o.writeBoolean(c.fireRequested);
         o.writeInt(c.actors.length);for(int i=0;i<c.actors.length;i++)ints(o,c.actors[i]);for(int i=0;i<40;i++)ints(o,c.projectiles[i]);
+        boolean narrating=v.action.kind==17&&v.narration!=null;o.writeBoolean(narrating);
+        if(narrating){OriginalNarration n=v.narration;ints(o,new int[]{n.frame,n.position,n.endTicks});o.writeBoolean(n.finished);o.writeBoolean(n.active);}
         o.flush();byte[] body=bytes.toByteArray();o.writeInt(crc(body,body.length));o.flush();return bytes.toByteArray();
     }
     public static OriginalSession decode(byte[] b,OriginalData data,OriginalSession.Resources resources)throws IOException{
         if(b==null||b.length<900||b.length>100000)throw new IOException("Snapshot length");
         DataInputStream tail=new DataInputStream(new ByteArrayInputStream(b,b.length-4,4));if(crc(b,b.length-4)!=tail.readInt())throw new IOException("Snapshot checksum");
-        DataInputStream in=new DataInputStream(new ByteArrayInputStream(b,0,b.length-4));if(in.readInt()!=MAGIC||in.readInt()!=VERSION)throw new IOException("Snapshot version");
+        DataInputStream in=new DataInputStream(new ByteArrayInputStream(b,0,b.length-4));if(in.readInt()!=MAGIC)throw new IOException("Snapshot magic");int version=in.readInt();if(version<1||version>VERSION)throw new IOException("Snapshot version");
         long time=in.readLong();int seq=in.readInt();byte[] raw=new byte[856];in.readFully(raw);OriginalPlayer p=OriginalPlayer.fromBrew(data,raw);
         p.maxHp=in.readInt();p.invisible=in.readBoolean();p.invisibilityTicks=in.readInt();p.infiniteAmmo=in.readBoolean();p.validate();
         OriginalSession s=new OriginalSession(data,resources,p);s.savedAt=time;s.saveSequence=seq;OriginalVM v=s.vm;
@@ -33,7 +35,13 @@ public final class SaveCodec {
         OriginalCombat c=s.combat;c.ticks=in.readInt();c.randomState=in.readInt();c.cooldown=in.readInt();c.reload=in.readInt();c.switchFrame=in.readInt();c.nextSlot=in.readInt();c.zoom=in.readInt();c.target=in.readInt();c.targetMode=in.readInt();c.targetDistance=in.readInt();c.shots=in.readInt();c.hurt=in.readInt();c.pendingEvent=in.readInt();c.fireRequested=in.readBoolean();
         if(in.readInt()!=c.actors.length)throw new IOException("Actor count");for(int i=0;i<c.actors.length;i++){
             readInts(in,c.actors[i]);int[] q=c.actors[i];if(q[1]<16||q[2]<16||q[1]>s.level.width*32-17||q[2]>s.level.height*32-17||q[6]<0||q[6]>2)throw new IOException("Actor state");}
-        for(int i=0;i<40;i++)readInts(in,c.projectiles[i]);if(in.available()!=0)throw new IOException("Trailing snapshot data");
+        for(int i=0;i<40;i++)readInts(in,c.projectiles[i]);s.ensureNarration();
+        if(version>=2&&in.readBoolean()){
+            if(v.narration==null)throw new IOException("Narration state without action");OriginalNarration n=v.narration;
+            n.frame=in.readInt();n.position=in.readInt();n.endTicks=in.readInt();n.finished=in.readBoolean();n.active=in.readBoolean();
+            if(n.frame<0||n.position<0||n.position>n.message.length()||n.endTicks<0||n.endTicks>18)throw new IOException("Narration position");
+        }
+        if(in.available()!=0)throw new IOException("Trailing snapshot data");
         if(c.target< -1||c.target>=c.actors.length||c.cooldown<0||c.reload<0)throw new IOException("Combat state");c.rebuildOccupancy();return s;
     }
 }

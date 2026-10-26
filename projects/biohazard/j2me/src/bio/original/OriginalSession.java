@@ -12,6 +12,7 @@ public final class OriginalSession {
     public OriginalCombat combat;
     public long savedAt;
     public int saveSequence;
+    private OriginalText storyText;
     public OriginalSession(OriginalData data,Resources resources)throws IOException{this(data,resources,new OriginalPlayer(data));}
     public OriginalSession(OriginalData data,Resources resources,OriginalPlayer player)throws IOException{this.data=data;this.resources=resources;this.player=player;load(player.level,player.x,player.y,player.angle);}
     public void load(int n,int x,int y,int angle)throws IOException{
@@ -28,10 +29,17 @@ public final class OriginalSession {
             if(combat.pendingEvent>=0){vm.explicit(combat.pendingEvent);combat.pendingEvent=-1;}
             vm.trigger(2,player.x,player.y);vm.trigger(0,player.x,player.y);
         }else combat.ticks++;
-        vm.action.x=player.x;vm.action.y=player.y;vm.action.angle=player.angle;vm.step();
+        if(vm.action.kind==17&&vm.narration!=null){vm.narration.tick();if(!vm.narration.active)vm.action.kind=0;}
+        vm.action.x=player.x;vm.action.y=player.y;vm.action.angle=player.angle;vm.step();ensureNarration();
         if(player.x!=vm.action.x||player.y!=vm.action.y){level.mark((player.x-8)/16,(player.y-8)/16,8,false);level.mark((vm.action.x-8)/16,(vm.action.y-8)/16,8,true);}
         player.x=vm.action.x;player.y=vm.action.y;player.angle=vm.action.angle;
         if(vm.transitionLevel!=0)load(vm.transitionLevel,vm.transitionX,vm.transitionY,vm.transitionAngle);
+    }
+    public void ensureNarration()throws IOException{
+        if(vm.action.kind==17&&vm.narration==null){
+            if(storyText==null)storyText=new OriginalText(resources.read(0));
+            vm.narration=new OriginalNarration(OriginalDialogue.message(vm,storyText));
+        }
     }
     public void fire(){if(!vm.busy()&&player.hp>0){if(vm.region(player.x,player.y,true)<0)combat.fire();}}
 }

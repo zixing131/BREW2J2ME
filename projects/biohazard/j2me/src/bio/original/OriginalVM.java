@@ -7,6 +7,7 @@ public final class OriginalVM {
     final boolean[] fired;
     public final OriginalPlayer player;
     public final ScriptAction action=new ScriptAction();
+    public OriginalNarration narration;
     public int event=-1,pc,textId,speaker,dialogMode,overlayColor,overlayAmount,fadeColor;
     public int unsupported=-1,transitionLevel,transitionX,transitionY,transitionAngle;
     public boolean running,condition,ended;
@@ -58,7 +59,7 @@ public final class OriginalVM {
                     break;
                 case 12:condition=false;break;
                 case 2:
-                    textId=c[p+6];speaker=c[p+4];dialogMode=c[p+3];action.kind=dialogMode==0?17:4;finishCheck(c);return;
+                    narration=null;textId=c[p+6];speaker=c[p+4];dialogMode=c[p+3];action.kind=dialogMode==0?17:4;finishCheck(c);return;
                 case 7:
                     action.kind=19;action.duration=(short)c[p+1];action.targetAngle=(short)c[p+2];
                     action.targetX=(short)(32*(short)c[p+3]+16);action.targetY=(short)(32*(short)c[p+4]+16);

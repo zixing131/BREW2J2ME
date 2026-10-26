@@ -61,7 +61,11 @@ public final class DesktopCanvasTest {
   c.resizeTest(176,220);s.vm.action.kind=4;s.vm.dialogMode=2;s.vm.speaker=0;s.vm.textId=6023;capture(c,"dialogue-narrator");
   check(field("dialogRows").getInt(c)==3,"Unnamed dialogue has three original lines");
   s.vm.dialogMode=3;s.vm.textId=6033;capture(c,"dialogue-hint");
-  OriginalSession chapter=new OriginalSession(s.data,c);chapter.tick(0);field("session").set(c,chapter);capture(c,"chapter-intro");
+  OriginalSession chapter=new OriginalSession(s.data,c);chapter.tick(0);field("session").set(c,chapter);
+  for(int i=0;i<36;i++)tick(c);capture(c,"chapter-intro");
+  int typed=chapter.vm.narration.position;key(c,53);check(chapter.vm.narration.position>typed&&chapter.vm.action.kind==17,"Confirm accelerates narration without skipping it");
+  capture(c,"chapter-accelerated");int narrativeTicks=0;
+  while(chapter.vm.action.kind==17){tick(c);check(++narrativeTicks<1000,"Narration automatically finishes");}
   field("session").set(c,s);s.vm.action.kind=0;s.vm.running=false;
   OriginalSession outdoor=new OriginalSession(s.data,c);outdoor.load(3,27*32+16,2*32+16,90);field("session").set(c,outdoor);
   for(int i=0;i<sizes.length;i++){field("touchConfigured").setBoolean(c,false);c.resizeTest(sizes[i][0],sizes[i][1]);capture(c,"outdoor-"+sizes[i][0]+"x"+sizes[i][1]);}

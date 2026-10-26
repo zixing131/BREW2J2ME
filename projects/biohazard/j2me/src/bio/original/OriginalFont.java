@@ -31,6 +31,13 @@ public final class OriginalFont {
     }
     /** Text UI 0xF7D0 uses two pixels between glyphs and a 16-pixel line pitch. */
     public int drawSpaced(int[] pixels,int w,int h,String s,int x,int y,int wrap,int color,int skipLines,int maxLines,int spacing,int lineHeight){
+        return flow(pixels,w,h,s,x,y,wrap,color,skipLines,maxLines,spacing,lineHeight,true);
+    }
+    /** 0x9534 measures the last glyph without trailing spacing, unlike the speech UI. */
+    public int drawNarration(int[] pixels,int w,int h,String s,int x,int y,int wrap,int maxLines){
+        return flow(pixels,w,h,s,x,y,wrap,0xffffff,0,maxLines,8,20,false);
+    }
+    private int flow(int[] pixels,int w,int h,String s,int x,int y,int wrap,int color,int skipLines,int maxLines,int spacing,int lineHeight,boolean trailing){
         int cx=x,line=0,shadow=0,style=0;
         for(int p=0;p<s.length();p++){
             char c=s.charAt(p);
@@ -44,7 +51,7 @@ public final class OriginalFont {
                 }
             }
             if(c=='\n'){line++;cx=x;continue;}
-            int step=advance(c)+spacing;if(cx+step>x+wrap&&cx>x){cx=x;line++;}
+            int step=advance(c)+spacing;if(cx+advance(c)+(trailing?spacing:0)>x+wrap&&cx>x){cx=x;line++;}
             if(line>=skipLines&&line<skipLines+maxLines){
                 int yy=y+(line-skipLines)*lineHeight;
                 if(style!=0)for(int oy=-1;oy<=1;oy++)for(int ox=-1;ox<=1;ox++)if(ox!=0||oy!=0)glyph(pixels,w,h,c,cx+ox,yy+oy,shadow);

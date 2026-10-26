@@ -115,6 +115,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         if(screen==PLAY){
             OriginalVM v=session.vm;
             if(n==11){goBack();return;}
+            if(v.action.kind==17&&v.narration!=null){if(n==5)v.narration.accelerate();return;}
             if(v.action.kind==4||v.action.kind==17){
                 syncDialogue();
                 if(n==2)dialogPage=Math.max(0,dialogPage-1);
@@ -286,10 +287,11 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private void storyDialog()throws IOException{
         syncDialogue();OriginalVM v=session.vm;String message=OriginalDialogue.message(v,text);
         if(v.dialogMode==0){
-            // Chapter/narration resources have no character name or metal speech panel.
-            rect(0,0,W,H,0);dialogRows=Math.max(1,(H-36)/20);
-            dialogLines=font.drawSpaced(frame,W,H,message,8,12,W-16,0xffffff,dialogPage,dialogRows,2,20);
-            label("5",W-14,H-17,12,0xffff00);return;
+            // 0x1D170: black screen, fixed 160px text region, latest lines around center.
+            rect(0,0,W,H,0);String visible=v.narration==null?message:v.narration.visible();
+            int width=Math.min(160,W),x=(W-width)/2+4;
+            int lines=font.drawNarration(frame,W,H,visible,x,0,width-4,0);
+            font.drawNarration(frame,W,H,visible,x,H/2-7-20*Math.max(0,lines-2),width-4,lines);return;
         }
         boolean named=v.speaker>0;int mode=v.dialogMode;
         int height=OriginalDialogue.textHeight(mode,named),top=OriginalDialogue.textTop(mode,named,H);

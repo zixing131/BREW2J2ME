@@ -111,6 +111,27 @@ public final class OriginalSystemsTest {
             OriginalFlash flash=new OriginalFlash(OriginalTest.read(new File(root.getParentFile(),"effects/"+id+".bin")));flash.draw(dest,w,h,flashPicture,x,y);
             for(int j=0;j<dest.length;j++)check(OriginalMaterials.pack(dest[j])==in.readUnsignedShort(),"ARM flash "+i+" pixel "+j);
         }in.close();System.out.println("PASS original ARM flash: "+flashCases+" complete clipped frames");
+        in=fixture(args[0],"arm-narration");int streams=in.readInt(),narrationFrames=0;
+        for(int i=0;i<streams;i++){
+            int length=in.readInt();StringBuffer message=new StringBuffer();for(int j=0;j<length;j++)message.append(in.readChar());
+            OriginalNarration narration=new OriginalNarration(message.toString());int frames=in.readInt();narrationFrames+=frames;
+            for(int j=0;j<frames;j++){
+                if(in.readInt()!=0)narration.accelerate();narration.tick();
+                check(narration.frame==in.readInt(),"ARM narration frame");check(narration.position==in.readInt(),"ARM narration token position");
+                check(narration.endTicks==in.readInt(),"ARM narration end delay");check(narration.finished==(in.readInt()!=0),"ARM narration finished");check(narration.active==(in.readInt()!=0),"ARM narration active");
+            }
+        }in.close();System.out.println("PASS original ARM narration: "+narrationFrames+" frames");
+        OriginalSession narrationSession=new OriginalSession(data,resources);narrationSession.tick(0);for(int i=0;i<25;i++)narrationSession.tick(0);
+        check(narrationSession.vm.narration!=null&&narrationSession.vm.narration.position>0,"Narration advances without confirm");
+        byte[] narrationSave=SaveCodec.encode(narrationSession,77,9);OriginalSession narrationRestored=SaveCodec.decode(narrationSave,data,resources);
+        check(Arrays.equals(narrationSave,SaveCodec.encode(narrationRestored,77,9)),"Narration snapshot includes exact typewriter state");
+        for(int i=0;i<40;i++){narrationSession.tick(0);narrationRestored.tick(0);}
+        check(Arrays.equals(SaveCodec.encode(narrationSession,77,9),SaveCodec.encode(narrationRestored,77,9)),"Narration deterministic resume");
+        // Produced by the actual v1 encoder at commit c0553e5, not by the v2 encoder.
+        OriginalSession legacySnapshot=SaveCodec.decode(OriginalTest.read(new File(args[0],"snapshot-v1.bin")),data,resources);
+        check(legacySnapshot.player.money==345&&legacySnapshot.savedAt==123456789L&&legacySnapshot.saveSequence==7,"Version 1 snapshot remains readable");
+        check(legacySnapshot.vm.action.kind==17&&legacySnapshot.vm.narration.position==0,"Older narration resumes from start of current text");
+        legacySnapshot.tick(0);check(legacySnapshot.vm.narration.position>0,"Version 1 snapshot advances in new runtime");
         byte[] radar=OriginalTest.read(new File(args[0],"arm-radar.bin"));int[][] coords={OriginalRadar.EXITS,OriginalRadar.DESTINATIONS,OriginalRadar.OBJECTIVES};int offset=0;
         for(int a=0;a<coords.length;a++)for(int i=0;i<coords[a].length;i++){check(coords[a][i]==Binary.u16(radar,offset),"Original radar coordinates");offset+=2;}
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");

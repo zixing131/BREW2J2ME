@@ -1,0 +1,17 @@
+{
+  "id": "dnf",
+  "title": "地下城与勇士：鬼剑士（韩国 WIPI）",
+  "status": "prototype",
+  "targets": {
+    "j2me": {
+      "build": "j2me/build.py",
+      "test": "j2me/test.py",
+      "artifacts": [
+        "j2me/dist/DnfGhostKnight.jar",
+        "j2me/dist/DnfGhostKnight.jad"
+      ]
+    }
+  },
+  "originals_manifest": "originals/manifest.json",
+  "documentation": "docs/03-development-status.md"
+}

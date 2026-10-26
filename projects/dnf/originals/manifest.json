@@ -1,0 +1,25 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "0002E1A1.jar",
+      "size": 3498048,
+      "sha256": "4d76f21a698055e0f6e702910e1915d5e1fb9497549ce3e34c3e03c26841881d"
+    },
+    {
+      "path": "big.png",
+      "size": 2186,
+      "sha256": "a45525cc8fc7c4959f15507b358fc79df1a36f84424bd3f6222d5a445b080113"
+    },
+    {
+      "path": "middle.png",
+      "size": 1645,
+      "sha256": "ef7967ac6ea7c8c1ba63f900a6b0fd9cb7804e953c2f0544b878e05b83974d20"
+    },
+    {
+      "path": "small.png",
+      "size": 3961,
+      "sha256": "ffd3dc763235fb94f883dd3a47c6afb98772c419b4568efddf77ffe6c603616c"
+    }
+  ]
+}

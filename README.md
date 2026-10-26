@@ -1,12 +1,12 @@
-# BREW 移植工作区
+# BREW / WIPI 移植工作区
 
-用于分析 BREW 软件、保存原始行为证据，并逐项目实现其他平台版本。Melange 等模拟器用于参考原版运行行为；仓库本身不是 BREW 模拟器。
+用于分析 BREW、WIPI 软件、保存原始行为证据，并逐项目实现其他平台版本。Melange 等模拟器用于参考原版运行行为；仓库本身不是 BREW 模拟器。
 
 ## 目录
 
 ```text
 BREW/
-├── projects/                  # 每个 BREW 软件一个独立项目
+├── projects/                  # 每个软件一个独立项目
 │   └── biohazard/              # 3D生化启示录
 │       ├── project.json       # 项目信息、构建/测试入口
 │       ├── originals/         # 原始输入，只读；含 SHA256 清单
@@ -26,6 +26,7 @@ BREW/
 | 项目 | 目标 | 状态 |
 |---|---|---|
 | [3D生化启示录](projects/biohazard/README.md) (`biohazard`) | J2ME CLDC1.1/MIDP2.0 | 0.3.1，核心系统已接入，完整还原进行中 |
+| [DNF 鬼剑士（韩国 WIPI）](projects/dnf/README.md) (`dnf`) | J2ME CLDC1.1/MIDP2.0 | 0.1.0，原场景与动作试玩；剧情与战斗移植进行中 |
 
 ## 快速开始
 

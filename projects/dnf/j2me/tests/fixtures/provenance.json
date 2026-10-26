@@ -1,0 +1,24 @@
+{
+  "source_sha256": "4d76f21a698055e0f6e702910e1915d5e1fb9497549ce3e34c3e03c26841881d",
+  "binary_sha256": "45bb74b218f8b88a6a434de4532e95b96f8d7febe1b4931fb217d1450fc4860a",
+  "executed": [
+    "0x6ea60",
+    "0x6d838",
+    "0x6de68",
+    "0x6e440",
+    "0x68dd4",
+    "0x6c9bc",
+    "0x6c8d0",
+    "0x684d8",
+    "0x6872c"
+  ],
+  "animation_steps": 5472,
+  "host_shims": [
+    "resource IO",
+    "malloc/free",
+    "memcpy/memset",
+    "sprintf",
+    "LZMA"
+  ],
+  "note": "No game parsing, animation or pixel blend logic replaced by shims."
+}

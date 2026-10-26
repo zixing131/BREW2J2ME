@@ -2,7 +2,7 @@
 
 ## 项目是隔离单位
 
-一个 BREW 软件对应 `projects/<slug>/`。slug使用稳定的英文小写/数字/连字符，显示名可以中文。注册信息来自该目录的 `project.json`；根工具自动发现，不依赖一份易失同步的中央列表。
+一个 BREW 或 WIPI 软件对应 `projects/<slug>/`。slug使用稳定的英文小写/数字/连字符，显示名可以中文。注册信息来自该目录的 `project.json`；根工具自动发现，不依赖一份易失同步的中央列表。
 
 每个项目包含：
 
@@ -56,3 +56,7 @@ flowchart LR
 | `runs/` | `.local/runs/` |
 
 原始输入移动前生成SHA256清单，移动后核验。没有保留旧路径软链接，防止新脚本继续依赖旧结构；已有模拟器启动参数应改用新的JAR路径。
+
+## WIPI 项目
+
+`projects/dnf` 接入同一项目入口，原始程序为 ARM/WIPI Clet。`Actor/Animation/World/Surface` 解释原角色、动作、地图并完成软件绘制，`DnfCanvas` 处理 MIDP 输入与中文适配菜单，`SaveData` 定义独立试玩记录。它不依赖 biohazard 的业务代码。平台差异和未恢复逻辑保留在 DNF 项目文档，公共工具不猜测 BREW/WIPI 资源格式。

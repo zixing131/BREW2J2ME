@@ -1,0 +1,4 @@
+# Local carrier installation metadata can contain subscriber identifiers.
+originals/app_info
+originals/__contents_info__
+originals/__downloading_info__

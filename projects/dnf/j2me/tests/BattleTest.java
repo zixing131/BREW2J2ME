@@ -27,8 +27,8 @@ public final class BattleTest {
             if(target>=0&&b.player.hero.animation.clip==0){e=b.enemies[target];b.player.x=e.x-35;b.player.y=e.y;b.player.mirror=false;b.attack();}
             b.tick(0,30);ticks++;
         }check(b.pendingStory==6&&b.living()==0,"six deaths dispatch native ANI6");shot(b,"battle-clear");
-        b.enter(41,3,11,5,292,241);e=b.enemies[0];b.player.x=e.x-35;b.player.y=e.y;b.skill(0);for(int i=0;i<8;i++)b.tick(0,30);check(e.hp<41,"upper slash uses action23 hit region");
-        b.enter(41,3,11,5,292,241);e=b.enemies[0];b.player.x=e.x-35;b.player.y=e.y;b.skill(1);b.draw(new Surface(240,320));for(int i=0;i<8;i++)b.tick(0,30);check(e.hp<41,"ghost slash original 30024 ACT hit region");
+        b.enter(41,3,11,5,292,241);e=b.enemies[0];b.player.x=e.x-35;b.player.y=e.y;b.skill(0);for(int i=0;i<8;i++)b.tick(0,30);check(e.hp<41,"upper slash uses action24 effect hit region");
+        b.enter(41,3,11,5,292,241);e=b.enemies[0];b.player.x=e.x-35;b.player.y=e.y;b.skill(1);b.draw(new Surface(240,320));for(int i=0;i<8;i++)b.tick(0,30);check(e.hp<41,"ghost slash original 30032 ACT hit region");
         b.fromStory(new Story(7,new KoreanFont(),true));b.tick(0,30000);check(b.dialogue==2&&b.elapsedMs==0,"quest introduction pauses protection timer");restored=Battle.decode(new Session(),b.encode());compare(b,restored);b.pageEnd=b.dialogueText().length();b.confirm();check(b.questState==1&&b.dialogue==-1,"accept protection mission");
         b.enter(41,4,11,5,292,241);check(b.father()&&b.level==60&&b.player.hero.family==1&&b.enemies.length==7,"native Derin switch and seven cultists");
         int hp=b.hp;for(int i=0;i<1000;i++)b.tick(0,30);check(b.hp==hp&&b.pendingStory<0,"tutorial invulnerability, timer not early");

@@ -213,11 +213,11 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void resumeStory(){resumeStory("dnf-story-progress");}
     private void resumeStory(String name){
         try{byte[] b=readRecord(name);
-            if(campaign&&b.length>=4&&b[0]==0x44&&b[1]==0x4e&&b[2]==0x42&&(b[3]==0x31||b[3]==0x32)){Battle restoredBattle=Battle.decode(session,b);battle=restoredBattle;progress=battle.campaign;menu=-3;battleClock=0;keys=0;noticeUntil=0;audio.stop();currentMusic=battle.music;if(currentMusic>=0)audio.play(currentMusic,0,true,true);return;}
+            if(campaign&&b.length>=4&&b[0]==0x44&&b[1]==0x4e&&b[2]==0x42&&(b[3]==0x31||b[3]==0x32||b[3]==0x33)){Battle restoredBattle=Battle.decode(session,b);battle=restoredBattle;progress=battle.campaign;menu=-3;battleClock=0;keys=0;noticeUntil=0;audio.stop();currentMusic=battle.music;if(currentMusic>=0)audio.play(currentMusic,0,true,true);return;}
             if(b.length<20||b.length>140000)throw new IOException("Progress length");
             DataInputStream d=new DataInputStream(new ByteArrayInputStream(b));int magic=d.readInt();boolean suspendedSave=magic==0x444e5334;boolean extended=magic==0x444e5333||suspendedSave;if(!extended&&b.length!=20&&b.length!=24)throw new IOException("Progress legacy length");if(!extended&&magic!=(b.length==20?0x444e5331:0x444e5332))throw new IOException("Progress version");
             int id=d.readInt(),time=d.readInt(),page=d.readInt(),flags=b.length>=24?d.readInt():0;if(flags<0||flags>3||d.readInt()!=(id^time^page^flags^0x1fa23b))throw new IOException("Progress checksum");
-            Battle suspendedBattle=null;Campaign restoredProgress=null;if(extended){restoredProgress=Campaign.read(d);if(suspendedSave){int length=d.readInt();if(length<0||length>d.available()-4)throw new IOException("Suspended battle length");if(length>0){byte[] bytes=new byte[length];d.readFully(bytes);suspendedBattle=Battle.decode(session,bytes);suspendedBattle.campaign=restoredProgress;}}if(d.readInt()!=Campaign.checksum(b,b.length-4)||d.available()!=0)throw new IOException("Progress campaign checksum");}
+            Battle suspendedBattle=null;Campaign restoredProgress=null;if(extended){restoredProgress=Campaign.read(d);if(suspendedSave){int length=d.readInt();if(length<0||length>d.available()-4)throw new IOException("Suspended battle length");if(length>0){byte[] bytes=new byte[length];d.readFully(bytes);suspendedBattle=Battle.decode(session,bytes);suspendedBattle.campaign=restoredProgress;suspendedBattle.refreshSkills();}}if(d.readInt()!=Campaign.checksum(b,b.length-4)||d.available()!=0)throw new IOException("Progress campaign checksum");}
             Story restored=new Story(id,korean,true);if(time<0||time>restored.duration||page<0)throw new IOException("Progress bounds");
             while(restored.tick<time){restored.waiting=false;restored.advance();}
             if(page>0&&(restored.dialogue<0||page>restored.nodes[restored.dialogue].text.length()))throw new IOException("Progress page");
@@ -343,7 +343,7 @@ public final class DnfCanvas extends Canvas implements Runnable {
         int boxW=Math.min(w-16,280),left=(w-boxW)/2;g.setColor(0x151b25);g.fillRect(left,8,boxW,h-16);g.setColor(0x9e8152);g.drawRect(left,8,boxW-1,h-17);
         int y=17;if(icon!=null){g.drawImage(icon,left+8,y,Graphics.TOP|Graphics.LEFT);}
         g.setColor(0xecd19b);g.drawString("地下城与勇士",w/2+12,y,Graphics.TOP|Graphics.HCENTER);
-        g.setColor(0xa6b4c6);g.drawString("鬼剑士 · WIPI 移植 0.6.0",w/2+12,y+19,Graphics.TOP|Graphics.HCENTER);
+        g.setColor(0xa6b4c6);g.drawString("鬼剑士 · WIPI 移植 0.7.0",w/2+12,y+19,Graphics.TOP|Graphics.HCENTER);
         y=64;
         if(menu==0){int first=menuFirst(),rows=menuRows();for(int row=0;row<rows;row++){int i=first+row;g.setColor(i==selected?0x6e4222:0x253040);g.fillRect(left+10,y+row*24,boxW-20,22);g.setColor(i==selected?0xffdf83:0xe7edf4);g.drawString(MAIN[i],left+19,y+row*24+2,Graphics.TOP|Graphics.LEFT);}g.setColor(0xa6b4c6);g.drawString((selected+1)+" / "+MAIN.length,w-25,h-45,Graphics.TOP|Graphics.RIGHT);}
         else {

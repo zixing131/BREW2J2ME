@@ -36,6 +36,17 @@ public final class World {
         int row=y/16-yOffset,col=x/16;
         return x>=8&&x<width-8&&row>=0&&row<rows&&col>=0&&col<cols&&collision[row*cols+col]==0;
     }
+    /** Adapter for original DS spawns outside the FIE collision grid (e.g. 83/4).
+     * Keeps those enemies reachable; ordinary in-grid spawns retain their coordinates. */
+    public int[] nearestStand(int x,int y)throws IOException {
+        int best=-1,bestDistance=Integer.MAX_VALUE;
+        for(int row=0;row<rows;row++)for(int col=0;col<cols;col++)if(collision[row*cols+col]==0){
+            int px=Math.max(col*16,Math.min(col*16+15,x)),py=Math.max((row+yOffset)*16,Math.min((row+yOffset)*16+15,y));
+            px=Math.max(8,Math.min(width-9,px));if(!canStand(px,py))continue;
+            int distance=Math.abs(px-x)+Math.abs(py-y);if(distance<bestDistance){best=py*width+px;bestDistance=distance;}
+        }
+        if(best<0)throw new IOException("No walkable spawn");return new int[]{best%width,best/width};
+    }
     public int[] start(){
         // Temporary scene inspection spawn; original zone/quest spawn selection is not yet ported.
         for(int y=rows/2;y<rows;y++)for(int x=1;x<cols-1;x++)if(canStand(x*16+8,(y+yOffset)*16+8))return new int[]{x*16+8,(y+yOffset)*16+8};

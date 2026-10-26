@@ -27,8 +27,9 @@ def main():
     assert hashlib.sha256((ROOT.parent/'originals/0002E1A1.jar').read_bytes()).hexdigest()==provenance['source_sha256']
     subprocess.run([sys.executable,str(ROOT/'tests/test_content.py')],check=True,cwd=ROOT)
     target=ROOT/'build/test-classes';target.mkdir(exist_ok=True)
-    sources=[p for p in (ROOT/'src').rglob('*.java') if p.name not in ('DnfCanvas.java','DnfMIDlet.java','Audio.java','NativeText.java')]+[ROOT/'tests/PortTest.java',ROOT/'tests/StoryTest.java',ROOT/'tests/BattleTest.java',ROOT/'tests/CampaignTest.java',ROOT/'tests/GameplayTest.java']
+    sources=[p for p in (ROOT/'src').rglob('*.java') if p.name not in ('DnfCanvas.java','DnfMIDlet.java','Audio.java','NativeText.java')]+[ROOT/'tests/PortTest.java',ROOT/'tests/StoryTest.java',ROOT/'tests/BattleTest.java',ROOT/'tests/CampaignTest.java',ROOT/'tests/GameplayTest.java',ROOT/'tests/CombatRulesTest.java']
     subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(target)]+[str(p) for p in sources],check=True,cwd=ROOT)
+    subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(target)+os.pathsep+str(jar),'dnf.CombatRulesTest'],check=True,cwd=ROOT)
     subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(target)+os.pathsep+str(jar),'dnf.PortTest'],check=True,cwd=ROOT)
     subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(target)+os.pathsep+str(jar),'dnf.StoryTest'],check=True,cwd=ROOT)
     subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(target)+os.pathsep+str(jar),'dnf.BattleTest'],check=True,cwd=ROOT)

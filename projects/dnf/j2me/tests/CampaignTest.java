@@ -41,6 +41,15 @@ public final class CampaignTest {
         }
         check(b.hp>0&&b.living()==0,"real input clears room "+b.field+"/"+b.stage+" hp="+b.hp+" living="+b.living()+" ticks="+ticks);
     }
+    private static void alternateRun(Battle b)throws Exception {
+        Campaign c=b.campaign;while(c.gold>=c.bag.items.price(13,9))c.bag.buy(c,13,9);
+        b.seed=3;b.startDungeon();check(c.entryRoute==1&&b.stage==2,"alternate original entrance selected");
+        int start=b.field*100+b.stage,goal=c.bossField*100+c.bossStage;HashMap<Integer,Integer> previous=new HashMap<Integer,Integer>();ArrayList<Integer> queue=new ArrayList<Integer>();previous.put(start,start);queue.add(start);
+        for(int pos=0;pos<queue.size()&&!previous.containsKey(goal);pos++){int room=queue.get(pos);for(int[] exit:new SceneData(room).areas)if(exit[0]==1&&exit[2]!=65535){int next=exit[2]*100+exit[3];if(!previous.containsKey(next)){previous.put(next,room);queue.add(next);}}}
+        check(previous.containsKey(goal),"alternate boss path");ArrayList<Integer> path=new ArrayList<Integer>();for(int room=goal;room!=start;room=previous.get(room))path.add(room);
+        fight(b);for(int i=path.size()-1;i>=0;i--){int next=path.get(i);walk(b,stageArea(b,next/100,next%100));fight(b);}
+        check(c.completedRuns==2&&b.dialogue>=0,"alternate route clears the selected boss");confirm(b);b.tick(0,30);check(c.dungeon==0,"alternate route returns to town");
+    }
     public static void main(String[] args)throws Exception {
         BufferedReader source=new BufferedReader(new FileReader("tests/fixtures/quest-conditions-arm.csv"));String line;Campaign checkCampaign=new Campaign();
         while((line=source.readLine())!=null){if(line.startsWith("#"))continue;String[] columns=line.split(",");int q=Integer.parseInt(columns[0]);checkCampaign.level=Integer.parseInt(columns[1]);Arrays.fill(checkCampaign.state,(byte)Integer.parseInt(columns[2]));checkCampaign.state[q]=0;check(checkCampaign.book.available(q,checkCampaign)==columns[3].equals("1"),"original ARM quest condition");}source.close();
@@ -54,14 +63,15 @@ public final class CampaignTest {
         walk(b,area(b,1,1));npc(b,9);check(c.state[3]==2,"GSD turn-in");npc(b,9);check(c.state[4]==1,"GSD offers Linus quest");walk(b,area(b,1,0));walk(b,area(b,1,3));npc(b,14);check(c.state[4]==2,"walk through all three town quest contacts");
         walk(b,area(b,1,0));walk(b,area(b,3,0));check(b.menuRequest==3&&b.campaign.dungeon==0,"dungeon entry opens selection before entering");b.menuRequest=-1;check(b.campaign.dungeon==0,"cancel entry");
         // Spend only quest-earned gold, then use skills and owned recovery items in combat.
-        for(int key:c.bag.entries())if(key/256<=10)c.bag.equip(key/256,key%256,c.level);b.refreshStats();
+        for(int key:c.bag.entries())if(key/256<=10&&!c.bag.equipped(key/256,key%256))c.bag.equip(key/256,key%256,c.level);b.refreshStats();
         while(c.gold>=c.bag.items.price(13,9))c.bag.buy(c,13,9);
-        b.startDungeon();check(b.field==6&&b.stage==1&&b.zone==1&&b.player.x==34&&b.player.y==205,"native ZON first entry");
+        b.seed=0;b.startDungeon();check(b.field==6&&b.stage==1&&b.zone==1&&b.player.x==34&&b.player.y==205,"native ZON first entry");
         byte[] entry=b.encode();fight(b);check(c.xp>0&&c.cleared(6,1),"death awards original XP and clears room");
         int before=c.xp;walk(b,area(b,1,8));fight(b);walk(b,area(b,1,6));check(b.stage==1&&b.living()==0,"cleared room does not respawn during same run");check(c.xp>=before,"progress preserved on return");
         walk(b,area(b,1,8));walk(b,area(b,1,9));fight(b);walk(b,stageArea(b,8,2));check(b.stage==2,"original multi-room path");fight(b);walk(b,area(b,1,6));check(b.stage==5,"approach boss branch");fight(b);walk(b,area(b,1,10));fight(b);
         check(b.dialogue>=0&&c.completedRuns==1,"boss clear offers return with single settlement");b=Battle.decode(new Session(),b.encode());confirm(b);b.tick(0,30);check(b.zone==0&&b.hp==b.maxHp&&b.campaign.completedRuns==1,"clear save resumes and returns to town");
-        c=b.campaign;check(c.book.available(7,c)&&c.book.available(8,c),"original level3 kill quests unlock naturally from the first run");npc(b,0);walk(b,area(b,1,1));npc(b,9);walk(b,area(b,1,0));check(c.state[7]==1&&c.state[8]==1,"both kill quests accepted through original NPC tables");b.startDungeon();fight(b);walk(b,area(b,1,8));fight(b);walk(b,area(b,1,9));fight(b);check(c.kills[21]==10&&c.kills[24]==4,"real second-run combat satisfies both kill quests");b.returnTown();npc(b,0);walk(b,area(b,1,1));npc(b,9);check(c.state[7]==2&&c.state[8]==2,"kill quests delivered to original NPCs");
+        c=b.campaign;check(c.book.available(7,c)&&c.book.available(8,c),"original level3 kill quests unlock naturally from the first run");npc(b,0);walk(b,area(b,1,1));npc(b,9);walk(b,area(b,1,0));check(c.state[7]==1&&c.state[8]==1,"both kill quests accepted through original NPC tables");b.seed=0;b.startDungeon();fight(b);walk(b,area(b,1,8));fight(b);walk(b,area(b,1,9));fight(b);check(c.kills[21]==10&&c.kills[24]==4,"real second-run combat satisfies both kill quests");b.returnTown();npc(b,0);walk(b,area(b,1,1));npc(b,9);check(c.state[7]==2&&c.state[8]==2,"kill quests delivered to original NPCs");
+        alternateRun(b);
         // Separate unit state for counter saturation and failed-run recovery.
         c.state[7]=1;c.state[8]=1;
         for(int i=0;i<20;i++)c.kill(new MonsterData(7,Assets.read(6,"bd")));for(int i=0;i<4;i++)c.kill(new MonsterData(10,Assets.read(6,"bd")));

@@ -26,7 +26,7 @@ BREW/
 | 项目 | 目标 | 状态 |
 |---|---|---|
 | [3D生化启示录](projects/biohazard/README.md) (`biohazard`) | J2ME CLDC1.1/MIDP2.0 | 0.3.1，核心系统已接入，完整还原进行中 |
-| [DNF 鬼剑士（韩国 WIPI）](projects/dnf/README.md) (`dnf`) | J2ME CLDC1.1/MIDP2.0 | 0.2.0，原开场链、中文剧情/日记、原包声音；主线战斗仍在移植 |
+| [DNF 鬼剑士（韩国 WIPI）](projects/dnf/README.md) (`dnf`) | J2ME CLDC1.1/MIDP2.0 | 0.7.0，剧情/任务、装备经济、技能升级、基础伤害及随机入口已接入；完整还原进行中 |
 
 ## 快速开始
 
@@ -57,6 +57,8 @@ python3 tools/project.py doctor
 
 - `projects/biohazard/j2me/dist/BiohazardDemo.jar`
 - `projects/biohazard/j2me/dist/BiohazardDemo.jad`
+- `projects/dnf/j2me/dist/DnfGhostKnight.jar`
+- `projects/dnf/j2me/dist/DnfGhostKnight.jad`
 
 `build/unverified.jar` 只是中间产物；运行或发布使用 `dist/` 下经 ProGuard `-microedition` 处理的包。
 

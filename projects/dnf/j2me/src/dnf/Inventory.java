@@ -12,6 +12,8 @@ public final class Inventory {
     public boolean equipped(int t,int id){int slot=items.slot(t);return slot>=0&&equipment[slot]==t*256+id;}
     public String equip(int t,int id,int level){if(count(t,id)==0||items.slot(t)<0)return "无法装备此物品";if(items.level(t,id)>level)return "等级不足，需要 "+items.level(t,id)+" 级";int s=items.slot(t);equipment[s]=equipped(t,id)?-1:t*256+id;return equipment[s]<0?"已卸下":"已装备 "+items.name(t,id);}
     public int attack(){int key=equipment[0];return key<0?0:items.stat(key/256,key%256,0);}
+    public int weaponStat(boolean magic){int key=equipment[0];return key<0?0:items.stat(key/256,key%256,magic?1:0);}
+    public int weaponLevel(){int key=equipment[0];return key<0?0:items.level(key/256,key%256);}
     public int defence(){int sum=0;for(int i=1;i<equipment.length;i++){int k=equipment[i];if(k>=0)sum+=items.stat(k/256,k%256,0);}return sum;}
     public int bonus(int effect){int sum=0;for(int i=0;i<equipment.length;i++){int k=equipment[i];if(k>=0){byte[] b=items.data[k/256][k%256];for(int j=0;j<3;j++){int p=15+j*7;if((b[p]&255)==effect)sum+=Items.word(b,p+1);}}}return sum;}
     public int[] entries(){int n=0;for(int t=0;t<20;t++)for(int i=1;i<quantities[t].length;i++)if(quantities[t][i]>0)n++;int[] out=new int[n];n=0;for(int t=0;t<20;t++)for(int i=1;i<quantities[t].length;i++)if(quantities[t][i]>0)out[n++]=t*256+i;return out;}

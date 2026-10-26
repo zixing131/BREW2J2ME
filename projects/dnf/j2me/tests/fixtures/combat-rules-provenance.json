@@ -1,0 +1,21 @@
+{
+  "binary_sha256": "45bb74b218f8b88a6a434de4532e95b96f8d7febe1b4931fb217d1450fc4860a",
+  "executed": [
+    "0x2490c",
+    "0x7c298",
+    "0x7bf58",
+    "0x7c8bc",
+    "0x7c544",
+    "0x2b8e0",
+    "0x7cf20",
+    "0x89e18",
+    "0x81bb8"
+  ],
+  "host_shims": [
+    "native_oracle resource/allocator/memory/LZMA",
+    "0x6c7d4 RNG",
+    "0x89d84 wander follow-up skipped after slot255",
+    "XP-only: 0x773a4/773dc refresh, 0x77094 passiveHP=0, 0x350d4 level VFX"
+  ],
+  "scope": "Explicit ARM fixtures for rank decoding, four base-damage branches and route selection.\nNo arithmetic is shimmed. RNG is supplied at its original entry point; native\npassive, enchantment and critical state is zero. Not an oracle for the hit pipeline.\n"
+}

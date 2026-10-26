@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT.parents[2]/'tools'))
 from toolchain import load_toolchain,validate_toolchain,java_executable
-VERSION='0.6.0'
+VERSION='0.7.0'
 def main():
     tc=load_toolchain();validate_toolchain(tc);jdk,api=tc['J2ME_JDK_HOME'],tc['J2ME_API_HOME']
     def run(args):subprocess.run([str(x) for x in args],cwd=ROOT,check=True)

@@ -1,5 +1,13 @@
 # 开发状态
 
+## 0.7.0（2026-10-27）
+
+修正上挑/鬼斩编号及动作、读取实际技能等级，四条基础伤害分支用原ARM结果核验；接入SP增长和中文技能升级菜单。怪物改用原权重与5.bd射程，凯诺恢复两种36000落雷特效。ZON按原关系随机选择候选入口/首领/特殊房，保存选择不重抽。Campaign v4 / DNB3兼容旧记录，含实际0.6存档迁移测试。
+
+原规则55,768、核心44,033、剧情13,377、战斗640、城镇/地下城181、玩法737、四分辨率Canvas/RMS683项检查通过。两种幽暗密林入口均实际输入通关，凯诺效果逐tick存读一致。完整技能树、转职/被动、完整伤害流水线、其他首领行为和封路仍未全部还原。见[0.7详细证据与范围](09-skills-damage-routes.md)。
+
+发布包3,975,820字节，48个CLDC class；SHA256 `3c0b9d90c5b6c69800e53de6e3d1249d2d5f0437f21e144e2e4fa36dc007b65c`。经ProGuard `-microedition`预校验，major45 / StackMap / JAD尺寸检查通过。
+
 ## 0.6.0（2026-10-26）
 
 原程序对照修复：按地区/首领/特殊房选择原BGM，回城、剧情返回和读取记录同步音乐，同曲不重复重启；按原区域表修正地下城mode。恢复未转职HP=31×等级、MP=16×等级+20，移除最低100保底；接入永久生命/魔力上限道具、经验书和具有成功/失败分支的命运硬币。Campaign v3追加永久属性并兼容v1/v2。详见[原版差异、证据与未完成项](08-original-parity.md)。
@@ -69,7 +77,7 @@ KEmulator2.22实测：继续旧0.3剧情记录，接玛丽委托，方向键从�
 
 `tools/story_assets.py`负责严格ANI读取、中文资源及原韩文核验字库；`tools/audio_assets.py`负责限定格式SMAF转换。`Story`推进原时间轴，`NativeText`只负责设备字宽排版，`Audio`负责MMAPI，`DnfCanvas`负责输入、画面和适配记录。`localization/zh-CN.json`保留原文key和中文值，构建时不联网翻译。
 
-`Campaign`保存跨场景任务/成长/地下城状态，`QuestBook`读取原任务与NPC表并提供已恢复的中文初期委托，`Zone`解析原候选入口/首领布局；`Battle`推进当前战斗和场景出口，`DnfCanvas`在DNS3/DNB2之间保持同一Campaign。详见06。
+`Campaign`保存跨场景任务/成长/地下城状态，`QuestBook`读取原任务与NPC表并提供已恢复的中文初期委托，`Zone`解析原候选入口/首领布局；`Battle`推进当前战斗和场景出口，`DnfCanvas`在DNS4/DNB3之间保持同一Campaign。详见06。
 
 原生基线只显式重建：`tools/reverse/native_oracle.py`、`story_oracle.py`需要Unicorn，`audio_oracle.py`需要FFmpeg。普通测试读取已提交fixtures，不重建期望值。
 

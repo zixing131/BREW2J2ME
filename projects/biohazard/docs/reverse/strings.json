@@ -1,0 +1,717 @@
+[
+  {
+    "address": 1216,
+    "text": "Invalid Operation",
+    "refs": [
+      1086
+    ]
+  },
+  {
+    "address": 1240,
+    "text": "Divide By Zero",
+    "refs": [
+      1096
+    ]
+  },
+  {
+    "address": 1256,
+    "text": "Overflow",
+    "refs": [
+      1104
+    ]
+  },
+  {
+    "address": 1268,
+    "text": "Underflow",
+    "refs": [
+      1112
+    ]
+  },
+  {
+    "address": 1280,
+    "text": "Inexact Result",
+    "refs": [
+      1120
+    ]
+  },
+  {
+    "address": 1296,
+    "text": ": Heap memory corrupted",
+    "refs": [
+      1140
+    ]
+  },
+  {
+    "address": 1320,
+    "text": "Unknown signal",
+    "refs": [
+      1144
+    ]
+  },
+  {
+    "address": 161128,
+    "text": "map.hkm",
+    "refs": [
+      87488,
+      87504,
+      88536
+    ]
+  },
+  {
+    "address": 161136,
+    "text": "mbxres.bin",
+    "refs": [
+      87552,
+      87560,
+      88540
+    ]
+  },
+  {
+    "address": 161148,
+    "text": "save.dat",
+    "refs": [
+      87696,
+      87708,
+      88548,
+      147920,
+      147924,
+      148376
+    ]
+  },
+  {
+    "address": 163248,
+    "text": "order: %s",
+    "refs": [
+      138648,
+      138652,
+      138768
+    ]
+  },
+  {
+    "address": 163260,
+    "text": "*dbgprintf-%d* %s:%d",
+    "refs": [
+      84676,
+      84688,
+      84916,
+      85072,
+      85080,
+      85340,
+      138500,
+      138508,
+      138560,
+      138568,
+      138620,
+      138628,
+      138736,
+      138748,
+      138764
+    ]
+  },
+  {
+    "address": 163284,
+    "text": "ismsbilling.c",
+    "refs": [
+      84660,
+      84672,
+      84912,
+      85056,
+      85064,
+      85336,
+      138488,
+      138496,
+      138548,
+      138552,
+      138608,
+      138616,
+      138732,
+      138744,
+      138760
+    ]
+  },
+  {
+    "address": 163300,
+    "text": "price: %d",
+    "refs": [
+      138588,
+      138592,
+      138752
+    ]
+  },
+  {
+    "address": 163312,
+    "text": "ISMSBilling ret: %d",
+    "refs": [
+      138528,
+      138532,
+      138740
+    ]
+  },
+  {
+    "address": 163332,
+    "text": "Roaming OutSide China",
+    "refs": [
+      85096,
+      85100,
+      85344
+    ]
+  },
+  {
+    "address": 163356,
+    "text": "ISMSBilling_Reset begin",
+    "refs": [
+      84708,
+      84712,
+      84920
+    ]
+  },
+  {
+    "address": 163380,
+    "text": "ISMSBilling_Reset end",
+    "refs": [
+      84884,
+      84888,
+      84932
+    ]
+  },
+  {
+    "address": 163404,
+    "text": "?Version=%s&OrderNum=%s",
+    "refs": [
+      150196,
+      150200,
+      150336
+    ]
+  },
+  {
+    "address": 163428,
+    "text": "1.0.9",
+    "refs": [
+      150188,
+      150192,
+      150332
+    ]
+  },
+  {
+    "address": 163436,
+    "text": "/smsbilling/orderStatusQry",
+    "refs": [
+      150156,
+      150164,
+      150328
+    ]
+  },
+  {
+    "address": 163464,
+    "text": "smsbilling.189brew.com:8080",
+    "refs": [
+      150128,
+      150136,
+      150324
+    ]
+  },
+  {
+    "address": 163492,
+    "text": "http://",
+    "refs": [
+      150104,
+      150108,
+      150320
+    ]
+  },
+  {
+    "address": 163500,
+    "text": "OrderStatus",
+    "refs": [
+      157852,
+      157864,
+      158236
+    ]
+  },
+  {
+    "address": 163512,
+    "text": "Price",
+    "refs": [
+      157808,
+      157824,
+      158232
+    ]
+  },
+  {
+    "address": 163520,
+    "text": "Currency",
+    "refs": [
+      157764,
+      157780,
+      158228
+    ]
+  },
+  {
+    "address": 163532,
+    "text": "OrderNum",
+    "refs": [
+      157724,
+      157736,
+      158224
+    ]
+  },
+  {
+    "address": 163544,
+    "text": "ErrorCode",
+    "refs": [
+      157676,
+      157692,
+      158220
+    ]
+  },
+  {
+    "address": 163564,
+    "text": "ServerData",
+    "refs": [
+      156816,
+      156824,
+      157276
+    ]
+  },
+  {
+    "address": 163576,
+    "text": "Price",
+    "refs": [
+      156768,
+      156784,
+      157272
+    ]
+  },
+  {
+    "address": 163584,
+    "text": "ProductName",
+    "refs": [
+      156724,
+      156736,
+      157268
+    ]
+  },
+  {
+    "address": 163596,
+    "text": "ProviderName",
+    "refs": [
+      156672,
+      156684,
+      157264
+    ]
+  },
+  {
+    "address": 163612,
+    "text": "OrderNum",
+    "refs": [
+      156620,
+      156632,
+      157260
+    ]
+  },
+  {
+    "address": 163624,
+    "text": "ValidationCodeImage",
+    "refs": [
+      156576,
+      156588,
+      157256
+    ]
+  },
+  {
+    "address": 163644,
+    "text": "TemporaryID",
+    "refs": [
+      156528,
+      156540,
+      157252
+    ]
+  },
+  {
+    "address": 163656,
+    "text": "ErrorCode",
+    "refs": [
+      156472,
+      156488,
+      157248
+    ]
+  },
+  {
+    "address": 163676,
+    "text": "&CallingApp=",
+    "refs": [
+      149684,
+      149692,
+      149936
+    ]
+  },
+  {
+    "address": 163692,
+    "text": "&CallingAppType=%d",
+    "refs": [
+      149624,
+      149628,
+      149932
+    ]
+  },
+  {
+    "address": 163712,
+    "text": "&ProviderID=%d",
+    "refs": [
+      149568,
+      149572,
+      149928
+    ]
+  },
+  {
+    "address": 163728,
+    "text": "&ItemName=",
+    "refs": [
+      149424,
+      149432,
+      149924
+    ]
+  },
+  {
+    "address": 163740,
+    "text": "&ItemID=%d",
+    "refs": [
+      149364,
+      149368,
+      149920
+    ]
+  },
+  {
+    "address": 163752,
+    "text": "&IdentifyDevice=%d&SubscriberID=%s&UserName=",
+    "refs": [
+      149188,
+      149192,
+      149916
+    ]
+  },
+  {
+    "address": 163800,
+    "text": "?Version=%s&ChargeType=%d&Currency=%d&Price=%d&IdentifyType=%d",
+    "refs": [
+      149124,
+      149128,
+      149912
+    ]
+  },
+  {
+    "address": 163864,
+    "text": "1.0.9",
+    "refs": [
+      149116,
+      149120,
+      149908
+    ]
+  },
+  {
+    "address": 163872,
+    "text": "/smsbilling/orderReq",
+    "refs": [
+      149076,
+      149084,
+      149904
+    ]
+  },
+  {
+    "address": 163896,
+    "text": "smsbilling.189brew.com:8080",
+    "refs": [
+      149048,
+      149056,
+      149900
+    ]
+  },
+  {
+    "address": 163924,
+    "text": "http://",
+    "refs": [
+      149024,
+      149028,
+      149896
+    ]
+  },
+  {
+    "address": 163932,
+    "text": "%d.%2d",
+    "refs": [
+      154372,
+      154380,
+      155500
+    ]
+  },
+  {
+    "address": 163940,
+    "text": "?Version=%s&ValidationCode=%s&OrderNum=%s",
+    "refs": [
+      148708,
+      148712,
+      148848
+    ]
+  },
+  {
+    "address": 163984,
+    "text": "1.0.9",
+    "refs": [
+      148700,
+      148704,
+      148844
+    ]
+  },
+  {
+    "address": 163992,
+    "text": "/smsbilling/orderConfirm",
+    "refs": [
+      148608,
+      148616,
+      148840
+    ]
+  },
+  {
+    "address": 164020,
+    "text": "smsbilling.189brew.com:8080",
+    "refs": [
+      148580,
+      148588,
+      148836
+    ]
+  },
+  {
+    "address": 164048,
+    "text": "http://",
+    "refs": [
+      148556,
+      148560,
+      148832
+    ]
+  },
+  {
+    "address": 164064,
+    "text": "ErrorCode",
+    "refs": [
+      75432,
+      75436,
+      76040
+    ]
+  },
+  {
+    "address": 164076,
+    "text": "TemporaryID",
+    "refs": [
+      75492,
+      75496,
+      76044
+    ]
+  },
+  {
+    "address": 164088,
+    "text": "OrderNum",
+    "refs": [
+      75564,
+      75568,
+      76048
+    ]
+  },
+  {
+    "address": 164100,
+    "text": "NumofSMS",
+    "refs": [
+      75636,
+      75640,
+      76052
+    ]
+  },
+  {
+    "address": 164112,
+    "text": "SMSShortCode",
+    "refs": [
+      75696,
+      75700,
+      76056
+    ]
+  },
+  {
+    "address": 164128,
+    "text": "SMSPayload",
+    "refs": [
+      75800,
+      75804,
+      76060
+    ]
+  },
+  {
+    "address": 164140,
+    "text": "KV_STATE_END",
+    "refs": [
+      75960,
+      75964,
+      76076
+    ]
+  },
+  {
+    "address": 164156,
+    "text": "*dbgprintf-%d* %s:%d",
+    "refs": [
+      75936,
+      75944,
+      76072
+    ]
+  },
+  {
+    "address": 164180,
+    "text": "ui_verify_input.c",
+    "refs": [
+      75924,
+      75932,
+      76068
+    ]
+  },
+  {
+    "address": 164200,
+    "text": "** cancelled...\n",
+    "refs": []
+  },
+  {
+    "address": 164220,
+    "text": "** finding host...\n",
+    "refs": []
+  },
+  {
+    "address": 164240,
+    "text": "** connecting...\n",
+    "refs": []
+  },
+  {
+    "address": 164260,
+    "text": "** sending...\n",
+    "refs": []
+  },
+  {
+    "address": 164276,
+    "text": "** receiving...\n",
+    "refs": []
+  },
+  {
+    "address": 164296,
+    "text": "** redirect...\n",
+    "refs": []
+  },
+  {
+    "address": 164312,
+    "text": "** cache hit...\n",
+    "refs": []
+  },
+  {
+    "address": 164332,
+    "text": "Web Connection Failed!",
+    "refs": [
+      155872,
+      155876,
+      156000
+    ]
+  },
+  {
+    "address": 164356,
+    "text": "*dbgprintf-%d* %s:%d",
+    "refs": [
+      155848,
+      155856,
+      155996
+    ]
+  },
+  {
+    "address": 164380,
+    "text": "web_fun.c",
+    "refs": [
+      155836,
+      155844,
+      155992
+    ]
+  },
+  {
+    "address": 164392,
+    "text": "Accept: */*\r\nX-Method: GET\r\n",
+    "refs": [
+      159376,
+      159380,
+      159540
+    ]
+  },
+  {
+    "address": 171336,
+    "text": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+    "refs": [
+      5248,
+      5260,
+      5432
+    ]
+  },
+  {
+    "address": 171504,
+    "text": " !\"#$%&'()*+,-./0123",
+    "refs": []
+  },
+  {
+    "address": 171529,
+    "text": "Abnormal termination",
+    "refs": [
+      1068,
+      1072,
+      1212
+    ]
+  },
+  {
+    "address": 171552,
+    "text": "Arithmetic exception: ",
+    "refs": []
+  },
+  {
+    "address": 171575,
+    "text": "Illegal instruction",
+    "refs": []
+  },
+  {
+    "address": 171600,
+    "text": "terrupt received",
+    "refs": []
+  },
+  {
+    "address": 171644,
+    "text": "Termination request",
+    "refs": []
+  },
+  {
+    "address": 171692,
+    "text": "direct: can't open: ",
+    "refs": []
+  },
+  {
+    "address": 171713,
+    "text": "Out of heap memory",
+    "refs": []
+  },
+  {
+    "address": 171736,
+    "text": "User-defined signal 1",
+    "refs": []
+  },
+  {
+    "address": 171760,
+    "text": "ser-defined signal 2",
+    "refs": []
+  },
+  {
+    "address": 171784,
+    "text": "re virtual fn called",
+    "refs": []
+  },
+  {
+    "address": 171805,
+    "text": "C++ library exception",
+    "refs": []
+  }
+]

@@ -1,0 +1,45 @@
+{
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "1073745158/bin.dat",
+      "size": 82789,
+      "sha256": "5d848f9d67594d76c1e93bee76fa79f12be3f526f84aa68a125424534bbf29af"
+    },
+    {
+      "path": "1073745158/biohazard.bin",
+      "size": 2267,
+      "sha256": "619b589db469341c55484ccd602611ef704d34298631ecb13e85e6bf139dc9ed"
+    },
+    {
+      "path": "1073745158/map.hkm",
+      "size": 281324,
+      "sha256": "fc76a72328c3b711c029ee4f6a5f824af2015b785cfdedf5f792a7d78655b368"
+    },
+    {
+      "path": "1073745158/mbxres.bin",
+      "size": 101971,
+      "sha256": "1e75d74d7bdf45f3dba3c048f66557bf3f85e46d9c6d74c3236fc430dc9f2e14"
+    },
+    {
+      "path": "1073745158/save.dat",
+      "size": 856,
+      "sha256": "9399bcef97d4e64610b6fc74bf839010418c2d7bb267ce338fb3cfe08573e772"
+    },
+    {
+      "path": "1073745158/shenghua.mod",
+      "size": 4516,
+      "sha256": "99da53b5ded598bdccf5d04def938e82d35d52bbd1af8b18ffa37d5fdc01acaa"
+    },
+    {
+      "path": "1073745158.mif",
+      "size": 3280,
+      "sha256": "c8c7193752183e9cf0304b07094059a35a9e93b6f1be0aec4271e0cd9a603601"
+    },
+    {
+      "path": "使用说明.txt",
+      "size": 3632,
+      "sha256": "719218b3d20ba44a64422c010fb925c07266569c182dbe77272e1de1e655b6d4"
+    }
+  ]
+}

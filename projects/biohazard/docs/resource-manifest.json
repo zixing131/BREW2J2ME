@@ -1,0 +1,2693 @@
+{
+  "sources": {
+    "bin.dat": {
+      "size": 82789,
+      "sha256": "5d848f9d67594d76c1e93bee76fa79f12be3f526f84aa68a125424534bbf29af"
+    },
+    "map.hkm": {
+      "size": 281324,
+      "sha256": "fc76a72328c3b711c029ee4f6a5f824af2015b785cfdedf5f792a7d78655b368"
+    },
+    "mbxres.bin": {
+      "size": 101971,
+      "sha256": "1e75d74d7bdf45f3dba3c048f66557bf3f85e46d9c6d74c3236fc430dc9f2e14"
+    },
+    "save.dat": {
+      "size": 856,
+      "sha256": "9399bcef97d4e64610b6fc74bf839010418c2d7bb267ce338fb3cfe08573e772"
+    },
+    "shenghua.mod": {
+      "size": 4516,
+      "sha256": "99da53b5ded598bdccf5d04def938e82d35d52bbd1af8b18ffa37d5fdc01acaa"
+    }
+  },
+  "images": [
+    {
+      "id": 1000,
+      "offset": 1724,
+      "width": 32,
+      "height": 672,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 13548,
+      "decoded_bytes": 45696,
+      "status": "png"
+    },
+    {
+      "id": 1101,
+      "offset": 15288,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 474,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1102,
+      "offset": 15780,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 454,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1103,
+      "offset": 16252,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 514,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1104,
+      "offset": 16784,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1134,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1105,
+      "offset": 17936,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 980,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1106,
+      "offset": 18932,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 889,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1107,
+      "offset": 19840,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 986,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1108,
+      "offset": 20844,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 819,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1109,
+      "offset": 21680,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 645,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1110,
+      "offset": 22344,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 313,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1111,
+      "offset": 22676,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 333,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1112,
+      "offset": 23028,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 65,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1113,
+      "offset": 23112,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 843,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1114,
+      "offset": 23972,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 558,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1115,
+      "offset": 24548,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 661,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1116,
+      "offset": 25228,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 608,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1117,
+      "offset": 25852,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 514,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1118,
+      "offset": 26384,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 969,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1119,
+      "offset": 27372,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1530,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1120,
+      "offset": 28920,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1329,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1121,
+      "offset": 30268,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 897,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1122,
+      "offset": 31184,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 361,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1123,
+      "offset": 31564,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 218,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1124,
+      "offset": 31800,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 212,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1125,
+      "offset": 32028,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 67,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1126,
+      "offset": 32112,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 214,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1127,
+      "offset": 32344,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 336,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1128,
+      "offset": 32696,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 365,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1129,
+      "offset": 33080,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 886,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1130,
+      "offset": 33984,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 781,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1131,
+      "offset": 34784,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 526,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1132,
+      "offset": 35328,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 576,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1133,
+      "offset": 35920,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 464,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1134,
+      "offset": 36400,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1225,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1135,
+      "offset": 37644,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 512,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1136,
+      "offset": 38172,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 440,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1137,
+      "offset": 38628,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 889,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1138,
+      "offset": 39536,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 723,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1139,
+      "offset": 40276,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 209,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1140,
+      "offset": 40504,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 139,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1141,
+      "offset": 40660,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 272,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1142,
+      "offset": 40948,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 130,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1143,
+      "offset": 41096,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 182,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1144,
+      "offset": 41296,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 351,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1145,
+      "offset": 41664,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 433,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1146,
+      "offset": 42116,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 204,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1147,
+      "offset": 42336,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 889,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1148,
+      "offset": 43244,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 220,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1149,
+      "offset": 43480,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 141,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1150,
+      "offset": 43640,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 392,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1151,
+      "offset": 44048,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 374,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1152,
+      "offset": 44440,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 366,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1153,
+      "offset": 44824,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 188,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1154,
+      "offset": 45028,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1004,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1155,
+      "offset": 46048,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1059,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1156,
+      "offset": 47124,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1167,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1157,
+      "offset": 48308,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1165,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1158,
+      "offset": 49492,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 755,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1159,
+      "offset": 50264,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 903,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1160,
+      "offset": 51184,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1022,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1161,
+      "offset": 52224,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1011,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1162,
+      "offset": 53252,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 464,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1163,
+      "offset": 53732,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 137,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1164,
+      "offset": 53888,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 183,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1165,
+      "offset": 54088,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 240,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1166,
+      "offset": 54344,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 289,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1167,
+      "offset": 54652,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 345,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1168,
+      "offset": 55016,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 248,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1169,
+      "offset": 55280,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 248,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1170,
+      "offset": 55544,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 346,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1171,
+      "offset": 55908,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 316,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1172,
+      "offset": 56240,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 376,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1173,
+      "offset": 56632,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 843,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1174,
+      "offset": 57492,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 206,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1175,
+      "offset": 57716,
+      "width": 32,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 121,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 1400,
+      "offset": 57856,
+      "width": 100,
+      "height": 100,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 930,
+      "decoded_bytes": 20400,
+      "status": "png"
+    },
+    {
+      "id": 1401,
+      "offset": 58804,
+      "width": 43,
+      "height": 41,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 677,
+      "decoded_bytes": 3692,
+      "status": "png"
+    },
+    {
+      "id": 2001,
+      "offset": 59500,
+      "width": 23,
+      "height": 58,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1393,
+      "decoded_bytes": 3008,
+      "status": "png"
+    },
+    {
+      "id": 2002,
+      "offset": 60912,
+      "width": 15,
+      "height": 97,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 267,
+      "decoded_bytes": 1480,
+      "status": "png"
+    },
+    {
+      "id": 2003,
+      "offset": 61196,
+      "width": 47,
+      "height": 97,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1392,
+      "decoded_bytes": 4436,
+      "status": "png"
+    },
+    {
+      "id": 2004,
+      "offset": 62604,
+      "width": 57,
+      "height": 44,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 956,
+      "decoded_bytes": 2384,
+      "status": "png"
+    },
+    {
+      "id": 2005,
+      "offset": 63576,
+      "width": 100,
+      "height": 87,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1444,
+      "decoded_bytes": 5396,
+      "status": "png"
+    },
+    {
+      "id": 2006,
+      "offset": 65036,
+      "width": 84,
+      "height": 336,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 6437,
+      "decoded_bytes": 19904,
+      "status": "png"
+    },
+    {
+      "id": 2007,
+      "offset": 71492,
+      "width": 50,
+      "height": 132,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 4877,
+      "decoded_bytes": 7696,
+      "status": "png"
+    },
+    {
+      "id": 2008,
+      "offset": 76388,
+      "width": 100,
+      "height": 399,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 14568,
+      "decoded_bytes": 42588,
+      "status": "png"
+    },
+    {
+      "id": 2009,
+      "offset": 90972,
+      "width": 50,
+      "height": 40,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1776,
+      "decoded_bytes": 3024,
+      "status": "png"
+    },
+    {
+      "id": 2010,
+      "offset": 92764,
+      "width": 52,
+      "height": 40,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2163,
+      "decoded_bytes": 3616,
+      "status": "png"
+    },
+    {
+      "id": 2011,
+      "offset": 94944,
+      "width": 98,
+      "height": 100,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 4623,
+      "decoded_bytes": 11472,
+      "status": "png"
+    },
+    {
+      "id": 2012,
+      "offset": 99584,
+      "width": 47,
+      "height": 40,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1915,
+      "decoded_bytes": 2892,
+      "status": "png"
+    },
+    {
+      "id": 2013,
+      "offset": 101516,
+      "width": 90,
+      "height": 100,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 3440,
+      "decoded_bytes": 10104,
+      "status": "png"
+    },
+    {
+      "id": 2014,
+      "offset": 104972,
+      "width": 55,
+      "height": 40,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2291,
+      "decoded_bytes": 3756,
+      "status": "png"
+    },
+    {
+      "id": 2101,
+      "offset": 107280,
+      "width": 19,
+      "height": 60,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 354,
+      "decoded_bytes": 1304,
+      "status": "png"
+    },
+    {
+      "id": 2102,
+      "offset": 107652,
+      "width": 16,
+      "height": 60,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 283,
+      "decoded_bytes": 1120,
+      "status": "png"
+    },
+    {
+      "id": 2103,
+      "offset": 107952,
+      "width": 32,
+      "height": 59,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 239,
+      "decoded_bytes": 2408,
+      "status": "png"
+    },
+    {
+      "id": 2104,
+      "offset": 108208,
+      "width": 28,
+      "height": 57,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 320,
+      "decoded_bytes": 1680,
+      "status": "png"
+    },
+    {
+      "id": 2201,
+      "offset": 108544,
+      "width": 25,
+      "height": 73,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 771,
+      "decoded_bytes": 2988,
+      "status": "png"
+    },
+    {
+      "id": 2202,
+      "offset": 109332,
+      "width": 23,
+      "height": 73,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 653,
+      "decoded_bytes": 2472,
+      "status": "png"
+    },
+    {
+      "id": 2203,
+      "offset": 110004,
+      "width": 25,
+      "height": 72,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 659,
+      "decoded_bytes": 2948,
+      "status": "png"
+    },
+    {
+      "id": 2204,
+      "offset": 110680,
+      "width": 26,
+      "height": 73,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 800,
+      "decoded_bytes": 3068,
+      "status": "png"
+    },
+    {
+      "id": 2501,
+      "offset": 111496,
+      "width": 25,
+      "height": 25,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 685,
+      "decoded_bytes": 1136,
+      "status": "png"
+    },
+    {
+      "id": 2502,
+      "offset": 112200,
+      "width": 25,
+      "height": 25,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 579,
+      "decoded_bytes": 1136,
+      "status": "png"
+    },
+    {
+      "id": 3001,
+      "offset": 112796,
+      "width": 32,
+      "height": 64,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 2031,
+      "decoded_bytes": 4352,
+      "status": "png"
+    },
+    {
+      "id": 3002,
+      "offset": 114844,
+      "width": 64,
+      "height": 22,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 1040,
+      "decoded_bytes": 2904,
+      "status": "png"
+    },
+    {
+      "id": 3003,
+      "offset": 115900,
+      "width": 32,
+      "height": 22,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 558,
+      "decoded_bytes": 1496,
+      "status": "png"
+    },
+    {
+      "id": 3004,
+      "offset": 116476,
+      "width": 32,
+      "height": 64,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 2836,
+      "decoded_bytes": 4352,
+      "status": "png"
+    },
+    {
+      "id": 3005,
+      "offset": 119328,
+      "width": 32,
+      "height": 64,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 3241,
+      "decoded_bytes": 4352,
+      "status": "png"
+    },
+    {
+      "id": 3006,
+      "offset": 122588,
+      "width": 32,
+      "height": 64,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1002,
+      "decoded_bytes": 4352,
+      "status": "png"
+    },
+    {
+      "id": 3007,
+      "offset": 123608,
+      "width": 64,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 757,
+      "decoded_bytes": 4224,
+      "status": "png"
+    },
+    {
+      "id": 3008,
+      "offset": 124384,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 224,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 3009,
+      "offset": 124624,
+      "width": 32,
+      "height": 64,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1147,
+      "decoded_bytes": 4352,
+      "status": "png"
+    },
+    {
+      "id": 3010,
+      "offset": 125788,
+      "width": 64,
+      "height": 32,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 1040,
+      "decoded_bytes": 4224,
+      "status": "png"
+    },
+    {
+      "id": 3011,
+      "offset": 126844,
+      "width": 64,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1035,
+      "decoded_bytes": 4224,
+      "status": "png"
+    },
+    {
+      "id": 3012,
+      "offset": 127896,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 567,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 3013,
+      "offset": 128480,
+      "width": 32,
+      "height": 64,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1480,
+      "decoded_bytes": 4352,
+      "status": "png"
+    },
+    {
+      "id": 3014,
+      "offset": 129976,
+      "width": 64,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1426,
+      "decoded_bytes": 4224,
+      "status": "png"
+    },
+    {
+      "id": 3015,
+      "offset": 131420,
+      "width": 32,
+      "height": 32,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1343,
+      "decoded_bytes": 2176,
+      "status": "png"
+    },
+    {
+      "id": 4001,
+      "offset": 132780,
+      "width": 46,
+      "height": 45,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 403,
+      "decoded_bytes": 4320,
+      "status": "png"
+    },
+    {
+      "id": 4002,
+      "offset": 133200,
+      "width": 38,
+      "height": 41,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1099,
+      "decoded_bytes": 1772,
+      "status": "png"
+    },
+    {
+      "id": 4003,
+      "offset": 134316,
+      "width": 37,
+      "height": 40,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1091,
+      "decoded_bytes": 1860,
+      "status": "png"
+    },
+    {
+      "id": 4004,
+      "offset": 135424,
+      "width": 70,
+      "height": 43,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1584,
+      "decoded_bytes": 3132,
+      "status": "png"
+    },
+    {
+      "id": 4005,
+      "offset": 137024,
+      "width": 78,
+      "height": 45,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1520,
+      "decoded_bytes": 3808,
+      "status": "png"
+    },
+    {
+      "id": 4006,
+      "offset": 138560,
+      "width": 74,
+      "height": 41,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1538,
+      "decoded_bytes": 3392,
+      "status": "png"
+    },
+    {
+      "id": 4007,
+      "offset": 140116,
+      "width": 68,
+      "height": 42,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1367,
+      "decoded_bytes": 3396,
+      "status": "png"
+    },
+    {
+      "id": 4008,
+      "offset": 141500,
+      "width": 80,
+      "height": 44,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1793,
+      "decoded_bytes": 4688,
+      "status": "png"
+    },
+    {
+      "id": 4009,
+      "offset": 143312,
+      "width": 41,
+      "height": 44,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1057,
+      "decoded_bytes": 1892,
+      "status": "png"
+    },
+    {
+      "id": 4010,
+      "offset": 144388,
+      "width": 65,
+      "height": 44,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1128,
+      "decoded_bytes": 2932,
+      "status": "png"
+    },
+    {
+      "id": 4011,
+      "offset": 145532,
+      "width": 68,
+      "height": 44,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1434,
+      "decoded_bytes": 3508,
+      "status": "png"
+    },
+    {
+      "id": 4012,
+      "offset": 146984,
+      "width": 66,
+      "height": 44,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1284,
+      "decoded_bytes": 3504,
+      "status": "png"
+    },
+    {
+      "id": 4013,
+      "offset": 148284,
+      "width": 66,
+      "height": 48,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1231,
+      "decoded_bytes": 3664,
+      "status": "png"
+    },
+    {
+      "id": 4101,
+      "offset": 149532,
+      "width": 60,
+      "height": 40,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1020,
+      "decoded_bytes": 4960,
+      "status": "png"
+    },
+    {
+      "id": 4111,
+      "offset": 150568,
+      "width": 60,
+      "height": 40,
+      "flags": 17,
+      "color_key": 0,
+      "gzip_bytes": 748,
+      "decoded_bytes": 2196,
+      "status": "unresolved-special-effect"
+    },
+    {
+      "id": 4112,
+      "offset": 151332,
+      "width": 60,
+      "height": 40,
+      "flags": 17,
+      "color_key": 0,
+      "gzip_bytes": 594,
+      "decoded_bytes": 1732,
+      "status": "unresolved-special-effect"
+    },
+    {
+      "id": 4113,
+      "offset": 151944,
+      "width": 60,
+      "height": 40,
+      "flags": 17,
+      "color_key": 0,
+      "gzip_bytes": 779,
+      "decoded_bytes": 2236,
+      "status": "unresolved-special-effect"
+    },
+    {
+      "id": 4114,
+      "offset": 152740,
+      "width": 60,
+      "height": 40,
+      "flags": 17,
+      "color_key": 0,
+      "gzip_bytes": 778,
+      "decoded_bytes": 2640,
+      "status": "unresolved-special-effect"
+    },
+    {
+      "id": 4115,
+      "offset": 153536,
+      "width": 60,
+      "height": 40,
+      "flags": 17,
+      "color_key": 0,
+      "gzip_bytes": 653,
+      "decoded_bytes": 2640,
+      "status": "unresolved-special-effect"
+    },
+    {
+      "id": 4201,
+      "offset": 154208,
+      "width": 60,
+      "height": 237,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1648,
+      "decoded_bytes": 9960,
+      "status": "png"
+    },
+    {
+      "id": 4301,
+      "offset": 155872,
+      "width": 15,
+      "height": 45,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 225,
+      "decoded_bytes": 1416,
+      "status": "png"
+    },
+    {
+      "id": 4302,
+      "offset": 156116,
+      "width": 8,
+      "height": 147,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 127,
+      "decoded_bytes": 2332,
+      "status": "png"
+    },
+    {
+      "id": 4303,
+      "offset": 156260,
+      "width": 79,
+      "height": 160,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 174,
+      "decoded_bytes": 6612,
+      "status": "png"
+    },
+    {
+      "id": 4304,
+      "offset": 156452,
+      "width": 71,
+      "height": 71,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 335,
+      "decoded_bytes": 2520,
+      "status": "png"
+    },
+    {
+      "id": 4501,
+      "offset": 156804,
+      "width": 66,
+      "height": 246,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 3719,
+      "decoded_bytes": 12112,
+      "status": "png"
+    },
+    {
+      "id": 4502,
+      "offset": 160540,
+      "width": 66,
+      "height": 249,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1976,
+      "decoded_bytes": 9248,
+      "status": "png"
+    },
+    {
+      "id": 4503,
+      "offset": 162532,
+      "width": 66,
+      "height": 252,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2008,
+      "decoded_bytes": 11236,
+      "status": "png"
+    },
+    {
+      "id": 4504,
+      "offset": 164556,
+      "width": 66,
+      "height": 252,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1789,
+      "decoded_bytes": 9316,
+      "status": "png"
+    },
+    {
+      "id": 4505,
+      "offset": 166364,
+      "width": 71,
+      "height": 267,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2741,
+      "decoded_bytes": 14560,
+      "status": "png"
+    },
+    {
+      "id": 4506,
+      "offset": 169124,
+      "width": 83,
+      "height": 249,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 3119,
+      "decoded_bytes": 20824,
+      "status": "png"
+    },
+    {
+      "id": 5000,
+      "offset": 172260,
+      "width": 104,
+      "height": 35,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 2043,
+      "decoded_bytes": 7520,
+      "status": "png"
+    },
+    {
+      "id": 5001,
+      "offset": 174320,
+      "width": 9,
+      "height": 14,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 112,
+      "decoded_bytes": 276,
+      "status": "png"
+    },
+    {
+      "id": 5002,
+      "offset": 174448,
+      "width": 104,
+      "height": 35,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 2374,
+      "decoded_bytes": 7520,
+      "status": "png"
+    },
+    {
+      "id": 5003,
+      "offset": 176840,
+      "width": 52,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 532,
+      "decoded_bytes": 1968,
+      "status": "png"
+    },
+    {
+      "id": 5004,
+      "offset": 177388,
+      "width": 53,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 517,
+      "decoded_bytes": 2016,
+      "status": "png"
+    },
+    {
+      "id": 5005,
+      "offset": 177924,
+      "width": 16,
+      "height": 16,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 132,
+      "decoded_bytes": 544,
+      "status": "png"
+    },
+    {
+      "id": 5006,
+      "offset": 178072,
+      "width": 120,
+      "height": 61,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 5098,
+      "decoded_bytes": 15068,
+      "status": "png"
+    },
+    {
+      "id": 5007,
+      "offset": 183188,
+      "width": 19,
+      "height": 11,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 114,
+      "decoded_bytes": 368,
+      "status": "png"
+    },
+    {
+      "id": 5008,
+      "offset": 183320,
+      "width": 18,
+      "height": 14,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 103,
+      "decoded_bytes": 596,
+      "status": "png"
+    },
+    {
+      "id": 5009,
+      "offset": 183440,
+      "width": 16,
+      "height": 15,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 88,
+      "decoded_bytes": 416,
+      "status": "png"
+    },
+    {
+      "id": 5010,
+      "offset": 183544,
+      "width": 17,
+      "height": 10,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 79,
+      "decoded_bytes": 408,
+      "status": "png"
+    },
+    {
+      "id": 5011,
+      "offset": 183640,
+      "width": 92,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1808,
+      "decoded_bytes": 5128,
+      "status": "png"
+    },
+    {
+      "id": 5012,
+      "offset": 185464,
+      "width": 176,
+      "height": 65,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 9256,
+      "decoded_bytes": 23332,
+      "status": "png"
+    },
+    {
+      "id": 5013,
+      "offset": 194736,
+      "width": 14,
+      "height": 7,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 112,
+      "decoded_bytes": 164,
+      "status": "png"
+    },
+    {
+      "id": 5014,
+      "offset": 194864,
+      "width": 104,
+      "height": 25,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1685,
+      "decoded_bytes": 5368,
+      "status": "png"
+    },
+    {
+      "id": 5015,
+      "offset": 196568,
+      "width": 120,
+      "height": 25,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 254,
+      "decoded_bytes": 6176,
+      "status": "png"
+    },
+    {
+      "id": 5016,
+      "offset": 196840,
+      "width": 15,
+      "height": 15,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 113,
+      "decoded_bytes": 484,
+      "status": "png"
+    },
+    {
+      "id": 5017,
+      "offset": 196972,
+      "width": 36,
+      "height": 18,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 575,
+      "decoded_bytes": 1116,
+      "status": "png"
+    },
+    {
+      "id": 5018,
+      "offset": 197564,
+      "width": 94,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1766,
+      "decoded_bytes": 5184,
+      "status": "png"
+    },
+    {
+      "id": 5019,
+      "offset": 199348,
+      "width": 11,
+      "height": 16,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 257,
+      "decoded_bytes": 464,
+      "status": "png"
+    },
+    {
+      "id": 5020,
+      "offset": 199624,
+      "width": 29,
+      "height": 19,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 375,
+      "decoded_bytes": 836,
+      "status": "png"
+    },
+    {
+      "id": 5021,
+      "offset": 200016,
+      "width": 42,
+      "height": 18,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 365,
+      "decoded_bytes": 1256,
+      "status": "png"
+    },
+    {
+      "id": 5022,
+      "offset": 200400,
+      "width": 27,
+      "height": 18,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 187,
+      "decoded_bytes": 716,
+      "status": "png"
+    },
+    {
+      "id": 5023,
+      "offset": 200604,
+      "width": 31,
+      "height": 19,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 203,
+      "decoded_bytes": 920,
+      "status": "png"
+    },
+    {
+      "id": 5024,
+      "offset": 200824,
+      "width": 9,
+      "height": 16,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 116,
+      "decoded_bytes": 248,
+      "status": "png"
+    },
+    {
+      "id": 5025,
+      "offset": 200956,
+      "width": 120,
+      "height": 37,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 395,
+      "decoded_bytes": 9140,
+      "status": "png"
+    },
+    {
+      "id": 5026,
+      "offset": 201368,
+      "width": 53,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 512,
+      "decoded_bytes": 1996,
+      "status": "png"
+    },
+    {
+      "id": 5027,
+      "offset": 201896,
+      "width": 53,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 522,
+      "decoded_bytes": 1996,
+      "status": "png"
+    },
+    {
+      "id": 5028,
+      "offset": 202436,
+      "width": 53,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 497,
+      "decoded_bytes": 1996,
+      "status": "png"
+    },
+    {
+      "id": 5029,
+      "offset": 202952,
+      "width": 18,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 259,
+      "decoded_bytes": 748,
+      "status": "png"
+    },
+    {
+      "id": 5030,
+      "offset": 203228,
+      "width": 53,
+      "height": 21,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 500,
+      "decoded_bytes": 1988,
+      "status": "png"
+    },
+    {
+      "id": 5031,
+      "offset": 203744,
+      "width": 94,
+      "height": 7,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 122,
+      "decoded_bytes": 1360,
+      "status": "png"
+    },
+    {
+      "id": 5032,
+      "offset": 203884,
+      "width": 95,
+      "height": 57,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1442,
+      "decoded_bytes": 10328,
+      "status": "png"
+    },
+    {
+      "id": 5033,
+      "offset": 205344,
+      "width": 93,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2041,
+      "decoded_bytes": 5108,
+      "status": "png"
+    },
+    {
+      "id": 5034,
+      "offset": 207404,
+      "width": 93,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2101,
+      "decoded_bytes": 5140,
+      "status": "png"
+    },
+    {
+      "id": 5035,
+      "offset": 209524,
+      "width": 106,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2383,
+      "decoded_bytes": 5804,
+      "status": "png"
+    },
+    {
+      "id": 5036,
+      "offset": 211924,
+      "width": 94,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1900,
+      "decoded_bytes": 5212,
+      "status": "png"
+    },
+    {
+      "id": 5037,
+      "offset": 213840,
+      "width": 56,
+      "height": 32,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1731,
+      "decoded_bytes": 2052,
+      "status": "png"
+    },
+    {
+      "id": 5038,
+      "offset": 215588,
+      "width": 16,
+      "height": 10,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 47,
+      "decoded_bytes": 384,
+      "status": "png"
+    },
+    {
+      "id": 5039,
+      "offset": 215652,
+      "width": 16,
+      "height": 10,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 264,
+      "decoded_bytes": 384,
+      "status": "png"
+    },
+    {
+      "id": 5040,
+      "offset": 215932,
+      "width": 16,
+      "height": 10,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 218,
+      "decoded_bytes": 384,
+      "status": "png"
+    },
+    {
+      "id": 5041,
+      "offset": 216168,
+      "width": 94,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 2108,
+      "decoded_bytes": 5116,
+      "status": "png"
+    },
+    {
+      "id": 5042,
+      "offset": 218292,
+      "width": 15,
+      "height": 15,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 238,
+      "decoded_bytes": 408,
+      "status": "png"
+    },
+    {
+      "id": 5043,
+      "offset": 218548,
+      "width": 15,
+      "height": 15,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 206,
+      "decoded_bytes": 408,
+      "status": "png"
+    },
+    {
+      "id": 5044,
+      "offset": 218772,
+      "width": 165,
+      "height": 43,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 3393,
+      "decoded_bytes": 14492,
+      "status": "png"
+    },
+    {
+      "id": 5045,
+      "offset": 222184,
+      "width": 176,
+      "height": 235,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 35928,
+      "decoded_bytes": 84368,
+      "status": "png"
+    },
+    {
+      "id": 5046,
+      "offset": 258128,
+      "width": 93,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1916,
+      "decoded_bytes": 4976,
+      "status": "png"
+    },
+    {
+      "id": 5047,
+      "offset": 260060,
+      "width": 92,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1823,
+      "decoded_bytes": 4656,
+      "status": "png"
+    },
+    {
+      "id": 5048,
+      "offset": 261900,
+      "width": 92,
+      "height": 28,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1807,
+      "decoded_bytes": 5064,
+      "status": "png"
+    },
+    {
+      "id": 5049,
+      "offset": 263724,
+      "width": 150,
+      "height": 155,
+      "flags": 0,
+      "color_key": 63263,
+      "gzip_bytes": 1900,
+      "decoded_bytes": 47120,
+      "status": "png"
+    },
+    {
+      "id": 6001,
+      "offset": 265640,
+      "width": 49,
+      "height": 17,
+      "flags": 32,
+      "color_key": 63519,
+      "gzip_bytes": 228,
+      "decoded_bytes": 1736,
+      "status": "png"
+    },
+    {
+      "id": 6002,
+      "offset": 265884,
+      "width": 40,
+      "height": 25,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 353,
+      "decoded_bytes": 980,
+      "status": "png"
+    },
+    {
+      "id": 6003,
+      "offset": 266256,
+      "width": 40,
+      "height": 25,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 411,
+      "decoded_bytes": 1140,
+      "status": "png"
+    },
+    {
+      "id": 6004,
+      "offset": 266684,
+      "width": 85,
+      "height": 29,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 667,
+      "decoded_bytes": 2292,
+      "status": "png"
+    },
+    {
+      "id": 6005,
+      "offset": 267368,
+      "width": 73,
+      "height": 21,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 586,
+      "decoded_bytes": 1828,
+      "status": "png"
+    },
+    {
+      "id": 6006,
+      "offset": 267972,
+      "width": 55,
+      "height": 27,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 484,
+      "decoded_bytes": 1588,
+      "status": "png"
+    },
+    {
+      "id": 6007,
+      "offset": 268472,
+      "width": 82,
+      "height": 29,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 597,
+      "decoded_bytes": 2132,
+      "status": "png"
+    },
+    {
+      "id": 6008,
+      "offset": 269088,
+      "width": 89,
+      "height": 21,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 650,
+      "decoded_bytes": 2028,
+      "status": "png"
+    },
+    {
+      "id": 6009,
+      "offset": 269756,
+      "width": 44,
+      "height": 23,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 571,
+      "decoded_bytes": 1228,
+      "status": "png"
+    },
+    {
+      "id": 6010,
+      "offset": 270344,
+      "width": 79,
+      "height": 22,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1048,
+      "decoded_bytes": 2312,
+      "status": "png"
+    },
+    {
+      "id": 6011,
+      "offset": 271408,
+      "width": 82,
+      "height": 30,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 750,
+      "decoded_bytes": 2816,
+      "status": "png"
+    },
+    {
+      "id": 6012,
+      "offset": 272176,
+      "width": 82,
+      "height": 27,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 645,
+      "decoded_bytes": 3120,
+      "status": "png"
+    },
+    {
+      "id": 6013,
+      "offset": 272840,
+      "width": 87,
+      "height": 23,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 765,
+      "decoded_bytes": 3292,
+      "status": "png"
+    },
+    {
+      "id": 7001,
+      "offset": 273624,
+      "width": 59,
+      "height": 66,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1459,
+      "decoded_bytes": 5324,
+      "status": "png"
+    },
+    {
+      "id": 7002,
+      "offset": 275100,
+      "width": 63,
+      "height": 66,
+      "flags": 48,
+      "color_key": 63519,
+      "gzip_bytes": 1584,
+      "decoded_bytes": 5532,
+      "status": "png"
+    },
+    {
+      "id": 7003,
+      "offset": 276700,
+      "width": 63,
+      "height": 68,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1508,
+      "decoded_bytes": 6108,
+      "status": "png"
+    },
+    {
+      "id": 7004,
+      "offset": 278224,
+      "width": 66,
+      "height": 68,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1365,
+      "decoded_bytes": 5992,
+      "status": "png"
+    },
+    {
+      "id": 7005,
+      "offset": 279608,
+      "width": 72,
+      "height": 70,
+      "flags": 16,
+      "color_key": 63519,
+      "gzip_bytes": 1698,
+      "decoded_bytes": 7772,
+      "status": "png"
+    }
+  ],
+  "resources": [
+    {
+      "id": 0,
+      "offset": 316,
+      "end": 15379,
+      "decoded_bytes": 34452
+    },
+    {
+      "id": 10000,
+      "offset": 15379,
+      "end": 32601,
+      "decoded_bytes": 27316
+    },
+    {
+      "id": 11000,
+      "offset": 32601,
+      "end": 33114,
+      "decoded_bytes": 3338
+    },
+    {
+      "id": 11001,
+      "offset": 33114,
+      "end": 33472,
+      "decoded_bytes": 2394
+    },
+    {
+      "id": 11002,
+      "offset": 33472,
+      "end": 33972,
+      "decoded_bytes": 3266
+    },
+    {
+      "id": 11003,
+      "offset": 33972,
+      "end": 34254,
+      "decoded_bytes": 1586
+    },
+    {
+      "id": 11004,
+      "offset": 34254,
+      "end": 34558,
+      "decoded_bytes": 1818
+    },
+    {
+      "id": 11005,
+      "offset": 34558,
+      "end": 34709,
+      "decoded_bytes": 650
+    },
+    {
+      "id": 11006,
+      "offset": 34709,
+      "end": 35168,
+      "decoded_bytes": 3106
+    },
+    {
+      "id": 11007,
+      "offset": 35168,
+      "end": 35516,
+      "decoded_bytes": 2810
+    },
+    {
+      "id": 11008,
+      "offset": 35516,
+      "end": 36016,
+      "decoded_bytes": 3370
+    },
+    {
+      "id": 11009,
+      "offset": 36016,
+      "end": 36182,
+      "decoded_bytes": 666
+    },
+    {
+      "id": 11010,
+      "offset": 36182,
+      "end": 36241,
+      "decoded_bytes": 114
+    },
+    {
+      "id": 11011,
+      "offset": 36241,
+      "end": 36300,
+      "decoded_bytes": 114
+    },
+    {
+      "id": 11012,
+      "offset": 36300,
+      "end": 36428,
+      "decoded_bytes": 490
+    },
+    {
+      "id": 11013,
+      "offset": 36428,
+      "end": 36523,
+      "decoded_bytes": 402
+    },
+    {
+      "id": 11014,
+      "offset": 36523,
+      "end": 36694,
+      "decoded_bytes": 674
+    },
+    {
+      "id": 11015,
+      "offset": 36694,
+      "end": 37126,
+      "decoded_bytes": 4186
+    },
+    {
+      "id": 15000,
+      "offset": 37126,
+      "end": 37723,
+      "decoded_bytes": 1180
+    },
+    {
+      "id": 20000,
+      "offset": 37723,
+      "end": 38602,
+      "decoded_bytes": 5880
+    },
+    {
+      "id": 30000,
+      "offset": 38602,
+      "end": 39180,
+      "decoded_bytes": 1420,
+      "format": "midi"
+    },
+    {
+      "id": 30001,
+      "offset": 39180,
+      "end": 40031,
+      "decoded_bytes": 6438,
+      "format": "midi"
+    },
+    {
+      "id": 51000,
+      "offset": 40031,
+      "end": 41524,
+      "decoded_bytes": 8508
+    },
+    {
+      "id": 52000,
+      "offset": 41524,
+      "end": 47318,
+      "decoded_bytes": 19076,
+      "candidate_dimensions": [
+        60,
+        30
+      ]
+    },
+    {
+      "id": 52001,
+      "offset": 47318,
+      "end": 52492,
+      "decoded_bytes": 17152,
+      "candidate_dimensions": [
+        60,
+        30
+      ]
+    },
+    {
+      "id": 52002,
+      "offset": 52492,
+      "end": 55890,
+      "decoded_bytes": 10740,
+      "candidate_dimensions": [
+        50,
+        40
+      ]
+    },
+    {
+      "id": 52003,
+      "offset": 55890,
+      "end": 62973,
+      "decoded_bytes": 22772,
+      "candidate_dimensions": [
+        50,
+        50
+      ]
+    },
+    {
+      "id": 52004,
+      "offset": 62973,
+      "end": 65706,
+      "decoded_bytes": 9440,
+      "candidate_dimensions": [
+        60,
+        40
+      ]
+    },
+    {
+      "id": 52005,
+      "offset": 65706,
+      "end": 68531,
+      "decoded_bytes": 9172,
+      "candidate_dimensions": [
+        60,
+        40
+      ]
+    },
+    {
+      "id": 52006,
+      "offset": 68531,
+      "end": 73764,
+      "decoded_bytes": 15016,
+      "candidate_dimensions": [
+        50,
+        50
+      ]
+    },
+    {
+      "id": 52007,
+      "offset": 73764,
+      "end": 79320,
+      "decoded_bytes": 16020,
+      "candidate_dimensions": [
+        50,
+        50
+      ]
+    },
+    {
+      "id": 52008,
+      "offset": 79320,
+      "end": 80734,
+      "decoded_bytes": 4372,
+      "candidate_dimensions": [
+        20,
+        20
+      ]
+    },
+    {
+      "id": 52009,
+      "offset": 80734,
+      "end": 83078,
+      "decoded_bytes": 6768,
+      "candidate_dimensions": [
+        30,
+        20
+      ]
+    },
+    {
+      "id": 52010,
+      "offset": 83078,
+      "end": 85509,
+      "decoded_bytes": 7088,
+      "candidate_dimensions": [
+        30,
+        20
+      ]
+    },
+    {
+      "id": 52011,
+      "offset": 85509,
+      "end": 88108,
+      "decoded_bytes": 7456,
+      "candidate_dimensions": [
+        30,
+        20
+      ]
+    },
+    {
+      "id": 52012,
+      "offset": 88108,
+      "end": 90624,
+      "decoded_bytes": 7052,
+      "candidate_dimensions": [
+        30,
+        20
+      ]
+    },
+    {
+      "id": 52013,
+      "offset": 90624,
+      "end": 93087,
+      "decoded_bytes": 6992,
+      "candidate_dimensions": [
+        30,
+        20
+      ]
+    },
+    {
+      "id": 52014,
+      "offset": 93087,
+      "end": 99125,
+      "decoded_bytes": 16556,
+      "candidate_dimensions": [
+        50,
+        50
+      ]
+    },
+    {
+      "id": 52015,
+      "offset": 99125,
+      "end": 101971,
+      "decoded_bytes": 9220,
+      "candidate_dimensions": [
+        30,
+        30
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "biohazard",
+  "title": "3D生化启示录",
+  "status": "in-progress",
+  "targets": {
+    "j2me": {
+      "build": "j2me/build.py",
+      "test": "j2me/test.py",
+      "artifacts": ["j2me/dist/BiohazardDemo.jar", "j2me/dist/BiohazardDemo.jad"]
+    }
+  },
+  "originals_manifest": "originals/manifest.json",
+  "documentation": "docs/03-development-status.md"
+}

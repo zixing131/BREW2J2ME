@@ -1,0 +1,5 @@
+{
+  "J2ME_JDK_HOME": "/path/to/jdk7",
+  "J2ME_API_HOME": "/path/to/kemulator/uei",
+  "PROGUARD_JAR": "/path/to/proguard/lib/proguard.jar"
+}

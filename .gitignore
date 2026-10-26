@@ -1,0 +1,41 @@
+# Local tools, sessions and machine configuration
+/.local/
+/runs/
+/toolchains/
+/emulators/
+/toolchain.local.json
+.env
+.env.*
+!.env.example
+
+# Reproducible build/distribution output (sources/fixtures are NOT ignored)
+**/build/
+**/dist/
+*.class
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.log
+
+# Local reverse-engineering databases/caches; text exports remain tracked
+*.i64
+*.idb
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+*.idb.bak
+*.i64.bak
+
+# Editor/OS metadata
+.DS_Store
+._*
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

@@ -1,0 +1,11 @@
+00026f4c  CMP             R1, #7; switch 8 cases
+00026f50  ADDLS           PC, PC, R1,LSL#2; switch jump
+00026f54  BX              LR; jumptable 00026F50 default case
+00026f58  BX              LR; jumptable 00026F50 case 0
+00026f5c  BX              LR; jumptable 00026F50 case 1
+00026f60  BX              LR; jumptable 00026F50 case 2
+00026f64  BX              LR; jumptable 00026F50 case 3
+00026f68  BX              LR; jumptable 00026F50 case 4
+00026f6c  BX              LR; jumptable 00026F50 case 5
+00026f70  BX              LR; jumptable 00026F50 case 6
+00026f74  BX              LR; jumptable 00026F50 case 7

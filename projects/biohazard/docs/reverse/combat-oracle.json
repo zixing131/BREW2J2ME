@@ -1,0 +1,9 @@
+{
+  "raw_sha256": "15822a608ff65d37788db7e8adb0d63a1cbda6de7c898fc6a155e8f8898174a5",
+  "seed": 2211134,
+  "weapon": 520,
+  "math": 1000,
+  "cost": 300,
+  "sight": 1000,
+  "host_adapter": "memset only; all tested ARM bodies unchanged"
+}

@@ -21,6 +21,8 @@ public final class OriginalRenderer {
     private int segmentCount;
     private int[] hitIndex;
     private double[] hitDistance,hitU;
+    private int viewX,viewY;
+    private OriginalCamera camera;
     public OriginalRenderer(int w,int h,byte[] metadata,int[][] tiles,int[] atlas){
         width=w;height=h;pixels=new int[w*h];depth=new int[w*h];this.metadata=metadata;this.tiles=tiles;this.atlas=atlas;
         spriteBase=8;int p=8+36*Binary.i32(metadata,4);boxBase=p+4;p+=4+32*Binary.i32(metadata,p);actorBase=p+4;
@@ -63,7 +65,12 @@ public final class OriginalRenderer {
     }
     public void render(OriginalLevel l,int x,int y,int angle){try{prepare(l,null);world(l,x,y,angle,1);}catch(IOException e){throw new RuntimeException(e.toString());}}
     public void render(OriginalSession session,Images images)throws IOException{
-        OriginalPlayer p=session.player;prepare(session.level,images);world(session.level,p.x,p.y,p.angle,session.combat.zoom!=0?2:1);
+        OriginalPlayer p=session.player;OriginalCombat c=session.combat;prepare(session.level,images);
+        int x=p.x,y=p.y;
+        if(p.current>=0){session.data.resolve(p,p.current,c.weapon);int base=session.data.effectBase+116*c.weapon[11];
+            int shot=Math.max(0,(c.weapon[1]&255)-c.cooldown);
+            if(c.cooldown>0&&shot<Binary.i32(metadata,base+56)){int recoil=Binary.s16(metadata,base+64+6*shot);x-=(recoil*OriginalTrig.cos(p.angle))>>16;y-=(recoil*OriginalTrig.sin(p.angle))>>16;}}
+        world(session.level,x,y,p.angle,c.zoom!=0?2:1);
         for(int i=0;i<session.level.objectCount;i++){
             int at=i*8,kind=session.level.objects[at+1]&255,var=Binary.u16(session.level.objects,at+2),idx=session.level.objects[at]&255;
             if(kind!=0&&var<500&&p.variables[var]==1)continue;int d=spriteBase+36*idx;if(metadata[d+30]!=0)continue;
@@ -74,22 +81,24 @@ public final class OriginalRenderer {
         }
     }
     private void world(OriginalLevel l,int x,int y,int angle,int zoom){
-        double dx=OriginalTrig.cos(angle)/65536.0,dy=OriginalTrig.sin(angle)/65536.0,planeX=-dy*.66/zoom,planeY=dx*.66/zoom,proj=width*zoom/1.32;
-        int mid=height/2;for(int i=0;i<depth.length;i++)depth[i]=Integer.MAX_VALUE;
+        viewX=x;viewY=y;camera=new OriginalCamera(width,height,zoom);
+        double dx=OriginalTrig.cos(angle)/65536.0,dy=OriginalTrig.sin(angle)/65536.0,proj=camera.focal,mid=camera.horizon;
+        double eye=OriginalCamera.EYE,ceiling=(l.header[11]&255)*32;
+        for(int i=0;i<depth.length;i++)depth[i]=Integer.MAX_VALUE;
         for(int col=0;col<width;col++){
-            double camera=2.0*col/width-1,rx=dx+planeX*camera,ry=dy+planeY*camera;
-            for(int row=0;row<height;row++){double d=48*proj/(Math.abs(row-mid)+.5);pixels[row*width+col]=floor(l,(int)(x+rx*d),(int)(y+ry*d),row<mid);}
+            double side=(col-width/2)/proj,rx=dx-dy*side,ry=dy+dx*side;
+            for(int row=0;row<height;row++){double d=(row<mid?ceiling-eye:eye)*proj/(Math.abs(row-mid)+.5);pixels[row*width+col]=floor(l,(int)(x+rx*d),(int)(y+ry*d),row<mid);}
             int hits=0;
             for(int i=0;i<segmentCount;i++){
                 int[] s=segments[i];double ax=s[0]-x,ay=s[1]-y,sx=s[2]-s[0],sy=s[3]-s[1],cross=rx*sy-ry*sx;
                 if(cross==0||(cross>0&&s[7]==0))continue;
-                double d=(ax*sy-ay*sx)/cross,u=(ax*ry-ay*rx)/cross;if(d<=.01||d>8192||u<0||u>1)continue;
+                double d=(ax*sy-ay*sx)/cross,u=(ax*ry-ay*rx)/cross;if(d<=.01||d>1000||u<0||u>1)continue;
                 int j=hits++;while(j>0&&hitDistance[j-1]<d){hitDistance[j]=hitDistance[j-1];hitIndex[j]=hitIndex[j-1];hitU[j]=hitU[j-1];j--;}
                 hitDistance[j]=d;hitIndex[j]=i;hitU[j]=u;
             }
             for(int k=0;k<hits;k++){
                 int i=hitIndex[k];int[] s=segments[i];Picture tex=textures[i];if(tex==null||tex.width<1||tex.height<1)continue;double d=hitDistance[k];
-                int top=(int)(mid-(s[5]-48)*proj/d),bottom=(int)(mid+48*proj/d),dist=(int)(d*256);
+                int top=(int)camera.heightY(d,s[5]),bottom=(int)camera.groundY(d),dist=(int)(d*256);
                 int tx=Math.min(tex.width-1,Math.max(0,(int)(textureU(hitU[k],s[4])*tex.width)));
                 for(int row=Math.max(0,top);row<=bottom&&row<height;row++){
                     int ty=(int)((row-top)*d*tex.height/(proj*s[5]));if(ty<0||ty>=tex.height)continue;int rgb=tex.pixels[ty*tex.width+tx];
@@ -100,11 +109,14 @@ public final class OriginalRenderer {
     }
     private void sprite(Images images,int descriptor,int x,int y,int state,OriginalSession s)throws IOException{
         OriginalPlayer p=s.player;double cs=OriginalTrig.cos(p.angle)/65536.0,sn=OriginalTrig.sin(p.angle)/65536.0;
-        double vx=x-p.x,vy=y-p.y,d=vx*cs+vy*sn;if(d<4)return;double side=cs*vy-sn*vx,proj=width*(s.combat.zoom!=0?2:1)/1.32,scale=proj/d;
+        double vx=x-viewX,vy=y-viewY,d=vx*cs+vy*sn;if(d<.01||d>=1000)return;double side=cs*vy-sn*vx,proj=camera.focal;
+        // 0x48A0: image scale is descriptor[6]/10 divided by radial distance*4.
+        double scale=proj*(metadata[descriptor+6]&255)/(40*Math.sqrt(vx*vx+vy*vy));
         Picture image=images.get(Binary.i32(metadata,descriptor));if(image==null)return;int frames=metadata[descriptor+4]&255;if(frames==0)return;
         int fh=image.height/frames,period=metadata[descriptor+12+16*state];if(period<=0)return;
         int frame=metadata[descriptor+13+16*state+s.combat.ticks%period];if(frame==0)return;boolean mirror=frame<0;frame=Math.abs(frame)-1;if(frame>=frames)return;
-        int left=(int)(width/2+side*scale-Binary.s16(metadata,descriptor+8)*scale),top=(int)(height/2+48*scale-Binary.s16(metadata,descriptor+10)*scale);
+        double anchor=metadata[descriptor+7]!=0?camera.heightY(d,(s.level.header[11]&255)*32):camera.groundY(d);
+        int left=(int)(width/2+side*proj/d-Binary.s16(metadata,descriptor+8)*scale),top=(int)(anchor-Binary.s16(metadata,descriptor+10)*scale);
         int dw=Math.max(1,(int)(image.width*scale)),dh=Math.max(1,(int)(fh*scale)),dist=(int)(d*256);
         for(int yy=Math.max(0,top);yy<top+dh&&yy<height;yy++)for(int xx=Math.max(0,left);xx<left+dw&&xx<width;xx++){
             int at=yy*width+xx;if(dist>=depth[at])continue;int tx=(int)((long)(xx-left)*image.width/dw);if(mirror)tx=image.width-1-tx;

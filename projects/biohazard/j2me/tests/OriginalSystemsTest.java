@@ -64,6 +64,13 @@ public final class OriginalSystemsTest {
         int[][] sizes={{176,220},{240,320},{320,240},{360,640},{640,360}};
         for(int k=0;k<sizes.length;k++){ScreenLayout layout=new ScreenLayout(sizes[k][0],sizes[k][1],true);for(int i=0;i<6;i++)check(layout.menuHit(layout.width/2,layout.menuTop(6)+i*layout.rowHeight+5,6,0,6)==i,"Menu draw/hit parity");check(layout.touchKey(1,1)==0&&layout.touchKey(layout.width-1,1)==11,"HUD touch");check(layout.touchKey(layout.width-1,layout.height-layout.touchHeight+2)==5,"Fire touch");check(layout.touchKey(-1,100)==-1,"Outside touch");}
         check(OriginalRenderer.textureU(.2,0)==.8&&OriginalRenderer.textureU(.2,1)==.2,"Wall U orientation flag");
+        OriginalCamera camera=new OriginalCamera(176,173,1);
+        // Original ARM 0x17858 executed in Unicorn: eye210, focal170, offset114.
+        // A wall 100 map units away projects through a 400-unit original depth.
+        check(camera.horizon==77&&camera.focal==170,"Native ARM camera initialization");
+        check(camera.groundY(100)==166.25&&Math.abs(camera.heightY(100,96)-3.05)<.00001,"Original wall projection in map units");
+        check(new OriginalCamera(352,346,1).focal==340,"Uniform camera scaling");
+        check(new OriginalCamera(176,173,2).focal==340,"Original sniper focal doubling");
         System.out.println("PASS original systems: "+checks+" assertions incl. axe/death story, combat, shops, save corruption/resume, original save, five layouts");
     }
 }

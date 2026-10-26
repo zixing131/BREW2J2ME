@@ -9,6 +9,7 @@ import javax.microedition.lcdui.*;
 final class OriginalCanvas extends Canvas implements Runnable,CommandListener,OriginalSession.Resources,OriginalRenderer.Images,OriginalRenderer.Labels {
     private static final int COVER=0,MENU=1,PLAY=2,PAUSE=3,INFO=4,ERROR=5,SAVE=6,LOAD=7,SUPPLY=8,INVENTORY=9,UPGRADE=10,PREMIUM=11,OFFER=12,OVERWRITE=13,PREMIUM_WEAPONS=14,SETTINGS=15;
     private final BioMIDlet app;
+    private final OriginalAudio audio=new OriginalAudio();
     private ScreenLayout layout;
     private int W,H;
     private int[] frame,scaled,atlas;
@@ -25,7 +26,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private int screen=COVER,selection,input,lastText=-1,dialogPage,dialogLines,dialogRows=5,returnScreen=MENU,shopSlot,offerItem,offerReturn,saveReturn=PAUSE,pendingSlot;
     private int pointerKey=-1,pointerRow=-1,lastDialogEvent=-1,lastDialogPc=-1;
     private String info="",infoTitle="游戏帮助",notice="";
-    private int infoLine,offerSelection;
+    private int infoLine,offerSelection,settingsReturn=MENU;
     private final OriginalNotice hint=new OriginalNotice();
     private String[] saveDescriptions=new String[4];
     private boolean gps,active=true,fireHeld,scriptSave,touch,touchConfigured;
@@ -38,7 +39,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             cover=get(5045);tiles=new int[75][];for(int i=0;i<75;i++)tiles[i]=rgb(Image.createImage("/images/"+(1101+i)+".png"));
             atlas=rgb(Image.createImage("/images/1000.png"));resize();
         }catch(Exception e){screen=ERROR;info="游戏资源载入失败，请重新安装。";e.printStackTrace();}
-        new Thread(this).start();
+        syncAudio();new Thread(this).start();
     }
     public byte[] read(int id)throws IOException{return Binary.read("/original/"+id+".bin");}
     public OriginalRenderer.Picture get(int id)throws IOException{
@@ -53,7 +54,12 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     }
     protected synchronized void sizeChanged(int w,int h){if(data!=null&&atlas!=null)resize();}
     private void clearInput(){input=0;fireHeld=false;pointerKey=-1;pointerRow=-1;if(session!=null)session.combat.fireRequested=false;}
-    private void open(int s){screen=s;selection=0;notice="";clearInput();}
+    private void open(int s){screen=s;selection=0;notice="";clearInput();syncAudio();}
+    private void settings(int from){settingsReturn=from;open(SETTINGS);}
+    private void syncAudio(){
+        boolean menu=screen==COVER||screen==MENU||(screen==SETTINGS&&settingsReturn==MENU)||(screen==INFO&&returnScreen==MENU)||(screen==LOAD&&saveReturn==MENU);
+        audio.update(screen==ERROR?0:menu?30000:30001,active&&running);
+    }
     private void newGame(){try{session=new OriginalSession(data,this);hint.clear();lastText=-1;dialogPage=0;gps=false;open(PLAY);}catch(Exception e){fail(e);}}
     public void run(){
         while(running){long start=System.currentTimeMillis();synchronized(this){if(active&&screen==PLAY)tick();if(active)repaint();}
@@ -74,10 +80,10 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         OriginalVM v=session.vm;
         if(lastText!=v.textId||lastDialogEvent!=v.event||lastDialogPc!=v.pc){lastText=v.textId;lastDialogEvent=v.event;lastDialogPc=v.pc;dialogPage=0;}
     }
-    private void fail(Exception e){clearInput();screen=ERROR;info="游戏运行失败，请返回主菜单重试。";e.printStackTrace();}
-    synchronized void activate(){active=true;clearInput();}
-    synchronized void suspend(){if(active&&session!=null){autosave();if(screen==PLAY)open(PAUSE);}active=false;clearInput();}
-    synchronized void shutdown(){if(session!=null)autosave();active=false;running=false;}
+    private void fail(Exception e){clearInput();screen=ERROR;audio.close();info="游戏运行失败，请返回主菜单重试。";e.printStackTrace();}
+    synchronized void activate(){active=true;clearInput();syncAudio();}
+    synchronized void suspend(){if(active&&session!=null){autosave();if(screen==PLAY)open(PAUSE);}active=false;clearInput();audio.close();}
+    synchronized void shutdown(){if(session!=null)autosave();active=false;running=false;audio.close();}
     protected void hideNotify(){suspend();}
     protected void showNotify(){activate();}
     private void autosave(){if(session==null||session.player.hp<=0)return;try{OriginalSaves.save(3,session);}catch(Exception e){notice="自动保存失败，请手动保存";}}
@@ -100,6 +106,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         else if(screen==SUPPLY||screen==INVENTORY||screen==PREMIUM)open(PAUSE);
         else if(screen==OFFER){if(session.vm.action.kind==22){session.vm.action.kind=0;session.vm.offer=-1;}open(offerReturn);selection=offerSelection;}
         else if(screen==INFO)open(returnScreen);
+        else if(screen==SETTINGS)open(settingsReturn);
         else open(MENU);
     }
     public synchronized void commandAction(Command c,Displayable d){goBack();}
@@ -154,18 +161,20 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         if(n!=5)return;
         if(screen==MENU){
             if(selection==0)newGame();else if(selection==1)records(false,false);else if(selection==5)app.quit();
-            else if(selection==2)open(SETTINGS);
+            else if(selection==2)settings(MENU);
             else if(selection==3)info("游戏帮助",text.get(7009),MENU);
-            else info("游戏关于","3D生化启示录$n版本 0.3.8$n$n"+text.get(7007)+"$n$n按数字键或屏幕按键操作。",MENU);
+            else info("游戏关于","3D生化启示录$n版本 0.3.9$n$n"+text.get(7007)+"$n$n按数字键或屏幕按键操作。",MENU);
         }else if(screen==SETTINGS){
             if(selection==0){touch=!touch;touchConfigured=true;}
-            else touchConfigured=false;
-            resize();
+            else if(selection==1)touchConfigured=false;
+            else audio.setEnabled(!audio.enabled());
+            resize();syncAudio();
         }else if(screen==PAUSE){
             if(selection==0){if(session.player.hp<=0)records(false,false);else open(PLAY);}else if(selection==1){if(session.player.hp>0)records(true,false);else notice="请载入记录或开始新游戏";}else if(selection==2)records(false,false);
             else if(selection==3)open(INVENTORY);else if(selection==4)open(SUPPLY);else if(selection==5)open(PREMIUM);
             else if(selection==6){notice=session.player.hp>0&&session.player.medicine()?"成功使用药品":"没有可用的药品";}
             else if(selection==7){notice=session.player.useInvisibility()?"隐身已开启，攻击后解除":"隐身已开启或能源不足";}
+            else if(selection==9)settings(PAUSE);
             else {autosave();open(MENU);}
         }else if(screen==SAVE){pendingSlot=selection;try{OriginalSaves.load(selection,data,this);open(OVERWRITE);}catch(Exception empty){saveTo(pendingSlot);}}
         else if(screen==OVERWRITE)saveTo(pendingSlot);
@@ -184,7 +193,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             else notice=session.player.premiumFailure(offerItem);
         }
     }
-    private int count(){return screen==MENU?6:screen==SETTINGS?2:screen==PAUSE?9:screen==SAVE?3:screen==LOAD?4:screen==SUPPLY?6:screen==INVENTORY?session.player.count:screen==UPGRADE?5:screen==PREMIUM?6:screen==PREMIUM_WEAPONS?5:0;}
+    private int count(){return screen==MENU?6:screen==SETTINGS?3:screen==PAUSE?10:screen==SAVE?3:screen==LOAD?4:screen==SUPPLY?6:screen==INVENTORY?session.player.count:screen==UPGRADE?5:screen==PREMIUM?6:screen==PREMIUM_WEAPONS?5:0;}
     private boolean originalShop(){return screen==PREMIUM||screen==PREMIUM_WEAPONS||screen==SUPPLY;}
     private int shopStep(){return screen==PREMIUM?25:35;}
     private int listStep(){return screen==SAVE||screen==LOAD?44:screen==INVENTORY?36:28;}
@@ -208,8 +217,8 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private String item(int i){
         OriginalPlayer p=session==null?null:session.player;
         if(screen==MENU)return text.get(8900+i);
-        if(screen==SETTINGS)return i==0?"屏幕按键："+(touch?"开启":"关闭"):"自动设置";
-        if(screen==PAUSE){String[] a={"继续游戏","保存记录","载入记录","武器改装","随身商店","短代商城","药品 "+p.medicines,"隐身 "+bio.original.Binary.u16(p.global,44),"返回主菜单"};return a[i];}
+        if(screen==SETTINGS)return i==0?"屏幕按键："+(touch?"开启":"关闭"):i==1?"自动设置":"游戏音乐："+(audio.enabled()?"开启":"关闭");
+        if(screen==PAUSE){String[] a={"继续游戏","保存记录","载入记录","武器改装","随身商店","短代商城","药品 "+p.medicines,"隐身 "+bio.original.Binary.u16(p.global,44),"返回主菜单","游戏设置"};return a[i];}
         if(screen==SAVE||screen==LOAD)return slotName(i)+"  "+savePart(i,false);
         if(screen==SUPPLY)return text.get(9250+i)+" "+OriginalPlayer.PRICES[i]+"金";
         if(screen==INVENTORY){int idx=p.slots[8*i+1]&255;return (p.current==i?"已装备 ":"")+text.get(data.w(idx,50));}
@@ -323,7 +332,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     }
     private String menuSummary(){
         if(notice.length()>0)return notice;
-        if(screen==SETTINGS)return selection==0?"确定后开启或关闭屏幕按键":"小屏按键关闭，大屏自动开启";
+        if(screen==SETTINGS)return selection==0?"确定后开启或关闭屏幕按键":selection==1?"小屏按键关闭，大屏自动开启":audio.unavailable()?"当前设备无法播放音乐":"开启或关闭游戏音乐";
         if(screen==SAVE)return "选择位置保存当前游戏记录";
         if(screen==LOAD)return "选择记录，继续未完成的任务";
         if(screen==INVENTORY)return "确定装备武器，并进入改装";

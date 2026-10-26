@@ -22,7 +22,8 @@ subprocess.run([str(java_executable(jdk,'java')),'-cp',str(out),'bio.original.Or
 subprocess.run([str(java_executable(jdk,'java')),'-cp',str(out),'bio.original.OriginalSystemsTest',str(root/'tests/fixtures'),str(root/'resources/original'),str(root.parent/'originals/1073745158/save.dat')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(out),'bio.original.OriginalPreview',str(root/'build/extracted/mbx'),str(root/'resources'),str(root/'build/original-preview.png')],check=True)
 desktop=root/'build/desktop-tests';desktop.mkdir(exist_ok=True)
-subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(desktop)]+list(map(str,original))+list(map(str,(root/'tests/midp').rglob('*.java')))+[str(root/'src/bio/OriginalCanvas.java'),str(root/'src/bio/OriginalSaves.java'),str(root/'tests/DesktopCanvasTest.java')],check=True)
+subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(desktop)]+list(map(str,original))+list(map(str,(root/'tests/midp').rglob('*.java')))+[str(root/'src/bio/OriginalCanvas.java'),str(root/'src/bio/OriginalSaves.java'),str(root/'src/bio/OriginalAudio.java'),str(root/'tests/OriginalAudioTest.java'),str(root/'tests/DesktopCanvasTest.java')],check=True)
+subprocess.run([str(java_executable(jdk,'java')),'-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.OriginalAudioTest'],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.DesktopCanvasTest',str(root/'build/ui-previews')],check=True)
 jar=root/'dist/BiohazardDemo.jar';jad=(root/'dist/BiohazardDemo.jad').read_text()
 assert 'MIDlet-Jar-Size: %d'%jar.stat().st_size in jad

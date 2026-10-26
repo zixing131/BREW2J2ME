@@ -72,6 +72,16 @@ public final class OriginalSystemsTest {
         check(new OriginalCamera(240,273,1).focal==170,"ARM keeps focal length on QVGA");
         check(new OriginalCamera(176,173,2).focal==340,"Original sniper focal doubling");
         OriginalAnimation animation=new OriginalAnimation(resources.read(20000));
+        OriginalText dialogueText=new OriginalText(resources.read(0));
+        check(OriginalDialogue.portrait(dialogueText.get(6020))==7002,"Rick name selects original portrait");
+        check(OriginalDialogue.portrait("人声")==-1,"Unknown speaker has no invented portrait");
+        check(OriginalDialogue.portrait("克")==7004&&OriginalDialogue.portrait("桑")==7003&&OriginalDialogue.portrait("豪")==7001&&OriginalDialogue.portrait("达")==7005,"Other original portrait mappings");
+        OriginalVM chapter=new OriginalVM(new OriginalScript(resources.read(11000)));chapter.start(0);chapter.step();
+        check(chapter.dialogMode==0&&chapter.speaker==2,"Original intro requests two text resources");
+        check(OriginalDialogue.message(chapter,dialogueText).equals(dialogueText.get(6018)+"$n"+dialogueText.get(6019)),"Chapter includes second text resource");
+        check(OriginalDialogue.textTop(2,true,220)==179&&OriginalDialogue.textTop(2,false,220)==163,"Native dialogue text geometry");
+        OriginalFont dialogueFont=new OriginalFont(resources.read(10000));int[] textPixels=new int[176*220];
+        check(dialogueFont.drawSpaced(textPixels,176,220,"一二三四",0,0,42,0xffffff,0,10,2,16)==2,"Original two-pixel glyph spacing wraps text");
         check(animation.frame(7,0).length==2&&animation.frame(7,0)[0][5]==4,"Original cover reflected continuation");
         check(animation.frame(6,1)[0][1]==-13&&animation.frame(6,1)[1][0]==5001,"Original selected menu shift and arrow");
         check(animation.frame(3,9)[0][0]==6005&&animation.frame(3,9)[0][3]==90,"Original gun icon order and scale");

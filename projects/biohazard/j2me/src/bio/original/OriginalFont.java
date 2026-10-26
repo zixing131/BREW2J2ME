@@ -27,6 +27,10 @@ public final class OriginalFont {
         }
     }
     public int draw(int[] pixels,int w,int h,String s,int x,int y,int wrap,int color,int skipLines,int maxLines){
+        return drawSpaced(pixels,w,h,s,x,y,wrap,color,skipLines,maxLines,0,14);
+    }
+    /** Text UI 0xF7D0 uses two pixels between glyphs and a 16-pixel line pitch. */
+    public int drawSpaced(int[] pixels,int w,int h,String s,int x,int y,int wrap,int color,int skipLines,int maxLines,int spacing,int lineHeight){
         int cx=x,line=0,shadow=0,style=0;
         for(int p=0;p<s.length();p++){
             char c=s.charAt(p);
@@ -40,9 +44,9 @@ public final class OriginalFont {
                 }
             }
             if(c=='\n'){line++;cx=x;continue;}
-            int step=advance(c);if(cx+step>x+wrap){cx=x;line++;}
+            int step=advance(c)+spacing;if(cx+step>x+wrap&&cx>x){cx=x;line++;}
             if(line>=skipLines&&line<skipLines+maxLines){
-                int yy=y+(line-skipLines)*14;
+                int yy=y+(line-skipLines)*lineHeight;
                 if(style!=0)for(int oy=-1;oy<=1;oy++)for(int ox=-1;ox<=1;ox++)if(ox!=0||oy!=0)glyph(pixels,w,h,c,cx+ox,yy+oy,shadow);
                 glyph(pixels,w,h,c,cx,yy,color);
             }cx+=step;

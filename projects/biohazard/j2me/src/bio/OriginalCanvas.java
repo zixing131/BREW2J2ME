@@ -22,7 +22,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private final Hashtable pictures=new Hashtable();
     private OriginalRenderer.Picture cover;
     private int screen=COVER,selection,input,lastText=-1,dialogPage,dialogLines,dialogRows=5,returnScreen=MENU,shopSlot,offerItem,offerReturn,saveReturn=PAUSE,pendingSlot;
-    private int pointerKey=-1,pointerRow=-1;
+    private int pointerKey=-1,pointerRow=-1,lastDialogEvent=-1,lastDialogPc=-1;
     private String info="",notice="";
     private String[] saveDescriptions=new String[4];
     private boolean gps,active=true,fireHeld,scriptSave,touch,touchConfigured;
@@ -61,10 +61,14 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         // A render/update tick is not a new BREW EVT_KEY. The original combat
         // latch itself continues firing on a hit; sniper zoom needs a second press.
         session.tick(input);
-        if(lastText!=session.vm.textId){lastText=session.vm.textId;dialogPage=0;}
+        syncDialogue();
         if(session.player.hp<=0){open(PAUSE);notice="GAME OVER - LOAD SAVE";}
         else if(session.vm.ended){autosave();open(PAUSE);notice="STORY COMPLETE";}
     }catch(Exception e){fail(e);}}
+    private void syncDialogue(){
+        OriginalVM v=session.vm;
+        if(lastText!=v.textId||lastDialogEvent!=v.event||lastDialogPc!=v.pc){lastText=v.textId;lastDialogEvent=v.event;lastDialogPc=v.pc;dialogPage=0;}
+    }
     private void fail(Exception e){clearInput();screen=ERROR;info=e.toString();}
     synchronized void activate(){active=true;clearInput();}
     synchronized void suspend(){if(active&&session!=null){autosave();if(screen==PLAY)open(PAUSE);}active=false;clearInput();}
@@ -110,7 +114,13 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         if(screen==PLAY){
             OriginalVM v=session.vm;
             if(n==11){goBack();return;}
-            if(v.action.kind==4||v.action.kind==17){if(n==5){if((dialogPage+1)*dialogRows<dialogLines)dialogPage++;else{v.acknowledge();dialogPage=0;}}return;}
+            if(v.action.kind==4||v.action.kind==17){
+                syncDialogue();
+                if(n==2)dialogPage=Math.max(0,dialogPage-1);
+                else if(n==8)dialogPage=Math.min(Math.max(0,dialogLines-dialogRows),dialogPage+1);
+                else if(n==5){if(dialogPage+dialogRows<dialogLines)dialogPage=Math.min(dialogLines-dialogRows,dialogPage+dialogRows);else{v.acknowledge();dialogPage=0;}}
+                return;
+            }
             if(v.action.kind==18){if(n==5)records(true,true);else if(n==0)v.acknowledge();return;}
             if(v.action.kind==21){if(n==5||n==0)v.transition(n==5);return;}
             if(v.action.kind==22){if(n==5)offer(v.offer,PLAY);else if(n==0){v.action.kind=0;v.offer=-1;}return;}
@@ -272,6 +282,32 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         int h=Math.min(H-24,Math.max(110,H*2/3)),y=H-h;box(2,y,W-4,h);dialogRows=Math.max(3,(h-36)/14);
         dialogLines=font.draw(frame,W,H,message,9,y+8,W-18,0xffffff,dialogPage*dialogRows,dialogRows);label(hint,9,H-19,W-18,0x00ff00);
     }
+    private void storyDialog()throws IOException{
+        syncDialogue();OriginalVM v=session.vm;String message=OriginalDialogue.message(v,text);
+        if(v.dialogMode==0){
+            // Chapter/narration resources have no character name or metal speech panel.
+            rect(0,0,W,H,0);dialogRows=Math.max(1,(H-36)/20);
+            dialogLines=font.drawSpaced(frame,W,H,message,8,12,W-16,0xffffff,dialogPage,dialogRows,2,20);
+            label("5",W-14,H-17,12,0xffff00);return;
+        }
+        boolean named=v.speaker>0;int mode=v.dialogMode;
+        int height=OriginalDialogue.textHeight(mode,named),top=OriginalDialogue.textTop(mode,named,H);
+        int left=mode==1?70:mode==3?W/4:0,width=mode==3?W/2:W;
+        int inset=OriginalDialogue.inset(mode,W),x=left+inset+1,wrap=Math.max(14,width-2*inset);
+        if(mode==3){blit(get(5012),W/4-6,H/2-17,W/2+12,35);}
+        else{
+            String name=named?text.get(v.speaker):"";int portrait=OriginalDialogue.portrait(name);
+            if(portrait>0){OriginalRenderer.Picture p=get(portrait);blit(p,mode==1?5:0,mode==1?top+height-p.height+25:top-p.height-20,p.width,p.height);}
+            if(mode==1)animation(3,5,120,H/2);
+            else{
+                // Native frame 3 is 176px wide. Extend its panel to cover adaptive text widths.
+                blit(get(5012),0,H-65,W,65);OriginalRenderer.Picture button=get(5029);blit(button,W-20,H-1-button.height,button.width,button.height);
+            }
+            if(named)font.drawSpaced(frame,W,H,"$T00000$Hffff00"+name,mode==1?70:14,top-16,W-20,0xffff00,0,1,2,16);
+        }
+        dialogRows=Math.max(1,(height-2)/16);
+        dialogLines=font.drawSpaced(frame,W,H,message,x,top+3,wrap,0xffffff,dialogPage,dialogRows,2,16);
+    }
     private void world()throws IOException{
         renderer.render(session,this);System.arraycopy(renderer.pixels,0,frame,W*layout.hud,renderer.pixels.length);OriginalPlayer p=session.player;OriginalCombat c=session.combat;
         if(p.current>=0){data.resolve(p,p.current,c.weapon);OriginalRenderer.Picture weapon=get(data.effectImage(c.weapon[11]));
@@ -295,7 +331,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         OriginalVM v=session.vm;if(v.overlayAmount>0)shade(v.overlayColor,v.overlayAmount);
         if(v.action.kind==1||v.action.kind==2){int n=v.action.duration;shade(v.fadeColor,n<=0?0:32*(v.action.kind==1?v.action.frame:n-v.action.frame)/n);}
         if(touch&&!v.busy())touchControls();
-        if(v.action.kind==4||v.action.kind==17)dialog((v.speaker>0?text.get(v.speaker)+"$n":"")+text.get(v.textId),"5 继续");
+        if(v.action.kind==4||v.action.kind==17)storyDialog();
         if(v.action.kind==18)dialog("保存游戏记录？","0 BACK     5 SAVE");
         if(v.action.kind==21)dialog("进入下一关？","0 BACK     5 CONTINUE");
         if(v.action.kind==22)dialog("OFFLINE ITEM OFFER$n"+text.get(bio.original.Binary.u16(data.weapons,2+20*v.offer)),"0 SKIP     5 VIEW");

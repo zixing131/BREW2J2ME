@@ -45,6 +45,19 @@ public final class DesktopCanvasTest {
   c.keyReleased(53);c.keyPressed(53);tick(c);c.keyReleased(53);check(sniper.combat.shots==1,"Second sniper press shoots");
   field("session").set(c,s);
   for(int i=0;i<sizes.length;i++){
+   int w=sizes[i][0],h=sizes[i][1];field("touchConfigured").setBoolean(c,false);c.resizeTest(w,h);field("screen").setInt(c,2);
+   s.vm.action.kind=4;s.vm.dialogMode=2;s.vm.speaker=6020;s.vm.textId=6040;
+   capture(c,"dialogue-"+w+"x"+h);check(field("dialogRows").getInt(c)==2,"Named dialogue retains two original lines");
+   int lines=field("dialogLines").getInt(c),advances=0;
+   while(s.vm.action.kind==4){key(c,53);if(s.vm.action.kind==4)capture(c,"dialogue-last-page-"+w+"x"+h);check(++advances<=lines,"Dialogue reaches final page");}
+   check(advances>=1,"Dialogue confirms");
+  }
+  c.resizeTest(176,220);s.vm.action.kind=4;s.vm.dialogMode=2;s.vm.speaker=0;s.vm.textId=6023;capture(c,"dialogue-narrator");
+  check(field("dialogRows").getInt(c)==3,"Unnamed dialogue has three original lines");
+  s.vm.dialogMode=3;s.vm.textId=6033;capture(c,"dialogue-hint");
+  OriginalSession chapter=new OriginalSession(s.data,c);chapter.tick(0);field("session").set(c,chapter);capture(c,"chapter-intro");
+  field("session").set(c,s);s.vm.action.kind=0;s.vm.running=false;
+  for(int i=0;i<sizes.length;i++){
    int w=sizes[i][0],h=sizes[i][1];c.resizeTest(w,h);field("screen").setInt(c,1);field("selection").setInt(c,1);capture(c,"menu-"+w+"x"+h);
    ScreenLayout l=(ScreenLayout)field("layout").get(c);for(int row=0;row<6;row++)check(l.mainMenuHit(l.width/2,l.mainMenuTop()+row*l.mainMenuStep()+15,1)==row,"Original menu hit geometry");
    field("screen").setInt(c,11);capture(c,"premium-"+w+"x"+h);

@@ -71,7 +71,7 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void advanceStory()throws IOException {
                     story.advance();int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}
                     if(story.finished){int next=story.nextId==1?999:story.nextId;boolean exists=false;for(int i=0;i<stories.length;i++)if(stories[i]==next)exists=true;
-                        if(story.exitType==2&&exists){startStory(next);}else if(campaign&&(story.exitType==1||story.exitType==3)){enterBattle();}else if(campaign&&story.exitType==0&&battle!=null){battle.pendingStory=-1;menu=-3;battleClock=0;saveBattle();}else{saveStory();menu=campaign?15:7;audio.stop();if(!campaign)message("本段剧情结束");}}
+                        if(story.exitType==2&&exists){startStory(next);}else if(campaign&&(story.exitType==1||story.exitType==3)){enterBattle();}else if(campaign&&story.exitType==0&&battle!=null){battle.pendingStory=-1;menu=-3;battleClock=0;syncBattleMusic(true);saveBattle();}else{saveStory();menu=campaign?15:7;audio.stop();if(!campaign)message("本段剧情结束");}}
     }
     private int movement(int key){
         if(key==KEY_NUM4)return Session.LEFT;if(key==KEY_NUM6)return Session.RIGHT;
@@ -178,7 +178,7 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void startStory(int id)throws IOException {
         Story next=new Story(id,korean,true);story=next;menu=-2;keys=0;noticeUntil=0;
         for(int i=0;i<stories.length;i++)if(stories[i]==id)storyIndex=i;
-        audio.stop();int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}
+        audio.stop();currentMusic=-1;int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}
     }
     private void saveRecord(String name,byte[] data)throws Exception {
         RecordStore r=RecordStore.openRecordStore(name,true);
@@ -190,9 +190,10 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void savePreferences(){try{saveRecord("dnf-preferences",new byte[]{1,(byte)session.speed,(byte)session.touchMode,(byte)audio.volume});}catch(Exception e){message("设置保存失败");}}
     private void loadPreferences(){try{byte[] b=readRecord("dnf-preferences");if(b.length==4&&b[0]==1&&b[1]>=0&&b[1]<5&&b[2]>=0&&b[2]<3&&b[3]>=0&&b[3]<=100){session.speed=b[1];session.touchMode=b[2];audio.volume=b[3];}}catch(Exception ignored){}}
     private void enterBattle()throws IOException {
-        Battle next=battle!=null&&battle.field==story.exitWords[0]&&battle.stage==story.exitWords[1]?battle:new Battle(new Session());next.campaign=progress;next.fromStory(story);progress=next.campaign;next.music=currentMusic;battle=next;menu=-3;battleClock=0;keys=0;noticeUntil=0;saveBattle();
+        Battle next=battle!=null&&battle.field==story.exitWords[0]&&battle.stage==story.exitWords[1]?battle:new Battle(new Session());next.campaign=progress;next.fromStory(story);progress=next.campaign;if(next.tutorial()||next.field==41&&next.stage==2)next.music=currentMusic;battle=next;menu=-3;battleClock=0;keys=0;noticeUntil=0;syncBattleMusic(false);saveBattle();
     }
-    private void advanceBattle()throws IOException {if(battle.menuRequest>=0){int tab=battle.menuRequest;battle.menuRequest=-1;openGameMenu(tab);return;}long now=System.currentTimeMillis();int elapsed=battleClock==0?Session.TICK_MS[session.speed]:(int)Math.max(0,Math.min(1000,now-battleClock));battleClock=now;battle.tick(keys,elapsed);if(battle.sceneChanged){battle.sceneChanged=false;keys=0;saveBattle();}if(battle.campaign.loot.notice.length()>0){message(battle.campaign.loot.notice);battle.campaign.loot.notice="";}int sound=battle.takeSound();if(sound>=0)audio.play(0,sound,false,false);checkBattleStory();}
+    private void syncBattleMusic(boolean force)throws IOException {battle.refreshMusic();if(force||currentMusic!=battle.music){currentMusic=battle.music;if(currentMusic>=0)audio.play(currentMusic,0,true,true);}}
+    private void advanceBattle()throws IOException {if(battle.menuRequest>=0){int tab=battle.menuRequest;battle.menuRequest=-1;openGameMenu(tab);return;}long now=System.currentTimeMillis();int elapsed=battleClock==0?Session.TICK_MS[session.speed]:(int)Math.max(0,Math.min(1000,now-battleClock));battleClock=now;battle.tick(keys,elapsed);syncBattleMusic(false);if(battle.sceneChanged){battle.sceneChanged=false;keys=0;saveBattle();}if(battle.campaign.loot.notice.length()>0){message(battle.campaign.loot.notice);battle.campaign.loot.notice="";}int sound=battle.takeSound();if(sound>=0)audio.play(0,sound,false,false);checkBattleStory();}
     private void checkBattleStory(){if(battle!=null&&battle.pendingStory>=0)try{int id=battle.pendingStory;progress=battle.campaign;startStory(id);saveStory();}catch(IOException e){menu=16;keys=0;message("剧情读取失败："+e.toString());}}
     private void openGameMenu(int tab){keys=0;gameMenu=new GameMenu(battle);gameMenu.tab=tab;gameMenu.refresh();menu=17;gamePage=0;saveBattle();}
     private void pauseBattle(){keys=0;menu=16;selected=0;saveBattle();}
@@ -223,7 +224,7 @@ public final class DnfCanvas extends Canvas implements Runnable {
             restored.pageStart=page;if(b.length>=24){restored.waiting=(flags&1)!=0;restored.finished=(flags&2)!=0;}
             if(restored.finished&&time!=restored.duration)throw new IOException("Progress end");
             if(campaign){progress=restoredProgress==null?new Campaign():restoredProgress;if(!extended&&id>=11&&id<100)progress.openingCheckpoint();battle=suspendedBattle;}
-            story=restored;menu=campaign&&restored.finished?15:-2;keys=0;noticeUntil=0;audio.stop();int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}if(campaign&&restored.finished&&(restored.exitType==1||restored.exitType==3))enterBattle();else if(campaign&&restored.finished&&restored.exitType==0&&battle!=null){battle.pendingStory=-1;menu=-3;}
+            story=restored;menu=campaign&&restored.finished?15:-2;keys=0;noticeUntil=0;audio.stop();currentMusic=-1;int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}if(campaign&&restored.finished&&(restored.exitType==1||restored.exitType==3))enterBattle();else if(campaign&&restored.finished&&restored.exitType==0&&battle!=null){battle.pendingStory=-1;menu=-3;syncBattleMusic(true);}
         }catch(Exception e){message("没有可继续的剧情记录，或记录已损坏");}
     }
     protected synchronized void pointerPressed(int x,int y){
@@ -342,7 +343,7 @@ public final class DnfCanvas extends Canvas implements Runnable {
         int boxW=Math.min(w-16,280),left=(w-boxW)/2;g.setColor(0x151b25);g.fillRect(left,8,boxW,h-16);g.setColor(0x9e8152);g.drawRect(left,8,boxW-1,h-17);
         int y=17;if(icon!=null){g.drawImage(icon,left+8,y,Graphics.TOP|Graphics.LEFT);}
         g.setColor(0xecd19b);g.drawString("地下城与勇士",w/2+12,y,Graphics.TOP|Graphics.HCENTER);
-        g.setColor(0xa6b4c6);g.drawString("鬼剑士 · WIPI 移植 0.5.0",w/2+12,y+19,Graphics.TOP|Graphics.HCENTER);
+        g.setColor(0xa6b4c6);g.drawString("鬼剑士 · WIPI 移植 0.6.0",w/2+12,y+19,Graphics.TOP|Graphics.HCENTER);
         y=64;
         if(menu==0){int first=menuFirst(),rows=menuRows();for(int row=0;row<rows;row++){int i=first+row;g.setColor(i==selected?0x6e4222:0x253040);g.fillRect(left+10,y+row*24,boxW-20,22);g.setColor(i==selected?0xffdf83:0xe7edf4);g.drawString(MAIN[i],left+19,y+row*24+2,Graphics.TOP|Graphics.LEFT);}g.setColor(0xa6b4c6);g.drawString((selected+1)+" / "+MAIN.length,w-25,h-45,Graphics.TOP|Graphics.RIGHT);}
         else {

@@ -10,6 +10,7 @@ public final class Campaign {
     public int difficulty,runMillis,escortHp=-1,escortX,escortY,rewardChoice;
     public final boolean[] storySeen=new boolean[64];
     public int level=1,xp,gold,completedRuns;
+    public int permanentHp,permanentMp;
     public int returnField=0,returnStage=1,returnZone=0,returnMode=0,returnX=40,returnY=250;
     public int dungeon,bossField=-1,bossStage=-1;
     private int[] cleared=new int[128];
@@ -51,18 +52,20 @@ public final class Campaign {
         return out;
     }
     public void write(DataOutputStream d)throws IOException {
-        d.writeInt(2);int[] v={level,xp,gold,completedRuns,returnField,returnStage,returnZone,returnMode,returnX,returnY,dungeon,bossField,bossStage};for(int i=0;i<v.length;i++)d.writeInt(v[i]);
+        d.writeInt(3);int[] v={level,xp,gold,completedRuns,returnField,returnStage,returnZone,returnMode,returnX,returnY,dungeon,bossField,bossStage};for(int i=0;i<v.length;i++)d.writeInt(v[i]);
         d.writeInt(state.length);d.write(state);for(int i=0;i<kills.length;i++)d.writeInt(kills[i]);d.writeInt(clearCount);for(int i=0;i<clearCount;i++)d.writeInt(cleared[i]);
         bag.write(d);loot.write(d);d.writeInt(difficulty);d.writeInt(runMillis);d.writeInt(escortHp);d.writeInt(escortX);d.writeInt(escortY);d.writeInt(rewardChoice);for(int i=0;i<storySeen.length;i++)d.writeBoolean(storySeen[i]);
+        d.writeInt(permanentHp);d.writeInt(permanentMp);
     }
     public static Campaign read(DataInputStream d)throws IOException {
-        int version=d.readInt();if(version<1||version>2)throw new IOException("Campaign version");Campaign c=new Campaign();c.level=d.readInt();c.xp=d.readInt();c.gold=d.readInt();c.completedRuns=d.readInt();c.returnField=d.readInt();c.returnStage=d.readInt();c.returnZone=d.readInt();c.returnMode=d.readInt();c.returnX=d.readInt();c.returnY=d.readInt();c.dungeon=d.readInt();c.bossField=d.readInt();c.bossStage=d.readInt();
+        int version=d.readInt();if(version<1||version>3)throw new IOException("Campaign version");Campaign c=new Campaign();c.level=d.readInt();c.xp=d.readInt();c.gold=d.readInt();c.completedRuns=d.readInt();c.returnField=d.readInt();c.returnStage=d.readInt();c.returnZone=d.readInt();c.returnMode=d.readInt();c.returnX=d.readInt();c.returnY=d.readInt();c.dungeon=d.readInt();c.bossField=d.readInt();c.bossStage=d.readInt();
         if(c.level<1||c.level>60||c.xp<0||c.xp>=c.needed()||c.gold<0||c.completedRuns<0||c.returnField<0||c.returnField>168||c.returnStage<1||c.returnStage>99||c.returnZone<0||c.returnZone>45||c.returnMode<0||c.returnMode>7||c.returnX<0||c.returnX>10000||c.returnY<0||c.returnY>10000||c.dungeon<0||c.dungeon>45||c.bossField< -1||c.bossField>168||c.bossStage< -1||c.bossStage>99)throw new IOException("Campaign bounds");
         if(d.readInt()!=c.state.length)throw new IOException("Quest count");d.readFully(c.state);for(int i=0;i<c.state.length;i++)if(c.state[i]<0||c.state[i]>2)throw new IOException("Quest state");
         for(int i=0;i<c.kills.length;i++){c.kills[i]=d.readInt();if(c.kills[i]<0||c.kills[i]>65535)throw new IOException("Quest counter");}
         c.clearCount=d.readInt();if(c.clearCount<0||c.clearCount>c.cleared.length)throw new IOException("Room count");for(int i=0;i<c.clearCount;i++){c.cleared[i]=d.readInt();if(c.cleared[i]<0||c.cleared[i]>16899)throw new IOException("Room id");}
-        if(version==2){c.bag.read(d);c.loot.read(d);c.difficulty=d.readInt();c.runMillis=d.readInt();if(c.difficulty<0||c.difficulty>3||c.runMillis<0||c.runMillis>86400000)throw new IOException("Run bounds");c.escortHp=d.readInt();c.escortX=d.readInt();c.escortY=d.readInt();if(c.escortHp< -1||c.escortHp>10000||c.escortX<0||c.escortX>10000||c.escortY<0||c.escortY>10000)throw new IOException("Escort bounds");c.rewardChoice=d.readInt();if(c.rewardChoice<0||c.rewardChoice>3)throw new IOException("Reward choice");for(int i=0;i<c.storySeen.length;i++)c.storySeen[i]=d.readBoolean();}
+        if(version>=2){c.bag.read(d);c.loot.read(d);c.difficulty=d.readInt();c.runMillis=d.readInt();if(c.difficulty<0||c.difficulty>3||c.runMillis<0||c.runMillis>86400000)throw new IOException("Run bounds");c.escortHp=d.readInt();c.escortX=d.readInt();c.escortY=d.readInt();if(c.escortHp< -1||c.escortHp>10000||c.escortX<0||c.escortX>10000||c.escortY<0||c.escortY>10000)throw new IOException("Escort bounds");c.rewardChoice=d.readInt();if(c.rewardChoice<0||c.rewardChoice>3)throw new IOException("Reward choice");for(int i=0;i<c.storySeen.length;i++)c.storySeen[i]=d.readBoolean();}
         else for(int i=0;i<c.state.length;i++)if(c.state[i]==2)c.rewardItems(i);
+        if(version>=3){c.permanentHp=d.readInt();c.permanentMp=d.readInt();if(c.permanentHp<0||c.permanentHp>1000000||c.permanentMp<0||c.permanentMp>1000000)throw new IOException("Permanent stat bounds");}
         return c;
     }
     public static int checksum(byte[] b,int len){int hash=0x514e46;for(int i=0;i<len;i++)hash=hash*31+(b[i]&255);return hash;}

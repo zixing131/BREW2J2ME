@@ -34,6 +34,11 @@ public final class Items {
         return 0;
     }
     public boolean recoverySupported(int t,int id){return recovery(t,id,10000,false)>0||recovery(t,id,10000,true)>0;}
+    public boolean usable(int t,int id){if(!valid(t,id)||t<13||t>17)return false;int effect=data[t][id][8]&255;return recoverySupported(t,id)||effect==60||effect==61||effect==118||effect==119;}
     public String detail(int t,int id){String s=name(t,id)+"\n"+TYPES[t]+" · 等级 "+level(t,id);if(t<=10)s+="\n"+(t<4?"物理 / 魔法攻击":"防御 / 魔法防御")+" "+stat(t,id,0)+" / "+stat(t,id,1);
-        if(t>=13&&t<=15){int effect=data[t][id][8]&255,n=word(data[t][id],9);if(recoverySupported(t,id)){String target=effect==52||effect==100?"生命与魔力":effect==49||effect==51?"魔力":"生命";s+="\n恢复"+target+" "+n+(effect>=50&&effect<=52?"%":" 点");}else s+="\n特殊效果尚未恢复";}return s;}
+        if(t>=13&&t<=17){byte[] b=data[t][id];int effect=b[8]&255,n=word(b,9);if(recoverySupported(t,id)){String target=effect==52||effect==100?"生命与魔力":effect==49||effect==51?"魔力":"生命";s+="\n恢复"+target+" "+n+(effect>=50&&effect<=52?"%":" 点");}
+            else if(effect==60||effect==61)s+="\n永久增加"+(effect==60?"生命":"魔力")+"上限 "+n+" 点";
+            else if(effect==119)s+="\n获得经验 "+n;
+            else if(effect==118)s+="\n"+n+"%概率恢复 "+word(b,11)+"%生命\n否则损失 "+word(b,13)+"%生命，可能倒下";
+            else s+="\n特殊效果尚未恢复";}return s;}
 }

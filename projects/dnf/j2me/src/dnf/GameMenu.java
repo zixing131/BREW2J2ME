@@ -27,7 +27,7 @@ public final class GameMenu {
         return (c.state[key]==0?"可接：":c.book.complete(key,c)?"可交：":"进行：")+QuestBook.title(key);
     }
     public String detail(){if(entries.length==0)return tab==4&&battle.campaign.state[259]==2?"主线已完成。可以继续探索地下城。":"暂无条目，先完成当前主线委托。";Campaign c=battle.campaign;int key=entries[selected],t=key/256,id=key%256;Items it=c.bag.items;
-        if(tab==0)return it.detail(t,id)+"\n"+(selling?"出售 1 件，获得 "+Math.max(1,it.price(t,id)/4)+" 金币？":t<=10?"确认装备 / 卸下；# 出售":t>=13&&t<=15?"确认使用；# 出售":"# 出售；任务物品不能出售");
+        if(tab==0)return it.detail(t,id)+"\n"+(selling?"出售 1 件，获得 "+Math.max(1,it.price(t,id)/4)+" 金币？":t<=10?"确认装备 / 卸下；# 出售":it.usable(t,id)?"确认使用；# 出售":"# 出售；任务物品不能出售");
         if(tab==1)return it.detail(t,id)+"\n购买 1 件："+it.price(t,id)+" 金币";
         if(tab==2)return it.recipeText(key);
         if(tab==3)return Adventure.zoneName(Adventure.ZONES[key])+"\n难度："+Adventure.difficultyName(difficulty)+"\n按 # 切换难度。确认进入。";

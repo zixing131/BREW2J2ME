@@ -64,6 +64,14 @@ public final class Battle {
         lastDirection=0;lastPressMs=-1000;dashing=false;hitFlash=0;damageTicks=0;comboHits=0;areaArmed=new boolean[ds.areas.length];order=new int[1+props.length+enemies.length];sortY=new int[order.length];conversation="";conversationQuest=-1;conversationAction=0;travelRequest=0;
         if(campaign.escortHp>0){campaign.escortX=x;campaign.escortY=y;}refreshStats();companion=null;ensureCompanion();
         if(!tutorial()&&campaign.dungeon>0&&campaign.cleared(field,stage))for(int i=0;i<enemies.length;i++){enemies[i].hp=0;enemies[i].dead=true;}
+        refreshMusic();
+    }
+    public void refreshMusic()throws IOException {
+        if(tutorial()||field==41&&stage==2)return;
+        int group=campaign.dungeon>0?FieldRules.region(campaign.dungeon):mode,room=0;
+        if(campaign.dungeon>0){mode=group;if(dungeonLayout==null)dungeonLayout=new Zone(campaign.dungeon);if(isBossRoom())room=1;
+            int[] special=dungeonLayout.routes[0][2];if(special[2]==field&&special[3]==stage)room=2;}
+        music=FieldRules.music(field,stage,group,room);
     }
     public void fromStory(Story s)throws IOException {
         int[] w=s.exitWords;
@@ -155,15 +163,21 @@ public final class Battle {
         serial++;lastClip=a.clip;lastFrame=-1;
     }
     /** Unpromoted Ghost Knight growth at 0x1402fa4, HP 0x79e14 / MP 0x79c88. */
-    public void refreshStats(){if(campaign==null||tutorial())return;maxHp=Math.max(100,31*campaign.level+8*campaign.bag.bonus(3)+campaign.bag.bonus(5));maxMp=Math.max(100,16*campaign.level+20+3*campaign.bag.bonus(4)+campaign.bag.bonus(6));hp=Math.min(hp,maxHp);mp=Math.min(mp,maxMp);}
+    public void refreshStats(){if(campaign==null||tutorial())return;maxHp=FieldRules.maxHp(campaign.level,campaign.bag.bonus(3),campaign.bag.bonus(5),campaign.permanentHp);maxMp=FieldRules.maxMp(campaign.level,campaign.bag.bonus(4),campaign.bag.bonus(6),campaign.permanentMp);hp=Math.min(hp,maxHp);mp=Math.min(mp,maxMp);}
     private void ensureCompanion()throws IOException {if(campaign.dungeon==23&&campaign.escortHp>0&&companion==null)companion=new Actor(20101,assets);}
     private void followCompanion()throws IOException {ensureCompanion();if(companion==null||campaign.escortHp<=0)return;int dx=player.x-campaign.escortX,dy=player.y-campaign.escortY;if(Math.abs(dx)>30&&player.world.canStand(campaign.escortX+(dx<0?-2:2),campaign.escortY))campaign.escortX+=dx<0?-2:2;if(Math.abs(dy)>8&&player.world.canStand(campaign.escortX,campaign.escortY+(dy<0?-1:1)))campaign.escortY+=dy<0?-1:1;companion.animation.tick();}
-    public String useItem(int type,int id){if(hp<=0)return "倒下后不能使用物品";if(campaign.bag.count(type,id)==0)return "物品不足";if(type!=13&&type!=14&&type!=15)return "此物品不能直接使用";
-        Items items=campaign.bag.items;if(!items.recoverySupported(type,id))return "此药品的特殊效果尚未恢复";
+    public String useItem(int type,int id){if(hp<=0)return "倒下后不能使用物品";if(campaign.bag.count(type,id)==0)return "物品不足";
+        Items items=campaign.bag.items;if(!items.usable(type,id))return "此物品的特殊效果尚未恢复";
+        if(items.level(type,id)>campaign.level)return "等级不足";
+        byte[] raw=items.data[type][id];int effect=raw[8]&255,amount=Items.word(raw,9);
+        if(effect==60||effect==61){int old=effect==60?campaign.permanentHp:campaign.permanentMp;if(old>1000000-amount)return "属性已达上限";if(effect==60)campaign.permanentHp+=amount;else campaign.permanentMp+=amount;refreshStats();}
+        else if(effect==119){if(campaign.level>=60)return "已达到最高等级";int old=campaign.level;campaign.experience(amount);level=campaign.level;refreshStats();if(level>old){hp=maxHp;mp=maxMp;}}
+        else if(effect==118){if(mode==7)return "此场景不能使用";hp=FieldRules.coin(hp,maxHp,random(100),amount,Items.word(raw,11),Items.word(raw,13),tutorial());}
+        else {
         int life=items.recovery(type,id,maxHp,false),mana=items.recovery(type,id,maxMp,true);
         if((life==0||hp==maxHp)&&(mana==0||mp==maxMp))return "无需恢复";
-        if(campaign.bag.items.level(type,id)>campaign.level)return "等级不足";
         hp=Math.min(maxHp,hp+life);mp=Math.min(maxMp,mp+mana);
+        }
         campaign.bag.remove(type,id,1);sceneChanged=true;return "使用 "+campaign.bag.items.name(type,id);
     }
     public int takeSound(){int s=sound;sound=-1;return s;}
@@ -260,12 +274,12 @@ public final class Battle {
         Zone z=new Zone(dungeon);int[] entry=z.routes[0][0],boss=z.routes[0][1];
         campaign.returnField=field;campaign.returnStage=stage;campaign.returnZone=zone;campaign.returnMode=mode;campaign.returnX=player.x;campaign.returnY=player.y;
         campaign.newRun();campaign.dungeon=dungeon;campaign.difficulty=difficulty;campaign.bossField=boss[2];campaign.bossStage=boss[3];
-        enter(entry[2],entry[3],dungeon,2,z.spawn[0][0],z.spawn[0][1]);standNearby();sceneChanged=true;
+        enter(entry[2],entry[3],dungeon,FieldRules.region(dungeon),z.spawn[0][0],z.spawn[0][1]);standNearby();sceneChanged=true;
     }
     /** Recovery adapter: retreat keeps earned progress, ends this run and restores health. */
     public void returnTown()throws IOException {
         int f=campaign.returnField,st=campaign.returnStage,z=campaign.returnZone,m=campaign.returnMode,x=campaign.returnX,y=campaign.returnY;
-        enter(f,st,z,m,x,y);campaign.dungeon=0;campaign.newRun();hp=maxHp;mp=maxMp;standNearby();sceneChanged=true;
+        campaign.dungeon=0;campaign.newRun();enter(f,st,z,m,x,y);hp=maxHp;mp=maxMp;standNearby();sceneChanged=true;
     }
     private void move(int dx,int dy,int steps){for(int i=0;i<steps;i++){
         if(player.world.canStand(player.x+dx,player.y))player.x+=dx;
@@ -352,7 +366,7 @@ public final class Battle {
         if(version==0x444e4232){v.campaign=Campaign.read(d);v.conversation=d.readUTF();v.conversationQuest=d.readInt();v.conversationAction=d.readInt();v.travelRequest=d.readInt();
             if(v.conversationQuest< -1||v.conversationQuest>=v.campaign.state.length||v.conversationAction<0||v.conversationAction>5||v.travelRequest<0||v.travelRequest>2||v.pageStart>v.dialogueText().length()||v.pageEnd>v.dialogueText().length())throw new IOException("Battle conversation");
         }else if(v.field==79)v.campaign.openingCheckpoint();
-        v.level=v.father()?60:v.campaign.level;v.ensureCompanion();d.readInt();if(d.available()!=0)throw new IOException("Battle trailing bytes");
+        v.level=v.father()?60:v.campaign.level;v.refreshStats();v.refreshMusic();v.ensureCompanion();d.readInt();if(d.available()!=0)throw new IOException("Battle trailing bytes");
         restored.speed=player.speed;restored.touchMode=player.touchMode;return v;
     }
 }

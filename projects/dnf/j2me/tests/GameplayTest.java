@@ -6,7 +6,18 @@ public final class GameplayTest {
     private static int checks;
     private static void check(boolean b,String s){checks++;if(!b)throw new AssertionError(s);}
     private static Campaign copy(Campaign c)throws Exception{ByteArrayOutputStream b=new ByteArrayOutputStream();c.write(new DataOutputStream(b));return Campaign.read(new DataInputStream(new ByteArrayInputStream(b.toByteArray())));}
+    private static void nativeRules()throws Exception {
+        String[] files={"field-music-arm","growth-arm","fate-coin-arm"};
+        for(int f=0;f<files.length;f++){BufferedReader r=new BufferedReader(new FileReader("tests/fixtures/"+files[f]+".csv"));String line;
+            while((line=r.readLine())!=null){if(line.startsWith("#"))continue;String[] cells=line.split(",");int[] v=new int[cells.length];for(int i=0;i<v.length;i++)v[i]=Integer.parseInt(cells[i]);
+                if(f==0)check(FieldRules.music(v[0],v[1],v[2],v[3])==v[4],"ARM scene music "+line);
+                else if(f==1){check(FieldRules.maxHp(v[0],v[1],v[3],v[5])==v[7],"ARM HP growth");check(FieldRules.maxMp(v[0],v[2],v[4],v[6])==v[8],"ARM MP growth");}
+                else check(FieldRules.coin(v[1],1000,v[0],50,30,25,false)==v[2],"ARM fate coin "+line);
+            }r.close();
+        }
+    }
     public static void main(String[] args)throws Exception {
+        nativeRules();
         Campaign c=new Campaign();Items it=c.bag.items;
         check(it.data[0].length==102&&it.data[11].length==154&&it.recipes.length==363,"native counts");
         check(it.name(0,101).equals("闪亮的小刀")&&it.level(0,101)==5&&it.stat(0,101,0)==10&&it.stat(0,101,1)==14,"native named sword values");
@@ -40,6 +51,16 @@ public final class GameplayTest {
         medicine.campaign.bag.add(15,1,1);int oldhp=medicine.hp,oldmp=medicine.mp;medicine.useItem(15,1);check(medicine.hp==oldhp+medicine.maxHp*15/100&&medicine.mp==oldmp+medicine.maxMp*15/100,"native dual recovery15 percent");
         medicine.hp=medicine.maxHp;medicine.useItem(13,9);check(medicine.campaign.bag.count(13,9)==1,"full HP does not waste potion");
         medicine.campaign.bag.add(13,24,1);medicine.useItem(13,24);check(medicine.campaign.bag.count(13,24)==1,"unknown special potion not silently consumed");
+        Battle stones=new Battle(new Session());stones.enter(0,1,0,0,40,250);check(stones.maxHp==31&&stones.maxMp==36,"native level1 has no invented100 floor");
+        stones.hp=7;stones.mp=8;stones.campaign.bag.add(17,3,1);stones.campaign.bag.add(17,4,1);stones.useItem(17,3);stones.useItem(17,4);
+        check(stones.maxHp==56&&stones.maxMp==56&&stones.hp==7&&stones.mp==8,"permanent stones do not refill current health");
+        stones=Battle.decode(new Session(),stones.encode());check(stones.campaign.permanentHp==25&&stones.campaign.permanentMp==20&&stones.hp==7&&stones.maxHp==56,"permanent effects survive battle save");
+        stones.campaign.bag.add(17,11,1);stones.useItem(17,11);check(stones.campaign.xp==100&&stones.campaign.bag.count(17,11)==0,"native100 XP book");
+        stones.campaign.bag.add(17,12,1);stones.useItem(17,12);check(stones.campaign.level==2&&stones.campaign.xp==398&&stones.maxHp==87,"experience book uses native one-level threshold");
+        stones.hp=stones.maxHp;stones.campaign.bag.add(13,26,1);stones.useItem(13,26);check(stones.campaign.bag.count(13,26)==0,"coin may be used at full health");
+        stones.campaign.level=60;stones.campaign.bag.add(17,11,1);stones.useItem(17,11);check(stones.campaign.bag.count(17,11)==1,"max-level XP book not wasted");
+        ByteArrayOutputStream legacy=new ByteArrayOutputStream();stones.campaign.write(new DataOutputStream(legacy));byte[] v3=legacy.toByteArray(),v2=Arrays.copyOf(v3,v3.length-8);v2[3]=2;
+        Campaign old=Campaign.read(new DataInputStream(new ByteArrayInputStream(v2)));check(old.permanentHp==0&&old.permanentMp==0&&old.bag.count(17,11)==1,"exact Campaign v2 layout migrates without losing inventory");
         check(MonsterData.name(25).equals("落雷凯诺")&&MonsterData.name(187).equals("玛丽"),"original early and final enemy names translated");
         // Original type-5 condition is a loan, not an availability requirement.
         c=new Campaign();c.state[117]=2;check(c.accept(129)&&c.bag.count(19,49)==1,"GSD receives the quest-loaned essence");check(c.book.complete(129,c)&&c.finish(129)&&c.bag.count(19,49)==0,"loan is consumed on hand-in");
@@ -65,7 +86,7 @@ public final class GameplayTest {
         // Compatibility with the exact published Campaign v1 layout (no inventory extension).
         ByteArrayOutputStream raw=new ByteArrayOutputStream();DataOutputStream d=new DataOutputStream(raw);d.writeInt(1);int[] fields={2,258,90,0,0,1,0,0,40,250,0,-1,-1};for(int v:fields)d.writeInt(v);d.writeInt(530);for(int i=0;i<530;i++)d.writeByte(i<=2?2:0);for(int i=0;i<1590;i++)d.writeInt(0);d.writeInt(0);
         c=Campaign.read(new DataInputStream(new ByteArrayInputStream(raw.toByteArray())));check(c.gold==90&&c.level==2&&c.bag.entries().length>0,"0.4 migration restores omitted earned item rewards");
-        for(int i=0;i<Adventure.ZONES.length;i++){int id=Adventure.ZONES[i];Battle b=new Battle(new Session());b.enter(0,1,0,0,40,250);b.startDungeon(id,0);check(b.supported()&&b.field>0&&b.stage>0,"playable original entry "+id);Battle restored=Battle.decode(new Session(),b.encode());check(restored.zone==id,"all dungeon saves "+id);}
+        for(int i=0;i<Adventure.ZONES.length;i++){int id=Adventure.ZONES[i];Battle b=new Battle(new Session());b.enter(0,1,0,0,40,250);b.startDungeon(id,0);check(b.supported()&&b.field>0&&b.stage>0,"playable original entry "+id);check(b.mode==FieldRules.region(id)&&b.music>=18,"native region and field music "+id);Battle restored=Battle.decode(new Session(),b.encode());check(restored.zone==id&&restored.music==b.music,"all dungeon saves "+id);b.returnTown();check(b.music==13&&b.mode==0,"return restores town BGM "+id);}
         System.out.println("PASS gameplay "+checks+" checks: inventory, native recipes/drops, 69 mainline nodes, 22 dungeon entries, migrations");
     }
 }

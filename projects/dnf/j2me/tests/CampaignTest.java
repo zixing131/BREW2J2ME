@@ -31,11 +31,12 @@ public final class CampaignTest {
     private static void npc(Battle b,int id)throws Exception{walk(b,area(b,2,100+id));check(b.interact(),"NPC interaction");confirm(b);}
     private static void fight(Battle b)throws Exception{
         int ticks=0;while(b.living()>0&&b.hp>0&&ticks++<8000){
+            if(b.hp<b.maxHp*3/4)for(int key:b.campaign.bag.entries())if(b.campaign.bag.items.recovery(key/256,key%256,b.maxHp,false)>0){b.useItem(key/256,key%256);break;}
             int nearest=-1,distance=99999;for(int i=0;i<b.enemies.length;i++){Battle.Enemy e=b.enemies[i];int d=Math.abs(e.x-b.player.x)+Math.abs(e.y-b.player.y);if(e.hp>0&&d<distance){nearest=i;distance=d;}}
             int key=0;if(nearest>=0){Battle.Enemy e=b.enemies[nearest];int dx=e.x-b.player.x,dy=e.y-b.player.y;
                 if(Math.abs(dy)>3)key=dy>0?Session.DOWN:Session.UP;
                 else if(Math.abs(dx)>37)key=dx>0?Session.RIGHT:Session.LEFT;
-                else {if(b.player.hero.animation.clip==0||b.player.hero.animation.clip==2){b.tick(dx<0?Session.LEFT:Session.RIGHT,30);b.attack();}else b.attack();}}
+                else {if(b.player.hero.animation.clip==0||b.player.hero.animation.clip==2){b.tick(dx<0?Session.LEFT:Session.RIGHT,30);b.skill(1);b.attack();}else b.attack();}}
             b.tick(key,30);
         }
         check(b.hp>0&&b.living()==0,"real input clears room "+b.field+"/"+b.stage+" hp="+b.hp+" living="+b.living()+" ticks="+ticks);
@@ -52,6 +53,9 @@ public final class CampaignTest {
         b=Battle.decode(new Session(),b.encode());c=b.campaign;check(c.state[3]==1&&c.state[2]==2,"quest state across battle save");
         walk(b,area(b,1,1));npc(b,9);check(c.state[3]==2,"GSD turn-in");npc(b,9);check(c.state[4]==1,"GSD offers Linus quest");walk(b,area(b,1,0));walk(b,area(b,1,3));npc(b,14);check(c.state[4]==2,"walk through all three town quest contacts");
         walk(b,area(b,1,0));walk(b,area(b,3,0));check(b.menuRequest==3&&b.campaign.dungeon==0,"dungeon entry opens selection before entering");b.menuRequest=-1;check(b.campaign.dungeon==0,"cancel entry");
+        // Spend only quest-earned gold, then use skills and owned recovery items in combat.
+        for(int key:c.bag.entries())if(key/256<=10)c.bag.equip(key/256,key%256,c.level);b.refreshStats();
+        while(c.gold>=c.bag.items.price(13,9))c.bag.buy(c,13,9);
         b.startDungeon();check(b.field==6&&b.stage==1&&b.zone==1&&b.player.x==34&&b.player.y==205,"native ZON first entry");
         byte[] entry=b.encode();fight(b);check(c.xp>0&&c.cleared(6,1),"death awards original XP and clears room");
         int before=c.xp;walk(b,area(b,1,8));fight(b);walk(b,area(b,1,6));check(b.stage==1&&b.living()==0,"cleared room does not respawn during same run");check(c.xp>=before,"progress preserved on return");

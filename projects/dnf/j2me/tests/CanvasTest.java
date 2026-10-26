@@ -72,6 +72,21 @@ public final class CanvasTest {
         while(b.dialogue>=0&&pages++<100)c.keyPressed(Canvas.KEY_NUM5);
         check(pages<100&&b.campaign.state[259]==2&&b.campaign.bag.count(t,id)==1,"ending settles selected weapon through Canvas");
     }
+    private static void fieldAudioUI(DnfCanvas c,int w,int h)throws Exception {
+        Battle b=new Battle(new Session());b.enter(0,1,0,0,40,250);set(c,"battle",b);set(c,"progress",b.campaign);set(c,"menu",Integer.valueOf(-3));
+        Method sync=DnfCanvas.class.getDeclaredMethod("syncBattleMusic",Boolean.TYPE);sync.setAccessible(true);sync.invoke(c,Boolean.TRUE);
+        check(((Integer)get(c,"currentMusic")).intValue()==13,"town native BGM13");int count=Manager.created.size();
+        for(int i=0;i<20;i++)sync.invoke(c,Boolean.FALSE);check(Manager.created.size()==count,"field ticks never restart unchanged BGM");
+        b.enter(4,1,0,0,40,250);sync.invoke(c,Boolean.FALSE);check(((Integer)get(c,"currentMusic")).intValue()==14,"west coast BGM14");
+        b.startDungeon(21,0);sync.invoke(c,Boolean.FALSE);check(((Integer)get(c,"currentMusic")).intValue()==20,"sky tower ordinary BGM20");
+        Zone z=new Zone(21);int[] boss=z.routes[0][1];b.enter(boss[2],boss[3],21,3,100,200);sync.invoke(c,Boolean.FALSE);check(((Integer)get(c,"currentMusic")).intValue()==21,"boss entrance BGM21");
+        check(((Audio)get(c,"audio")).error.length()==0,"native scene tracks exist and decode through MMAPI adapter");
+        b.returnTown();sync.invoke(c,Boolean.FALSE);check(((Integer)get(c,"currentMusic")).intValue()==14,"retreat restores previous town music");
+        b.campaign.bag.add(17,3,1);int hp=b.maxHp;c.keyPressed(Canvas.KEY_NUM9);GameMenu m=(GameMenu)get(c,"gameMenu");for(int i=0;i<m.entries.length;i++)if(m.entries[i]==17*256+3)m.selected=i;
+        c.keyPressed(Canvas.KEY_NUM5);paint(c,"permanent-item-"+w+"x"+h);finishMenuDetail(c);check(b.maxHp==hp+25&&b.campaign.bag.count(17,3)==0,"permanent stone usable through actual paginated menu");
+        c.keyPressed(Canvas.KEY_NUM0);c.suspend();Method resume=DnfCanvas.class.getDeclaredMethod("resumeStory",String.class);resume.setAccessible(true);resume.invoke(c,"dnf-campaign-slot-"+get(c,"slot"));b=(Battle)get(c,"battle");
+        check(b.campaign.permanentHp==25&&b.maxHp==hp+25&&((Integer)get(c,"currentMusic")).intValue()==14,"RMS reload preserves stone and restarts correct field track");
+    }
     private static void run(int w,int h)throws Exception{
         Canvas.testWidth=w;Canvas.testHeight=h;DnfCanvas c=new DnfCanvas(new DnfMIDlet());
         try{
@@ -130,7 +145,7 @@ public final class CanvasTest {
             int resource=audio.resources[0];audio.resources[0]=65534;audio.preview(0);check(audio.error.indexOf("Missing audio resource")>=0,"missing primary audio reports failure");audio.resources[0]=resource;
             Manager.fail=true;audio.preview(0);check(audio.error.length()>0,"unsupported codec safely reported");Manager.fail=false;
             set(c,"menu",Integer.valueOf(5));set(c,"selected",Integer.valueOf(2));c.keyPressed(Canvas.KEY_NUM5);check(audio.volume==25,"third setting changes volume");
-            battleUI(c,w,h);campaignUI(c,w,h);economyUI(c,w,h);
+            battleUI(c,w,h);campaignUI(c,w,h);economyUI(c,w,h);fieldAudioUI(c,w,h);
         }finally{c.stop();((Thread)get(c,"thread")).join(2000);check(!((Thread)get(c,"thread")).isAlive(),"canvas thread terminates");}
     }
     public static void main(String[] args)throws Exception{

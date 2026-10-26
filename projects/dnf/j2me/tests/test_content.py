@@ -54,6 +54,20 @@ def main():
         current=999 if row['next']==1 else row['next']
     assert chain==[100,101,102,103,999,201,3,4] and row['exit']==1
 
+    sc=json.loads((ROOT/'localization/sc-zh-CN.json').read_text())
+    assert len(sc)==138 and sum(map(len,sc.values()))==417
+    packed=(ROOT/'resources/quest-dialogues.bin').read_bytes();pos=2
+    assert struct.unpack_from('>H',packed)[0]==len(sc)
+    seen=set()
+    for _ in range(len(sc)):
+        q,phase,npc,n=struct.unpack_from('>HBBH',packed,pos);pos+=6;key=f'{q}:{phase}:{npc}'
+        assert key not in seen and n==len(sc[key]);seen.add(key)
+        for expected in sc[key]:
+            speaker=packed[pos];size=struct.unpack_from('>H',packed,pos+1)[0];pos+=3
+            assert packed[pos:pos+size].decode('utf8')==expected;pos+=size
+            assert not any('\uac00'<=c<='\ud7a3' for c in expected)
+    assert pos==len(packed) and seen==set(sc)
+
     # Broken linked event data must not cause loops or read outside the event section.
     data=bytearray((ROOT/'resources/original/2.ani').read_bytes());obj=12+8*36;struct.pack_into('<H',data,obj+30,65535)
     try:story_assets.ani(data)

@@ -45,6 +45,33 @@ public final class CanvasTest {
         b.hp=0;paint(c,"defeat-canvas-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);Method tick=DnfCanvas.class.getDeclaredMethod("advanceBattle");tick.setAccessible(true);tick.invoke(c);check(b.zone==0&&b.hp==b.maxHp,"defeat UI returns to safe town");
         check(b.campaign.state[2]==1,"retreat retains active quest");
     }
+    private static void finishMenuDetail(DnfCanvas c)throws Exception{
+        GameMenu m=(GameMenu)get(c,"gameMenu");if(!m.confirming)c.keyPressed(Canvas.KEY_NUM5);
+        int pages=0;while(m.confirming&&pages++<100)c.keyPressed(Canvas.KEY_NUM5);
+        check(pages<100,"detail pages terminate without relying on repaint");
+    }
+    private static void economyUI(DnfCanvas c,int w,int h)throws Exception{
+        Battle b=(Battle)get(c,"battle");b.enter(0,1,0,0,40,250);b.campaign.openingCheckpoint();b.campaign.level=5;b.campaign.gold=1000;
+        b.campaign.bag.add(11,3,3);b.campaign.bag.add(11,4,3);b.campaign.bag.add(11,5,3);
+        c.keyPressed(Canvas.KEY_NUM9);check(((Integer)get(c,"menu")).intValue()==17,"bag reachable through key9");paint(c,"inventory-"+w+"x"+h);
+        c.keyPressed(Canvas.KEY_NUM3);GameMenu m=(GameMenu)get(c,"gameMenu");int key=13*256+9;
+        for(int i=0;i<m.entries.length;i++)if(m.entries[i]==key)m.selected=i;
+        paint(c,"merchant-"+w+"x"+h);finishMenuDetail(c);check(b.campaign.bag.count(13,9)==1&&b.campaign.gold==900,"canvas shop confirms exactly one purchase");
+        c.keyPressed(Canvas.KEY_NUM3);m.selected=0;paint(c,"craft-"+w+"x"+h);finishMenuDetail(c);check(b.campaign.bag.count(0,101)==1&&b.campaign.gold==800,"canvas native recipe transaction");
+        c.keyPressed(Canvas.KEY_NUM1);c.keyPressed(Canvas.KEY_NUM1);for(int i=0;i<m.entries.length;i++)if(m.entries[i]==101)m.selected=i;finishMenuDetail(c);check(b.campaign.bag.equipped(0,101),"canvas equips crafted weapon");
+        c.keyPressed(Canvas.KEY_NUM0);c.suspend();Method resume=DnfCanvas.class.getDeclaredMethod("resumeStory",String.class);resume.setAccessible(true);resume.invoke(c,"dnf-campaign-slot-"+get(c,"slot"));b=(Battle)get(c,"battle");check(b.campaign.bag.equipped(0,101)&&b.campaign.gold==800,"RMS restores equipment and transaction balances");
+        c.keyPressed(Canvas.KEY_NUM9);c.keyPressed(Canvas.KEY_NUM1);paint(c,"mainline-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM1);paint(c,"adventure-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM0);
+        // A dialogue interrupt must preserve the partially defeated room, including after RMS reload.
+        b.startDungeon(9,0);b.enter(25,1,9,0,180,200);check(b.enemies.length>0,"native preboss room populated");b.enemies[0].hp=1;b.campaign.runMillis=12345;
+        Method start=DnfCanvas.class.getDeclaredMethod("startStory",Integer.TYPE);start.setAccessible(true);start.invoke(c,Integer.valueOf(20));c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM5);b=(Battle)get(c,"battle");check(b!=null&&b.enemies[0].hp==1&&b.campaign.runMillis==12345,"DNS4 preserves suspended enemy and run timer");
+        playStoryChain(c,20);b=(Battle)get(c,"battle");check(b.enemies[0].hp==1&&b.campaign.runMillis==12345,"same-room story does not respawn enemies");
+        b.campaign.state[259]=1;b.campaign.kills[259*3]=1;playStoryChain(c,47);b=(Battle)get(c,"battle");check(((Story)get(c,"story")).id==483&&b.zone==20&&b.rewardChoices()==4,"full native ending chain offers four rewards");
+        c.keyPressed(Canvas.KEY_NUM3);c.keyPressed(Canvas.KEY_NUM3);check(b.campaign.rewardChoice==2,"reward selector uses numeric keys");
+        paint(c,"ending-reward-"+w+"x"+h);c.suspend();resume.invoke(c,"dnf-campaign-slot-"+get(c,"slot"));b=(Battle)get(c,"battle");check(b.campaign.rewardChoice==2&&b.rewardChoices()==4,"reward selection persists before settlement");
+        int p=b.campaign.book.choiceOffset(259,2),t=b.campaign.book.value(259,p),id=b.campaign.book.value(259,p+1);int pages=0;
+        while(b.dialogue>=0&&pages++<100)c.keyPressed(Canvas.KEY_NUM5);
+        check(pages<100&&b.campaign.state[259]==2&&b.campaign.bag.count(t,id)==1,"ending settles selected weapon through Canvas");
+    }
     private static void run(int w,int h)throws Exception{
         Canvas.testWidth=w;Canvas.testHeight=h;DnfCanvas c=new DnfCanvas(new DnfMIDlet());
         try{
@@ -103,7 +130,7 @@ public final class CanvasTest {
             int resource=audio.resources[0];audio.resources[0]=65534;audio.preview(0);check(audio.error.indexOf("Missing audio resource")>=0,"missing primary audio reports failure");audio.resources[0]=resource;
             Manager.fail=true;audio.preview(0);check(audio.error.length()>0,"unsupported codec safely reported");Manager.fail=false;
             set(c,"menu",Integer.valueOf(5));set(c,"selected",Integer.valueOf(2));c.keyPressed(Canvas.KEY_NUM5);check(audio.volume==25,"third setting changes volume");
-            battleUI(c,w,h);campaignUI(c,w,h);
+            battleUI(c,w,h);campaignUI(c,w,h);economyUI(c,w,h);
         }finally{c.stop();((Thread)get(c,"thread")).join(2000);check(!((Thread)get(c,"thread")).isAlive(),"canvas thread terminates");}
     }
     public static void main(String[] args)throws Exception{

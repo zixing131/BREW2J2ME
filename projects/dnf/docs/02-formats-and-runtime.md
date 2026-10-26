@@ -51,3 +51,7 @@ BAC、FOR、FOB 前两字节是 **rows,cols**，随后分别每格5/3/3字节。
 ## 后续资源
 
 `.ani` 是剧情/演出流，不能直接当精灵动画；`.ds` 也不是 BAC 格子格式。`.snd` 解压后为 `u8 trackCount`，逐轨 `u8 flag,u32 length,MMMD payload`；0.snd含16轨，不能统一跳过6字节后当单轨，更不能把SMAF当MIDI。剧情、字库和音频详见[专项记录](04-story-and-audio.md)。`0x88f4/0x9288` 揭示原四组 DnfHero、DnfQuest 等保存文件，当前使用独立试玩记录与四槽剧情/战斗/Campaign RMS，尚不读写原版存档格式。
+
+## 物品、后续任务与跨演出状态
+
+0.5将原0/1/2.etc、10/12.bd、questItem、SC、mapAni接入物品/交易与主线运行时；字段表、函数依据及DNS4/Campaign v2边界见[07](07-equipment-and-mainline.md)。格式解析不代表所有高级效果已实现。

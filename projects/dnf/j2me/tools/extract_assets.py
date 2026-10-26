@@ -3,7 +3,7 @@
 import hashlib,json,lzma,shutil,struct,zipfile
 from pathlib import Path
 import formats
-import audio_assets,story_assets
+import audio_assets,story_assets,gameplay_assets
 ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT.parent/'originals/0002E1A1.jar'
 SHA256='4d76f21a698055e0f6e702910e1915d5e1fb9497549ce3e34c3e03c26841881d'
@@ -39,6 +39,7 @@ def main():
     (ROOT/'build').mkdir(exist_ok=True)
     sounds=audio_assets.extract(ROOT/'resources',ROOT/'build')
     stories=story_assets.extract(ROOT/'resources',ROOT/'build',SOURCE)
+    gameplay_assets.extract(ROOT/'resources',ROOT/'build')
     (ROOT/'build/asset-report.json').write_text(json.dumps({'containers':sum(report.values()),'types':report,'exceptions':exceptions},ensure_ascii=False,indent=2)+'\n')
     print('Decoded %d resources; validated DAT/ACT/FRA/FIE/BAC/FOR/FOB, one documented source anomaly'%sum(report.values()))
     print('Converted %d original audio tracks; parsed %d story timelines and original bitmap font'%(len(sounds),len(stories)))

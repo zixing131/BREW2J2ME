@@ -51,7 +51,7 @@ public final class CampaignTest {
         walk(b,area(b,1,0));check(b.field==0,"north street to Feng Zhen street");npc(b,0);check(c.state[2]==2,"deliver quest2");int gold=c.gold;check(!c.finish(2)&&c.gold==gold,"reward cannot be claimed twice");npc(b,0);check(c.state[3]==1,"accept native next quest");
         b=Battle.decode(new Session(),b.encode());c=b.campaign;check(c.state[3]==1&&c.state[2]==2,"quest state across battle save");
         walk(b,area(b,1,1));npc(b,9);check(c.state[3]==2,"GSD turn-in");npc(b,9);check(c.state[4]==1,"GSD offers Linus quest");walk(b,area(b,1,0));walk(b,area(b,1,3));npc(b,14);check(c.state[4]==2,"walk through all three town quest contacts");
-        walk(b,area(b,1,0));walk(b,area(b,3,0));check(b.dialogue>=0&&b.campaign.dungeon==0,"dungeon entry asks before entering");b.dismiss();check(b.campaign.dungeon==0,"cancel entry");
+        walk(b,area(b,1,0));walk(b,area(b,3,0));check(b.menuRequest==3&&b.campaign.dungeon==0,"dungeon entry opens selection before entering");b.menuRequest=-1;check(b.campaign.dungeon==0,"cancel entry");
         b.startDungeon();check(b.field==6&&b.stage==1&&b.zone==1&&b.player.x==34&&b.player.y==205,"native ZON first entry");
         byte[] entry=b.encode();fight(b);check(c.xp>0&&c.cleared(6,1),"death awards original XP and clears room");
         int before=c.xp;walk(b,area(b,1,8));fight(b);walk(b,area(b,1,6));check(b.stage==1&&b.living()==0,"cleared room does not respawn during same run");check(c.xp>=before,"progress preserved on return");

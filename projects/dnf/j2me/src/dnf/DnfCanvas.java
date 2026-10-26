@@ -24,6 +24,8 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private Story story;
     private Battle battle;
     private Campaign progress;
+    private GameMenu gameMenu;
+    private int gamePage,gameEnd;
     private int currentMusic=-1;
     private long battleClock;
     private Audio audio;
@@ -69,7 +71,7 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void advanceStory()throws IOException {
                     story.advance();int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}
                     if(story.finished){int next=story.nextId==1?999:story.nextId;boolean exists=false;for(int i=0;i<stories.length;i++)if(stories[i]==next)exists=true;
-                        if(story.exitType==2&&exists){startStory(next);}else if(campaign&&(story.exitType==1||story.exitType==3)){enterBattle();}else{saveStory();menu=campaign?15:7;audio.stop();if(!campaign)message("本段剧情结束");}}
+                        if(story.exitType==2&&exists){startStory(next);}else if(campaign&&(story.exitType==1||story.exitType==3)){enterBattle();}else if(campaign&&story.exitType==0&&battle!=null){battle.pendingStory=-1;menu=-3;battleClock=0;saveBattle();}else{saveStory();menu=campaign?15:7;audio.stop();if(!campaign)message("本段剧情结束");}}
     }
     private int movement(int key){
         if(key==KEY_NUM4)return Session.LEFT;if(key==KEY_NUM6)return Session.RIGHT;
@@ -96,18 +98,26 @@ public final class DnfCanvas extends Canvas implements Runnable {
             else if(key==KEY_NUM0||key==-7)menu=12;
             else if(fire||key==-6){if(selected==0)newCampaign();else menu=12;}
         }else if(menu==-3){
-            if(battle.dialogue>=0){if(fire)confirmBattle();else if(key==KEY_NUM0||key==-7){if(battle.dialogue>=3)battle.dismiss();else pauseBattle();}}
+            if(battle.dialogue>=0){if(battle.rewardChoices()>0&&(key==KEY_NUM1||key==KEY_NUM3)){battle.selectReward(key==KEY_NUM1?-1:1);}else if(fire)confirmBattle();else if(key==KEY_NUM0||key==-7){if(battle.dialogue>=3)battle.dismiss();else pauseBattle();}}
             else if(move!=0){keys|=move;battle.directionPressed(move);}
             else if(fire){battle.attack();checkBattleStory();}
             else if(key==KEY_NUM1||key==KEY_STAR)battle.skill(0);
             else if(key==KEY_NUM3)battle.skill(1);
             else if(key==KEY_NUM7){keys=0;battle.journal();}
+            else if(key==KEY_NUM9)openGameMenu(0);
             else if(key==KEY_NUM0||key==KEY_POUND||key==-6||key==-7)pauseBattle();
         }else if(menu==16){
             if(key==KEY_NUM0||key==-7){menu=-3;battleClock=0;keys=0;}
-            else if(move==Session.UP||move==Session.LEFT)selected=(selected+4)%5;
-            else if(move==Session.DOWN||move==Session.RIGHT)selected=(selected+1)%5;
-            else if(fire||key==-6){if(selected==0){menu=-3;battleClock=0;}else if(selected==3){menu=-3;battleClock=0;battle.journal();}else if(selected==4){menu=-3;battleClock=0;if(battle.campaign.dungeon>0)battle.show("离开当前地下城，返回城镇休整？\n已经取得的经验和任务进度会保留。\n5：返回城镇   0：取消",4,-1);else if(!battle.tutorial()&&battle.field!=41){battle.hp=battle.maxHp;battle.mp=battle.maxMp;message("休整完成");}else message("请先完成当前任务");}else if(saveBattle()){if(selected==2){menu=12;audio.stop();refreshSlots();}else message("战斗进度已保存");}}
+            else if(move==Session.UP||move==Session.LEFT)selected=(selected+5)%6;
+            else if(move==Session.DOWN||move==Session.RIGHT)selected=(selected+1)%6;
+            else if(fire||key==-6){if(selected==5){openGameMenu(0);}else if(selected==0){menu=-3;battleClock=0;}else if(selected==3){menu=-3;battleClock=0;battle.journal();}else if(selected==4){menu=-3;battleClock=0;if(battle.campaign.dungeon>0)battle.show("离开当前地下城，返回城镇休整？\n已经取得的经验和任务进度会保留。\n5：返回城镇   0：取消",4,-1);else if(!battle.tutorial()&&battle.field!=41){battle.hp=battle.maxHp;battle.mp=battle.maxMp;message("休整完成");}else message("请先完成当前任务");}else if(saveBattle()){if(selected==2){menu=12;audio.stop();refreshSlots();}else message("战斗进度已保存");}}
+        }else if(menu==17){
+            if(key==KEY_NUM0||key==-7){if(gameMenu.confirming){gameMenu.confirming=false;gameMenu.selling=false;gamePage=0;}else{menu=-3;battleClock=0;saveBattle();}}
+            else if(key==KEY_NUM1||move==Session.LEFT){gameMenu.changeTab(-1);gamePage=0;}
+            else if(key==KEY_NUM3||move==Session.RIGHT){gameMenu.changeTab(1);gamePage=0;}
+            else if(key==KEY_POUND){gameMenu.alternate();gamePage=0;}
+            else if(move==Session.UP||move==Session.DOWN){gameMenu.move(move==Session.UP?-1:1);gamePage=0;}
+            else if(fire||key==-6){try{if(gameMenu.confirming&&gameDetailEnd()<gameMenu.detail().length()){gamePage=gameEnd;}else{boolean entered=gameMenu.confirm();gamePage=0;if(entered){menu=-3;battleClock=0;}saveBattle();}}catch(IOException e){message("操作失败："+e.toString());}}
         }else if(menu==15){if(fire||key==KEY_NUM0||key==-7){menu=12;refreshSlots();}}
         else if(menu==-2){
             if(fire)confirmStory();else if(key==KEY_NUM0||key==KEY_STAR||key==-7){saveStory();menu=campaign?12:0;selected=7;refreshSlots();audio.stop();}
@@ -180,20 +190,21 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void savePreferences(){try{saveRecord("dnf-preferences",new byte[]{1,(byte)session.speed,(byte)session.touchMode,(byte)audio.volume});}catch(Exception e){message("设置保存失败");}}
     private void loadPreferences(){try{byte[] b=readRecord("dnf-preferences");if(b.length==4&&b[0]==1&&b[1]>=0&&b[1]<5&&b[2]>=0&&b[2]<3&&b[3]>=0&&b[3]<=100){session.speed=b[1];session.touchMode=b[2];audio.volume=b[3];}}catch(Exception ignored){}}
     private void enterBattle()throws IOException {
-        Battle next=new Battle(new Session());next.campaign=progress;next.fromStory(story);progress=next.campaign;next.music=currentMusic;battle=next;menu=-3;battleClock=0;keys=0;noticeUntil=0;saveBattle();
+        Battle next=battle!=null&&battle.field==story.exitWords[0]&&battle.stage==story.exitWords[1]?battle:new Battle(new Session());next.campaign=progress;next.fromStory(story);progress=next.campaign;next.music=currentMusic;battle=next;menu=-3;battleClock=0;keys=0;noticeUntil=0;saveBattle();
     }
-    private void advanceBattle()throws IOException {long now=System.currentTimeMillis();int elapsed=battleClock==0?Session.TICK_MS[session.speed]:(int)Math.max(0,Math.min(1000,now-battleClock));battleClock=now;battle.tick(keys,elapsed);if(battle.sceneChanged){battle.sceneChanged=false;keys=0;saveBattle();}int sound=battle.takeSound();if(sound>=0)audio.play(0,sound,false,false);checkBattleStory();}
+    private void advanceBattle()throws IOException {if(battle.menuRequest>=0){int tab=battle.menuRequest;battle.menuRequest=-1;openGameMenu(tab);return;}long now=System.currentTimeMillis();int elapsed=battleClock==0?Session.TICK_MS[session.speed]:(int)Math.max(0,Math.min(1000,now-battleClock));battleClock=now;battle.tick(keys,elapsed);if(battle.sceneChanged){battle.sceneChanged=false;keys=0;saveBattle();}if(battle.campaign.loot.notice.length()>0){message(battle.campaign.loot.notice);battle.campaign.loot.notice="";}int sound=battle.takeSound();if(sound>=0)audio.play(0,sound,false,false);checkBattleStory();}
     private void checkBattleStory(){if(battle!=null&&battle.pendingStory>=0)try{int id=battle.pendingStory;progress=battle.campaign;startStory(id);saveStory();}catch(IOException e){menu=16;keys=0;message("剧情读取失败："+e.toString());}}
+    private void openGameMenu(int tab){keys=0;gameMenu=new GameMenu(battle);gameMenu.tab=tab;gameMenu.refresh();menu=17;gamePage=0;saveBattle();}
     private void pauseBattle(){keys=0;menu=16;selected=0;saveBattle();}
-    private void saveCampaign(){if(menu==-3||menu==16)saveBattle();else if(menu==-2)saveStory();}
+    private void saveCampaign(){if(menu==-3||menu==16||menu==17)saveBattle();else if(menu==-2)saveStory();}
     private boolean saveBattle(){if(battle==null)return false;try{saveRecord("dnf-campaign-slot-"+slot,battle.encode());occupied[slot]=true;return true;}catch(Exception e){message("战斗存档失败："+e.toString());return false;}}
-    private void confirmBattle(){Font f=Font.getFont(Font.FACE_SYSTEM,Font.STYLE_PLAIN,Font.SIZE_MEDIUM);int lines=Math.max(1,(getHeight()/2-42)/f.getHeight());battle.pageEnd=NativeText.draw(null,f,battle.dialogueText(),battle.pageStart,12,0,getWidth()-24,lines,0xffffff);battle.confirm();checkBattleStory();}
+    private void confirmBattle(){Font f=Font.getFont(Font.FACE_SYSTEM,Font.STYLE_PLAIN,Font.SIZE_MEDIUM);int lines=Math.max(1,(getHeight()/2-(battle.rewardChoices()>0?68:42))/f.getHeight());battle.pageEnd=NativeText.draw(null,f,battle.dialogueText(),battle.pageStart,12,0,getWidth()-24,lines,0xffffff);battle.confirm();checkBattleStory();}
     private void saveStory(){
         if(story==null)return;
         try{ByteArrayOutputStream b=new ByteArrayOutputStream();DataOutputStream d=new DataOutputStream(b);
             int flags=(story.waiting?1:0)|(story.finished?2:0);
-            d.writeInt(campaign?0x444e5333:0x444e5332);d.writeInt(story.id);d.writeInt(story.tick);d.writeInt(story.pageStart);d.writeInt(flags);d.writeInt(story.id^story.tick^story.pageStart^flags^0x1fa23b);
-            if(campaign){if(progress==null)progress=new Campaign();progress.write(d);d.flush();byte[] raw=b.toByteArray();d.writeInt(Campaign.checksum(raw,raw.length));}
+            d.writeInt(campaign?0x444e5334:0x444e5332);d.writeInt(story.id);d.writeInt(story.tick);d.writeInt(story.pageStart);d.writeInt(flags);d.writeInt(story.id^story.tick^story.pageStart^flags^0x1fa23b);
+            if(campaign){if(progress==null)progress=new Campaign();progress.write(d);byte[] suspended=battle==null?new byte[0]:battle.encode();d.writeInt(suspended.length);d.write(suspended);d.flush();byte[] raw=b.toByteArray();d.writeInt(Campaign.checksum(raw,raw.length));}
             d.flush();saveRecord(campaign?"dnf-campaign-slot-"+slot:"dnf-story-progress",b.toByteArray());
             if(campaign)occupied[slot]=true;
         }catch(Exception e){message("剧情进度保存失败");}
@@ -202,29 +213,30 @@ public final class DnfCanvas extends Canvas implements Runnable {
     private void resumeStory(String name){
         try{byte[] b=readRecord(name);
             if(campaign&&b.length>=4&&b[0]==0x44&&b[1]==0x4e&&b[2]==0x42&&(b[3]==0x31||b[3]==0x32)){Battle restoredBattle=Battle.decode(session,b);battle=restoredBattle;progress=battle.campaign;menu=-3;battleClock=0;keys=0;noticeUntil=0;audio.stop();currentMusic=battle.music;if(currentMusic>=0)audio.play(currentMusic,0,true,true);return;}
-            if(b.length<20||b.length>20000)throw new IOException("Progress length");
-            DataInputStream d=new DataInputStream(new ByteArrayInputStream(b));int magic=d.readInt();boolean extended=magic==0x444e5333;if(!extended&&b.length!=20&&b.length!=24)throw new IOException("Progress legacy length");if(!extended&&magic!=(b.length==20?0x444e5331:0x444e5332))throw new IOException("Progress version");
+            if(b.length<20||b.length>140000)throw new IOException("Progress length");
+            DataInputStream d=new DataInputStream(new ByteArrayInputStream(b));int magic=d.readInt();boolean suspendedSave=magic==0x444e5334;boolean extended=magic==0x444e5333||suspendedSave;if(!extended&&b.length!=20&&b.length!=24)throw new IOException("Progress legacy length");if(!extended&&magic!=(b.length==20?0x444e5331:0x444e5332))throw new IOException("Progress version");
             int id=d.readInt(),time=d.readInt(),page=d.readInt(),flags=b.length>=24?d.readInt():0;if(flags<0||flags>3||d.readInt()!=(id^time^page^flags^0x1fa23b))throw new IOException("Progress checksum");
-            Campaign restoredProgress=null;if(extended){restoredProgress=Campaign.read(d);if(d.readInt()!=Campaign.checksum(b,b.length-4)||d.available()!=0)throw new IOException("Progress campaign checksum");}
+            Battle suspendedBattle=null;Campaign restoredProgress=null;if(extended){restoredProgress=Campaign.read(d);if(suspendedSave){int length=d.readInt();if(length<0||length>d.available()-4)throw new IOException("Suspended battle length");if(length>0){byte[] bytes=new byte[length];d.readFully(bytes);suspendedBattle=Battle.decode(session,bytes);suspendedBattle.campaign=restoredProgress;}}if(d.readInt()!=Campaign.checksum(b,b.length-4)||d.available()!=0)throw new IOException("Progress campaign checksum");}
             Story restored=new Story(id,korean,true);if(time<0||time>restored.duration||page<0)throw new IOException("Progress bounds");
             while(restored.tick<time){restored.waiting=false;restored.advance();}
             if(page>0&&(restored.dialogue<0||page>restored.nodes[restored.dialogue].text.length()))throw new IOException("Progress page");
             restored.pageStart=page;if(b.length>=24){restored.waiting=(flags&1)!=0;restored.finished=(flags&2)!=0;}
             if(restored.finished&&time!=restored.duration)throw new IOException("Progress end");
-            if(campaign){progress=restoredProgress==null?new Campaign():restoredProgress;if(!extended&&id>=11&&id<100)progress.openingCheckpoint();battle=null;}
-            story=restored;menu=campaign&&restored.finished?15:-2;keys=0;noticeUntil=0;audio.stop();int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}if(campaign&&restored.finished&&(restored.exitType==1||restored.exitType==3))enterBattle();
+            if(campaign){progress=restoredProgress==null?new Campaign():restoredProgress;if(!extended&&id>=11&&id<100)progress.openingCheckpoint();battle=suspendedBattle;}
+            story=restored;menu=campaign&&restored.finished?15:-2;keys=0;noticeUntil=0;audio.stop();int music=story.takeMusic();if(music>=0){currentMusic=music;audio.play(music,0,true,true);}if(campaign&&restored.finished&&(restored.exitType==1||restored.exitType==3))enterBattle();else if(campaign&&restored.finished&&restored.exitType==0&&battle!=null){battle.pendingStory=-1;menu=-3;}
         }catch(Exception e){message("没有可继续的剧情记录，或记录已损坏");}
     }
     protected synchronized void pointerPressed(int x,int y){
         if(!ready){if(menu==7&&y>=getHeight()-50)owner.quit();return;}
         if(!touch()||x<0||x>=getWidth()||y<0||y>=getHeight())return;
         if(menu==-3){
-            if(battle.dialogue>=0){if(y>=getHeight()-32&&x>getWidth()/2&&battle.dialogue>=3)battle.dismiss();else if(y<30)pauseBattle();else confirmBattle();repaint();return;}
+            if(battle.dialogue>=0){if(battle.rewardChoices()>0&&y>=getHeight()-54&&y<getHeight()-26){battle.selectReward(x<getWidth()/2?-1:1);repaint();return;}if(y>=getHeight()-32&&x>getWidth()/2&&battle.dialogue>=3)battle.dismiss();else if(y<30)pauseBattle();else confirmBattle();repaint();return;}
             int vh=viewHeight();if(y<vh)return;int column=Math.min(3,x*4/getWidth()),row=(y-vh)*2/(getHeight()-vh);
             if(row==0)keys=new int[]{Session.LEFT,Session.UP,Session.DOWN,Session.RIGHT}[column];
             else if(column==0){battle.attack();checkBattleStory();}else if(column==1)battle.skill(0);else if(column==2)battle.skill(1);else pauseBattle();return;
         }
-        if(menu==16){if(y>=getHeight()-42)keyPressed(x<getWidth()/2?KEY_NUM5:KEY_NUM0);else{int row=(y-66)/pauseRowHeight();if(y>=66&&row>=0&&row<5){selected=row;keyPressed(KEY_NUM5);}}return;}
+        if(menu==17){if(y<44){keyPressed(x<getWidth()/2?KEY_NUM1:KEY_NUM3);}else if(y>=getHeight()-48){keyPressed(x<getWidth()/3?KEY_NUM5:x<2*getWidth()/3?KEY_POUND:KEY_NUM0);}else if(gameMenu.confirming){keyPressed(KEY_NUM5);}else{int row=(y-62)/gameRowHeight(),index=gameFirst()+row;if(row>=0&&row<gameRows()&&index<gameMenu.entries.length){gameMenu.selected=index;keyPressed(KEY_NUM5);}}repaint();return;}
+        if(menu==16){if(y>=getHeight()-42)keyPressed(x<getWidth()/2?KEY_NUM5:KEY_NUM0);else{int row=(y-66)/pauseRowHeight();if(y>=66&&row>=0&&row<6){selected=row;keyPressed(KEY_NUM5);}}return;}
         if(menu>=11){
             if(menu==11)keyPressed(KEY_NUM5);
             else if(menu==12){if(y>=getHeight()-42){keyPressed(x<getWidth()/2?KEY_NUM5:KEY_NUM0);}else if(y<64){keyPressed(KEY_STAR);}else if(x<getWidth()/3)keyPressed(KEY_NUM4);else if(x>getWidth()*2/3)keyPressed(KEY_NUM6);else keyPressed(KEY_NUM5);}
@@ -251,10 +263,10 @@ public final class DnfCanvas extends Canvas implements Runnable {
         int w=getWidth(),h=getHeight();g.setColor(0x11141a);g.fillRect(0,0,w,h);
         g.setFont(Font.getFont(Font.FACE_SYSTEM,Font.STYLE_PLAIN,Font.SIZE_MEDIUM));
         if(!ready){g.setColor(0xffffff);g.drawString(menu==7?"资源加载失败，0退出":"正在读取原版资源…",4,h/2,Graphics.TOP|Graphics.LEFT);return;}
-        int vh=menu==11?getHeight()-32:viewHeight(),lw=menu>=11&&menu!=16?240:w>h?320:240,lh=menu>=11&&menu!=16?320:w>h?240:320;
+        int vh=menu==11?getHeight()-32:viewHeight(),lw=menu>=11&&menu!=16&&menu!=17?240:w>h?320:240,lh=menu>=11&&menu!=16&&menu!=17?320:w>h?240:320;
         if(surface==null||surface.w!=lw||surface.h!=lh){surface=new Surface(lw,lh);scanline=new int[w*8];}
-        if(menu>=11&&menu!=16){surface.clear(0);int left=(lw-240)/2,top=(lh-320)/2;surface.tile(titleArt,0,0,left,top,0,false,1,0,0,0,false);surface.tile(titleArt,1,0,left,top+126,0,false,1,0,0,0,false);}
-        else if((menu==-3||menu==16)&&battle!=null)battle.draw(surface);
+        if(menu>=11&&menu!=16&&menu!=17){surface.clear(0);int left=(lw-240)/2,top=(lh-320)/2;surface.tile(titleArt,0,0,left,top,0,false,1,0,0,0,false);surface.tile(titleArt,1,0,left,top+126,0,false,1,0,0,0,false);}
+        else if((menu==-3||menu==16||menu==17)&&battle!=null)battle.draw(surface);
         else if(menu==-2&&story!=null)story.draw(surface);
         else if(menu==10)surface.clear(0x0841);
         else session.draw(surface);
@@ -264,7 +276,8 @@ public final class DnfCanvas extends Canvas implements Runnable {
                 for(int px=0;px<dw;px++)scanline[row*dw+px]=Surface.rgb(surface.pixels[sy*lw+px*lw/dw]);}
             g.drawRGB(scanline,0,dw,ox,oy+py,dw,strip,false);
         }
-        if(menu==16)drawBattlePause(g,w,h);
+        if(menu==17)drawGameMenu(g,w,h);
+        else if(menu==16)drawBattlePause(g,w,h);
         else if(menu==-3)drawBattle(g,w,h,vh,ox,oy,dw,dh,lw,lh);
         else if(menu>=11)drawFront(g,w,h);
         else if(menu>=0&&menu!=10)drawMenu(g,w,h);
@@ -294,26 +307,42 @@ public final class DnfCanvas extends Canvas implements Runnable {
                 g.setColor(0x10151d);g.drawString(label,ax+1,ay+1,Graphics.TOP|Graphics.HCENTER);g.setColor(a[0]==2?0xffdf83:0x87dfbe);g.drawString(label,ax,ay,Graphics.TOP|Graphics.HCENTER);
             }
         }
+        for(int i=0;i<battle.campaign.loot.ground.length;i++){int[] a=battle.campaign.loot.ground[i];if(a==null||a[0]!=battle.field||a[1]!=battle.stage)continue;int x=ox+(a[2]-battle.cameraX)*dw/lw,y=oy+(a[3]-battle.cameraY)*dh/lh;if(x<0||x>w||y<fh*2+30||y>vh-30)continue;g.setColor(a[4]<0?0xffdf83:0x87dfbe);g.fillRect(x-3,y-3,7,7);String label=a[4]<0?"金币 "+a[6]:battle.campaign.bag.items.name(a[4],a[5]);NativeText.draw(g,f,label,0,Math.max(4,Math.min(w-110,x-50)),y-20,106,1,0xffdf83);}
         if(battle.hp<=0){g.setColor(0x121923);g.fillRect(12,h/2-35,w-24,70);NativeText.draw(g,f,"战斗失败\n按5返回城镇，休整后再来挑战。",0,20,h/2-27,w-40,3,0xffdf83);}
         if(battle.field==41&&battle.stage==2){int x=ox+(207-battle.cameraX)*dw/lw,y=oy+(146-battle.cameraY)*dh/lh;g.setColor(0xffe484);g.drawString("研究日志 5",x,y,Graphics.TOP|Graphics.HCENTER);}
         if(touch()){String[] labels={"←","↑","↓","→","攻击",battle.father()?"技能1":"上挑",battle.father()?"技能3":"鬼斩","菜单"};int bh=(h-vh)/2;for(int i=0;i<8;i++){int bx=(i%4)*w/4,by=vh+(i/4)*bh;g.setColor(0x293444);g.fillRect(bx+1,by+1,w/4-2,bh-2);g.setColor(0xffdf83);g.drawString(labels[i],bx+w/8,by+(bh-fh)/2,Graphics.TOP|Graphics.HCENTER);}}
         else{g.setColor(0x121923);g.fillRect(0,h-fh-2,w,fh+2);g.setColor(0xffdf83);g.drawString((battle.zone==0||battle.zone==20)?"5交谈  7任务  0菜单":battle.father()?"5攻击  1/3技能  0菜单":"5攻击  1上挑  3鬼斩  0菜单",w/2,h-fh-1,Graphics.TOP|Graphics.HCENTER);}
-        if(battle.dialogue>=0){int top=h/2;g.setColor(0x121923);g.fillRect(5,top-8,w-10,h-top-20);g.setColor(0xb99b64);g.drawRect(5,top-8,w-11,h-top-21);battle.pageEnd=NativeText.draw(g,f,battle.dialogueText(),battle.pageStart,12,top,w-24,Math.max(1,(h/2-42)/fh),0xffffff);g.setColor(0x121923);g.fillRect(0,h-26,w,26);g.setColor(0xffdf83);g.drawString(battle.dialogue>=3?"5 继续 / 确认   0 取消":"5 继续    0 保存菜单",w/2,h-22,Graphics.TOP|Graphics.HCENTER);}
+        if(battle.dialogue>=0){int top=h/2;g.setColor(0x121923);g.fillRect(5,top-8,w-10,h-top-20);g.setColor(0xb99b64);g.drawRect(5,top-8,w-11,h-top-21);battle.pageEnd=NativeText.draw(g,f,battle.dialogueText(),battle.pageStart,12,top,w-24,Math.max(1,(h/2-(battle.rewardChoices()>0?68:42))/fh),0xffffff);if(battle.rewardChoices()>0){g.setColor(0x6e4222);g.fillRect(6,h-54,w-12,27);g.setColor(0xffdf83);g.drawString("1 ‹ "+battle.rewardLabel()+" › 3",w/2,h-51,Graphics.TOP|Graphics.HCENTER);}g.setColor(0x121923);g.fillRect(0,h-26,w,26);g.setColor(0xffdf83);g.drawString(battle.dialogue>=3?"5 继续 / 确认   0 取消":"5 继续    0 保存菜单",w/2,h-22,Graphics.TOP|Graphics.HCENTER);}
     }
-    private int pauseRowHeight(){return Math.min(34,Math.max(20,(getHeight()-105)/5));}
+    private int gameDetailEnd(){Font f=Font.getFont(Font.FACE_SYSTEM,Font.STYLE_PLAIN,Font.SIZE_MEDIUM);gameEnd=NativeText.draw(null,f,gameMenu.detail(),gamePage,14,62,getWidth()-28,Math.max(1,(getHeight()-118)/f.getHeight()),0xffffff);return gameEnd;}
+    private int gameRowHeight(){return Math.max(22,Font.getFont(Font.FACE_SYSTEM,Font.STYLE_PLAIN,Font.SIZE_MEDIUM).getHeight()+8);}
+    private int gameRows(){return Math.max(1,(getHeight()-142)/gameRowHeight());}
+    private int gameFirst(){return Math.max(0,Math.min(gameMenu.selected-gameRows()/2,gameMenu.entries.length-gameRows()));}
+    private void drawGameMenu(Graphics g,int w,int h){
+        Font f=g.getFont();int fh=f.getHeight();g.setColor(0x121923);g.fillRect(4,4,w-8,h-8);g.setColor(0xb99b64);g.drawRect(4,4,w-9,h-9);
+        g.setColor(0xffdf83);g.drawString("‹  "+GameMenu.TABS[gameMenu.tab]+"  ›",w/2,12,Graphics.TOP|Graphics.HCENTER);
+        g.setColor(0xb7c2d2);g.drawString("Lv."+battle.campaign.level+"  金币 "+battle.campaign.gold,12,36,Graphics.TOP|Graphics.LEFT);
+        if(gameMenu.confirming){gameEnd=NativeText.draw(g,f,gameMenu.detail(),gamePage,14,62,w-28,Math.max(1,(h-118)/fh),0xffffff);}
+        else if(gameMenu.entries.length==0){NativeText.draw(g,f,gameMenu.detail(),0,14,68,w-28,4,0xb7c2d2);}
+        else{int first=gameFirst(),rh=gameRowHeight();for(int row=0;row<gameRows()&&first+row<gameMenu.entries.length;row++){int i=first+row,y=62+row*rh;g.setColor(i==gameMenu.selected?0x6e4222:0x253040);g.fillRect(10,y,w-20,rh-2);NativeText.draw(g,f,gameMenu.row(i),0,16,y+3,w-32,1,i==gameMenu.selected?0xffdf83:0xffffff);}g.setColor(0xb7c2d2);g.drawString((gameMenu.selected+1)+" / "+gameMenu.entries.length,w-14,h-77,Graphics.TOP|Graphics.RIGHT);}
+        if(gameMenu.result.length()>0)NativeText.draw(g,f,gameMenu.result,0,14,h-76,w-28,1,0x87dfbe);
+        g.setColor(0xffdf83);g.drawString(gameMenu.confirming?(gameEnd<gameMenu.detail().length()?"5 下一页   0 取消":gameMenu.tab==4?"与NPC交谈交付   0 返回":"5 确认   # 更多   0 返回"):"5 查看   # 更多   0 返回",w/2,h-48,Graphics.TOP|Graphics.HCENTER);
+        g.setColor(0xb7c2d2);g.drawString("1 / 3 切换栏目    ↑↓ 选择",w/2,h-24,Graphics.TOP|Graphics.HCENTER);
+    }
+    private int pauseRowHeight(){return Math.min(34,Math.max(20,(getHeight()-105)/6));}
     private void drawBattlePause(Graphics g,int w,int h){
         g.setColor(0x121923);g.fillRect(8,24,w-16,h-48);g.setColor(0xb99b64);g.drawRect(8,24,w-17,h-49);
         g.setColor(0xffdf83);g.drawString("冒险手册",w/2,32,Graphics.TOP|Graphics.HCENTER);
-        String[] items={"继续冒险","保存进度","保存并返回标题","任务与角色","回城休整"};int row=pauseRowHeight();
+        String[] items={"继续冒险","保存进度","保存并返回标题","任务与角色","回城休整","背包 / 商店 / 地下城"};int row=pauseRowHeight();
         for(int i=0;i<items.length;i++){g.setColor(i==selected?0x6e4222:0x253040);g.fillRect(18,66+i*row,w-36,row-3);g.setColor(i==selected?0xffdf83:0xffffff);g.drawString(items[i],w/2,66+i*row+(row-g.getFont().getHeight())/2,Graphics.TOP|Graphics.HCENTER);}
-        if(h>300)NativeText.draw(g,g.getFont(),battle.location()+" · Lv."+battle.level,0,18,66+5*row+8,w-36,2,0xb7c2d2);
+        if(h>300)NativeText.draw(g,g.getFont(),battle.location()+" · Lv."+battle.level,0,18,66+6*row+8,w-36,2,0xb7c2d2);
         g.setColor(0xffdf83);g.drawString("5 确认    0 返回",w/2,h-24,Graphics.TOP|Graphics.HCENTER);
     }
     private void drawMenu(Graphics g,int w,int h){
         int boxW=Math.min(w-16,280),left=(w-boxW)/2;g.setColor(0x151b25);g.fillRect(left,8,boxW,h-16);g.setColor(0x9e8152);g.drawRect(left,8,boxW-1,h-17);
         int y=17;if(icon!=null){g.drawImage(icon,left+8,y,Graphics.TOP|Graphics.LEFT);}
         g.setColor(0xecd19b);g.drawString("地下城与勇士",w/2+12,y,Graphics.TOP|Graphics.HCENTER);
-        g.setColor(0xa6b4c6);g.drawString("鬼剑士 · WIPI 移植 0.4.0",w/2+12,y+19,Graphics.TOP|Graphics.HCENTER);
+        g.setColor(0xa6b4c6);g.drawString("鬼剑士 · WIPI 移植 0.5.0",w/2+12,y+19,Graphics.TOP|Graphics.HCENTER);
         y=64;
         if(menu==0){int first=menuFirst(),rows=menuRows();for(int row=0;row<rows;row++){int i=first+row;g.setColor(i==selected?0x6e4222:0x253040);g.fillRect(left+10,y+row*24,boxW-20,22);g.setColor(i==selected?0xffdf83:0xe7edf4);g.drawString(MAIN[i],left+19,y+row*24+2,Graphics.TOP|Graphics.LEFT);}g.setColor(0xa6b4c6);g.drawString((selected+1)+" / "+MAIN.length,w-25,h-45,Graphics.TOP|Graphics.RIGHT);}
         else {

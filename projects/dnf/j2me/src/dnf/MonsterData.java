@@ -13,5 +13,5 @@ public final class MonsterData {
         for(int i=0;i<3;i++){int p=78+i*15;attackWeight[i]=record[p]&255;attackClip[i]=record[p+6]&255;attackDamage[i]=u16(p+9);}
     }
     private int u16(int p){return (record[p]&255)|((record[p+1]&255)<<8);}
-    public String name(){if(id==4)return "GBL研究员";if(id==144)return "GBL教徒";if(id==3)return "冰虎";if(id==1)return "哥布林";return "敌人 "+id;}
+    public String name(){if(id==4)return "GBL研究员";if(id==144)return "GBL教徒";if(id==3)return "冰虎";if(id==1)return "希加布";if(id==2)return "精英希加布";if(id==7||id==13)return "哥布林";if(id==8)return "医疗哥布林";if(id==9||id==14)return "投掷哥布林";if(id==10)return "牛头前锋";if(id==11)return "哥布林十夫长";if(id==12)return "牛头巨兽";return "敌人 "+id;}
 }

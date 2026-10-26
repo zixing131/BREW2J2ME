@@ -6,5 +6,6 @@ public final class Font {
     private Font(int size){awt=new java.awt.Font("SansSerif",0,size==SIZE_SMALL?12:size==SIZE_LARGE?20:16);}
     public static Font getFont(int a,int b,int c){return new Font(c);}
     public int getHeight(){return awt.getSize()+4;}
+    public int stringWidth(String s){return substringWidth(s,0,s.length());}
     public int substringWidth(String s,int p,int n){return new java.awt.Canvas().getFontMetrics(awt).stringWidth(s.substring(p,p+n));}
 }

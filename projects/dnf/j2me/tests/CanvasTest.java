@@ -33,6 +33,18 @@ public final class CanvasTest {
         while(((Integer)get(c,"menu")).intValue()==-2&&ticks++<30000){Story part=(Story)get(c,"story");if(part.waiting)c.keyPressed(Canvas.KEY_NUM5);else storyAdvance.invoke(c);}
         b=(Battle)get(c,"battle");check(ticks<30000&&b.field==79&&b.zone==20,"ANI8/9/10/11 returns to original town scene");paint(c,"town-canvas-"+w+"x"+h);
     }
+    private static void campaignUI(DnfCanvas c,int w,int h)throws Exception {
+        Battle b=(Battle)get(c,"battle");b.player.x=280;b.player.y=363;c.keyPressed(Canvas.KEY_NUM5);check(b.dialogue>=3,"Mary original quest conversation opens");paint(c,"mary-quest-"+w+"x"+h);
+        int pages=0;while(((Integer)get(c,"menu")).intValue()==-3&&b.dialogue>=0&&pages++<100)c.keyPressed(Canvas.KEY_NUM5);
+        check(((Story)get(c,"story")).id==12&&b.campaign.state[2]==1,"quest confirmation launches ANI12");
+        c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM5);Campaign restored=(Campaign)get(c,"progress");check(restored.state[2]==1,"quest survives DNS3 story RMS round trip");
+        playStoryChain(c,12);b=(Battle)get(c,"battle");check(b.campaign.state[2]==1,"story to field retains campaign");
+        c.keyPressed(Canvas.KEY_NUM7);paint(c,"quest-journal-"+w+"x"+h);check(b.dialogueText().indexOf("风振")>=0,"task journal has original objective");c.keyPressed(Canvas.KEY_NUM0);check(b.dialogue<0,"cancel journal returns to field");
+        b.enter(0,1,0,0,40,250);b.startDungeon();paint(c,"dungeon-canvas-"+w+"x"+h);
+        c.keyPressed(Canvas.KEY_NUM0);paint(c,"campaign-menu-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM5);c.keyPressed(Canvas.KEY_NUM5);b=(Battle)get(c,"battle");check(b.campaign.dungeon==1&&b.field==6,"dungeon RMS preserves run");
+        b.hp=0;paint(c,"defeat-canvas-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);Method tick=DnfCanvas.class.getDeclaredMethod("advanceBattle");tick.setAccessible(true);tick.invoke(c);check(b.zone==0&&b.hp==b.maxHp,"defeat UI returns to safe town");
+        check(b.campaign.state[2]==1,"retreat retains active quest");
+    }
     private static void run(int w,int h)throws Exception{
         Canvas.testWidth=w;Canvas.testHeight=h;DnfCanvas c=new DnfCanvas(new DnfMIDlet());
         try{
@@ -91,7 +103,7 @@ public final class CanvasTest {
             int resource=audio.resources[0];audio.resources[0]=65534;audio.preview(0);check(audio.error.indexOf("Missing audio resource")>=0,"missing primary audio reports failure");audio.resources[0]=resource;
             Manager.fail=true;audio.preview(0);check(audio.error.length()>0,"unsupported codec safely reported");Manager.fail=false;
             set(c,"menu",Integer.valueOf(5));set(c,"selected",Integer.valueOf(2));c.keyPressed(Canvas.KEY_NUM5);check(audio.volume==25,"third setting changes volume");
-            battleUI(c,w,h);
+            battleUI(c,w,h);campaignUI(c,w,h);
         }finally{c.stop();((Thread)get(c,"thread")).join(2000);check(!((Thread)get(c,"thread")).isAlive(),"canvas thread terminates");}
     }
     public static void main(String[] args)throws Exception{

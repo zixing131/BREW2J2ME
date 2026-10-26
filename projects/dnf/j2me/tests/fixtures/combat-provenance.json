@@ -1,0 +1,8 @@
+{
+  "binary_sha256": "45bb74b218f8b88a6a434de4532e95b96f8d7febe1b4931fb217d1450fc4860a",
+  "executed": [
+    "0x7638c"
+  ],
+  "cases": 512,
+  "note": "No collision logic replaced by host shims."
+}

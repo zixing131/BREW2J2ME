@@ -11,6 +11,28 @@ public final class CanvasTest {
     private static Object get(Object o,String name)throws Exception{Field f=o.getClass().getDeclaredField(name);f.setAccessible(true);return f.get(o);}
     private static void set(Object o,String name,Object value)throws Exception{Field f=o.getClass().getDeclaredField(name);f.setAccessible(true);f.set(o,value);}
     private static void paint(DnfCanvas c,String name)throws Exception{BufferedImage image=new BufferedImage(c.getWidth(),c.getHeight(),BufferedImage.TYPE_INT_RGB);c.paint(new Graphics(image));ImageIO.write(image,"png",new File("build/"+name+".png"));}
+    private static void playStoryChain(DnfCanvas c,int id)throws Exception {
+        Method start=DnfCanvas.class.getDeclaredMethod("startStory",Integer.TYPE);start.setAccessible(true);start.invoke(c,Integer.valueOf(id));
+        Method advance=DnfCanvas.class.getDeclaredMethod("advanceStory");advance.setAccessible(true);int ticks=0;
+        while(((Integer)get(c,"menu")).intValue()==-2&&ticks++<30000){Story part=(Story)get(c,"story");if(part.waiting)c.keyPressed(Canvas.KEY_NUM5);else advance.invoke(c);}
+        check(ticks<30000&&((Integer)get(c,"menu")).intValue()==-3,"story chain enters playable field");
+    }
+    private static void battleUI(DnfCanvas c,int w,int h)throws Exception {
+        set(c,"campaign",Boolean.TRUE);playStoryChain(c,5);Battle b=(Battle)get(c,"battle");check(b.field==41&&b.stage==3&&b.enemies.length==6,"actual ANI5 enters research battle");
+        paint(c,"combat-canvas-"+w+"x"+h);int px=b.player.x;
+        c.pointerPressed(5,h-h/5+4);if(Viewport.defaultTouch(w,h))check(((Integer)get(c,"keys")).intValue()==Session.LEFT,"battle touch movement");else check(((Integer)get(c,"keys")).intValue()==0,"low-resolution battle has no virtual keys");c.pointerReleased(5,h-5);
+        c.keyPressed(Canvas.KEY_NUM1);check(b.player.hero.animation.clip==23,"campaign key1 is upper slash, not action browser");
+        int savedCooldown=b.upperCooldown,savedMusic=b.music;c.keyPressed(Canvas.KEY_NUM0);check(((Integer)get(c,"menu")).intValue()==16,"campaign pause");paint(c,"combat-pause-"+w+"x"+h);
+        c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM5);check(((Integer)get(c,"menu")).intValue()==12,"save and return to slots");b.player.x+=9;c.keyPressed(Canvas.KEY_NUM5);b=(Battle)get(c,"battle");
+        check(b.player.x==px&&b.player.hero.animation.clip==23&&b.upperCooldown==savedCooldown&&b.music==savedMusic,"RMS restores battle action, position, cooldown and music");
+        Method wallTick=DnfCanvas.class.getDeclaredMethod("advanceBattle");wallTick.setAccessible(true);set(c,"battleClock",Long.valueOf(System.currentTimeMillis()-300));int before=b.elapsedMs;wallTick.invoke(c);check(b.elapsedMs-before>=300&&b.elapsedMs-before<1000,"mission clock follows elapsed active time, not frame interval");
+        playStoryChain(c,7);b=(Battle)get(c,"battle");check(b.father()&&b.level==60,"ANI7 switches to playable Derin protection mission");check(b.dialogue==2&&b.elapsedMs==0,"quest463 introduction before protection timer");paint(c,"quest463-canvas-"+w+"x"+h);while(b.dialogue>=0)c.keyPressed(Canvas.KEY_NUM5);c.keyPressed(Canvas.KEY_NUM1);paint(c,"derin-canvas-"+w+"x"+h);
+        b.elapsedMs=180000-Session.TICK_MS[((Session)get(c,"session")).speed];Method advance=DnfCanvas.class.getDeclaredMethod("advanceBattle");advance.setAccessible(true);advance.invoke(c);
+        check(((Story)get(c,"story")).id==8,"protection timer launches original ANI8");
+        Method storyAdvance=DnfCanvas.class.getDeclaredMethod("advanceStory");storyAdvance.setAccessible(true);int ticks=0;
+        while(((Integer)get(c,"menu")).intValue()==-2&&ticks++<30000){Story part=(Story)get(c,"story");if(part.waiting)c.keyPressed(Canvas.KEY_NUM5);else storyAdvance.invoke(c);}
+        b=(Battle)get(c,"battle");check(ticks<30000&&b.field==79&&b.zone==20,"ANI8/9/10/11 returns to original town scene");paint(c,"town-canvas-"+w+"x"+h);
+    }
     private static void run(int w,int h)throws Exception{
         Canvas.testWidth=w;Canvas.testHeight=h;DnfCanvas c=new DnfCanvas(new DnfMIDlet());
         try{
@@ -20,16 +42,16 @@ public final class CanvasTest {
             c.suspend();Session s=(Session)get(c,"session");
             check(((Integer)get(c,"menu")).intValue()==11,"original title is default entry");
             paint(c,"title-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);
-            check(((Integer)get(c,"menu")).intValue()==12,"four campaign slots");paint(c,"slots-"+w+"x"+h);c.keyPressed(Canvas.KEY_NUM5);
+            check(((Integer)get(c,"menu")).intValue()==12,"four campaign slots");paint(c,"slots-"+w+"x"+h);if(((boolean[])get(c,"occupied"))[0]){c.keyPressed(Canvas.KEY_STAR);c.keyPressed(Canvas.KEY_NUM4);}c.keyPressed(Canvas.KEY_NUM5);
             Story opening=(Story)get(c,"story");check(opening.id==100&&opening.nativeText,"empty slot starts native ANI 100 in Chinese");
             if(w==240&&h==320){
                 Method advance=DnfCanvas.class.getDeclaredMethod("advanceStory");advance.setAccessible(true);
                 int steps=0,last=100,count=1;int[] chain={100,101,102,103,999,201,3,4};
                 while(((Integer)get(c,"menu")).intValue()==-2&&steps++<20000){Story part=(Story)get(c,"story");if(part.waiting)c.keyPressed(Canvas.KEY_NUM5);else advance.invoke(c);
                     part=(Story)get(c,"story");if(part.id!=last){check(count<chain.length&&part.id==chain[count++],"original opening transition");last=part.id;}}
-                check(count==chain.length&&((Integer)get(c,"menu")).intValue()==15,"ANI4 yields to field boundary, never auto-starts ANI5");
-                c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM5);check(((Integer)get(c,"menu")).intValue()==15,"completed checkpoint resumes boundary");
-                c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_STAR);c.keyPressed(Canvas.KEY_NUM4);c.keyPressed(Canvas.KEY_NUM5);check(((Story)get(c,"story")).id==100,"confirmed overwrite starts fresh");
+                check(count==chain.length&&((Integer)get(c,"menu")).intValue()==-3,"ANI4 enters investigation field, never auto-starts ANI5");
+                c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM5);c.keyPressed(Canvas.KEY_NUM5);check(((Integer)get(c,"menu")).intValue()==-3,"completed checkpoint resumes field");
+                c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM8);c.keyPressed(Canvas.KEY_NUM5);c.keyPressed(Canvas.KEY_STAR);c.keyPressed(Canvas.KEY_NUM4);c.keyPressed(Canvas.KEY_NUM5);check(((Story)get(c,"story")).id==100,"confirmed overwrite starts fresh");
             }
             c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_NUM5);check(((Story)get(c,"story")).id==100,"campaign slot resumes");
             c.keyPressed(Canvas.KEY_NUM0);c.keyPressed(Canvas.KEY_STAR);check(((Integer)get(c,"selected")).intValue()==1,"overwrite defaults to no");
@@ -69,6 +91,7 @@ public final class CanvasTest {
             int resource=audio.resources[0];audio.resources[0]=65534;audio.preview(0);check(audio.error.indexOf("Missing audio resource")>=0,"missing primary audio reports failure");audio.resources[0]=resource;
             Manager.fail=true;audio.preview(0);check(audio.error.length()>0,"unsupported codec safely reported");Manager.fail=false;
             set(c,"menu",Integer.valueOf(5));set(c,"selected",Integer.valueOf(2));c.keyPressed(Canvas.KEY_NUM5);check(audio.volume==25,"third setting changes volume");
+            battleUI(c,w,h);
         }finally{c.stop();((Thread)get(c,"thread")).join(2000);check(!((Thread)get(c,"thread")).isAlive(),"canvas thread terminates");}
     }
     public static void main(String[] args)throws Exception{

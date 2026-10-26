@@ -6,8 +6,8 @@ import java.util.Hashtable;
 import javax.microedition.lcdui.*;
 
 /** MIDP adapter for the recovered original state machines. */
-final class OriginalCanvas extends Canvas implements Runnable,CommandListener,OriginalSession.Resources,OriginalRenderer.Images {
-    private static final int COVER=0,MENU=1,PLAY=2,PAUSE=3,INFO=4,ERROR=5,SAVE=6,LOAD=7,SUPPLY=8,INVENTORY=9,UPGRADE=10,PREMIUM=11,OFFER=12,OVERWRITE=13,PREMIUM_WEAPONS=14;
+final class OriginalCanvas extends Canvas implements Runnable,CommandListener,OriginalSession.Resources,OriginalRenderer.Images,OriginalRenderer.Labels {
+    private static final int COVER=0,MENU=1,PLAY=2,PAUSE=3,INFO=4,ERROR=5,SAVE=6,LOAD=7,SUPPLY=8,INVENTORY=9,UPGRADE=10,PREMIUM=11,OFFER=12,OVERWRITE=13,PREMIUM_WEAPONS=14,SETTINGS=15;
     private final BioMIDlet app;
     private ScreenLayout layout;
     private int W,H;
@@ -25,6 +25,8 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private int screen=COVER,selection,input,lastText=-1,dialogPage,dialogLines,dialogRows=5,returnScreen=MENU,shopSlot,offerItem,offerReturn,saveReturn=PAUSE,pendingSlot;
     private int pointerKey=-1,pointerRow=-1,lastDialogEvent=-1,lastDialogPc=-1;
     private String info="",notice="";
+    private int infoLine;
+    private final OriginalNotice hint=new OriginalNotice();
     private String[] saveDescriptions=new String[4];
     private boolean gps,active=true,fireHeld,scriptSave,touch,touchConfigured;
     private volatile boolean running=true;
@@ -52,7 +54,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     protected synchronized void sizeChanged(int w,int h){if(data!=null&&atlas!=null)resize();}
     private void clearInput(){input=0;fireHeld=false;pointerKey=-1;pointerRow=-1;if(session!=null)session.combat.fireRequested=false;}
     private void open(int s){screen=s;selection=0;notice="";clearInput();}
-    private void newGame(){try{session=new OriginalSession(data,this);lastText=-1;dialogPage=0;gps=false;open(PLAY);}catch(Exception e){fail(e);}}
+    private void newGame(){try{session=new OriginalSession(data,this);hint.clear();lastText=-1;dialogPage=0;gps=false;open(PLAY);}catch(Exception e){fail(e);}}
     public void run(){
         while(running){long start=System.currentTimeMillis();synchronized(this){if(active&&screen==PLAY)tick();if(active)repaint();}
             long ms=50-(System.currentTimeMillis()-start);try{Thread.sleep(ms>0?ms:1);}catch(InterruptedException ignored){}
@@ -61,7 +63,9 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private void tick(){try{
         // A render/update tick is not a new BREW EVT_KEY. The original combat
         // latch itself continues firing on a hit; sniper zoom needs a second press.
-        session.tick(input);
+        hint.tick(W);session.tick(input);
+        if(session.combat.pendingNotice>0){showHint(session.combat.pendingNotice);session.combat.pendingNotice=0;}
+        if(session.vm.pendingNotice>0){showHint(session.vm.pendingNotice);session.vm.pendingNotice=0;}
         syncDialogue();
         if(session.player.hp<=0){open(PAUSE);notice="GAME OVER - LOAD SAVE";}
         else if(session.vm.ended){autosave();open(PAUSE);notice="STORY COMPLETE";}
@@ -106,18 +110,29 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         catch(Exception e){session.vm.action.kind=old;open(SAVE);notice="SAVE FAILED: "+e.getMessage();}
     }
     private void offer(int item,int backTo){dialogPage=0;offerItem=item;offerReturn=backTo;open(OFFER);}
-    private void info(String message,int backTo){info=message;returnScreen=backTo;open(INFO);}
+    private void info(String message,int backTo){info=message;infoLine=0;returnScreen=backTo;open(INFO);}
+    private void showHint(int id){String message=text.get(id);hint.show(message,font.measure(message,2),W);}
+    public void drawLabel(int[] dest,int w,int h,int id,int cx,int cy){
+        String message=text.get(id);int width=font.measure(message,0);
+        font.draw(dest,w,h,message,cx-width/2,cy-6,Math.max(1,width),0,0,1);
+    }
     private void choose(int n){
         if(n<0)return;
         if(screen==COVER){if(n==5)open(MENU);return;}
         if(screen==ERROR){if(n==0||n==11)open(MENU);return;}
-        if(screen==INFO){goBack();return;}
+        if(screen==INFO){
+            int rows=Math.max(1,(H-50)/14),lines=font.draw(frame,W,H,info,8,24,W-16,0xffffff,0,0);
+            if(n==0||n==11)goBack();
+            else if(n==2)infoLine=Math.max(0,infoLine-rows);
+            else if(n==8||n==5)infoLine=Math.min(Math.max(0,lines-rows),infoLine+rows);
+            return;
+        }
         if(screen==PLAY){
             OriginalVM v=session.vm;
             if(n==11){goBack();return;}
             if(v.action.kind==17&&v.narration!=null){if(n==5)v.narration.accelerate();return;}
             if(v.action.kind==4||v.action.kind==17){
-                syncDialogue();
+                syncDialogue();measureDialogue();
                 if(n==2)dialogPage=Math.max(0,dialogPage-1);
                 else if(n==8)dialogPage=Math.min(Math.max(0,dialogLines-dialogRows),dialogPage+1);
                 else if(n==5){if(dialogPage+dialogRows<dialogLines)dialogPage=Math.min(dialogLines-dialogRows,dialogPage+dialogRows);else{v.acknowledge();dialogPage=0;}}
@@ -127,7 +142,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             if(v.action.kind==21){if(n==5||n==0)v.transition(n==5);return;}
             if(v.action.kind==22){if(n==5)offer(v.offer,PLAY);else if(n==0){v.action.kind=0;v.offer=-1;}return;}
             if(v.busy())return;
-            if(n==0){notice=session.player.hp>0&&session.player.medicine()?"HP RESTORED":"NO MEDICINE / GAME OVER";}
+            if(n==0){showHint(session.player.hp>0&&session.player.medicine()?8001:8000);}
             else if(n==7)session.combat.cycle();
             else if(n==9){if(session.player.global[46]!=0)gps=!gps;else offer(3,PLAY);}
             else if(n==10)open(PREMIUM);
@@ -138,9 +153,13 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         if(n!=5)return;
         if(screen==MENU){
             if(selection==0)newGame();else if(selection==1)records(false,false);else if(selection==5)app.quit();
-            else if(selection==2){touch=!touch;touchConfigured=true;resize();info("TOUCH "+(touch?"ON":"OFF")+"$nAUTO RESOLUTION$n"+getWidth()+"x"+getHeight()+"$nSelect settings again to toggle.",MENU);}
-            else if(selection==3)info("2/8 MOVE 4/6 TURN$n1/3 STRAFE 5 FIRE$n7 WEAPON 0 MEDICINE$n9 GPS # PREMIUM$n* SYSTEM / BACK$nSave/load in SYSTEM.$nTouch: HUD and bottom keys.$nPremium: OFFLINE, no SMS.",MENU);
-            else info("3D生化启示录$nJ2ME ARM PORT 0.3.2$nOriginal maps, scripts,$nweapon/enemy tables.$nJava renderer / RMS adapter.",MENU);
+            else if(selection==2)open(SETTINGS);
+            else if(selection==3)info(text.get(7009),MENU);
+            else info("3D生化启示录$nJ2ME ARM PORT 0.3.7$nOriginal maps, scripts,$nweapon/enemy tables.$nJava renderer / RMS adapter.",MENU);
+        }else if(screen==SETTINGS){
+            if(selection==0){touch=!touch;touchConfigured=true;}
+            else touchConfigured=false;
+            resize();
         }else if(screen==PAUSE){
             if(selection==0){if(session.player.hp<=0)records(false,false);else open(PLAY);}else if(selection==1){if(session.player.hp>0)records(true,false);else notice="LOAD A SAVE OR START NEW GAME";}else if(selection==2)records(false,false);
             else if(selection==3)open(INVENTORY);else if(selection==4)open(SUPPLY);else if(selection==5)open(PREMIUM);
@@ -149,7 +168,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             else {autosave();open(MENU);}
         }else if(screen==SAVE){pendingSlot=selection;try{OriginalSaves.load(selection,data,this);open(OVERWRITE);}catch(Exception empty){saveTo(pendingSlot);}}
         else if(screen==OVERWRITE)saveTo(pendingSlot);
-        else if(screen==LOAD){try{session=OriginalSaves.load(selection,data,this);lastText=-1;dialogPage=0;gps=false;open(PLAY);}catch(Exception e){notice="LOAD FAILED: "+e.getMessage();}}
+        else if(screen==LOAD){try{session=OriginalSaves.load(selection,data,this);hint.clear();lastText=-1;dialogPage=0;gps=false;open(PLAY);}catch(Exception e){notice="LOAD FAILED: "+e.getMessage();}}
         else if(screen==SUPPLY)notice=session.player.buySupply(selection)?"PURCHASED":"NOT ENOUGH MONEY";
         else if(screen==INVENTORY){if(session.player.count==0)return;shopSlot=selection;session.combat.select(shopSlot);open(UPGRADE);}
         else if(screen==UPGRADE){notice=session.player.upgrade(shopSlot,selection)?"UPGRADED":"MAX LEVEL / NOT ENOUGH MONEY";}
@@ -160,7 +179,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             else notice="LIMIT REACHED / INVENTORY FULL";
         }
     }
-    private int count(){return screen==MENU?6:screen==PAUSE?9:screen==SAVE?3:screen==LOAD?4:screen==SUPPLY?6:screen==INVENTORY?session.player.count:screen==UPGRADE?5:screen==PREMIUM?6:screen==PREMIUM_WEAPONS?5:0;}
+    private int count(){return screen==MENU?6:screen==SETTINGS?2:screen==PAUSE?9:screen==SAVE?3:screen==LOAD?4:screen==SUPPLY?6:screen==INVENTORY?session.player.count:screen==UPGRADE?5:screen==PREMIUM?6:screen==PREMIUM_WEAPONS?5:0;}
     private boolean originalShop(){return screen==PREMIUM||screen==PREMIUM_WEAPONS||screen==SUPPLY;}
     private int shopStep(){return screen==PREMIUM?25:35;}
     private int shown(){return Math.min(count(),originalShop()?Math.max(2,(H-(screen==SUPPLY?100:146))/shopStep()):Math.max(1,(H-64)/layout.rowHeight));}
@@ -174,6 +193,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
     private String item(int i){
         OriginalPlayer p=session==null?null:session.player;
         if(screen==MENU)return text.get(8900+i);
+        if(screen==SETTINGS)return i==0?"屏幕按键："+(touch?"开启":"关闭"):"自动设置";
         if(screen==PAUSE){String[] a={"继续游戏","保存记录","载入记录","武器 / 升级","物品商店","超级商店","药品 "+p.medicines,"隐身 "+bio.original.Binary.u16(p.global,44),"返回主菜单"};return a[i];}
         if(screen==SAVE||screen==LOAD)return (i==3?"AUTO":"SLOT "+(i+1))+"  "+saveDescriptions[i];
         if(screen==SUPPLY)return text.get(9250+i)+" $"+OriginalPlayer.PRICES[i];
@@ -189,7 +209,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         if(count()>0){int row=menuHit(x,y);if(row>=0){selection=row;pointerRow=row;}
             else if(originalShop()){if(y>=H-21)pointerKey=x<W/2?5:0;else if(y<shopTop())navigate(-1);else navigate(1);}
             else if(y<27)navigate(-1);else if(y>=H-24)pointerKey=x<W/4?0:x<W/2?2:x<W*3/4?8:5;return;}
-        if(screen==PLAY&&!session.vm.busy()){pointerKey=quickHit(x,y);if(pointerKey<0)pointerKey=layout.touchKey(x,y);press(pointerKey);}else if(screen==OFFER&&y>H-30)pointerKey=x<W/4?0:x<W/2?2:x<W*3/4?8:5;else pointerKey=x<W/3&&y>H-30?0:5;
+        if(screen==PLAY&&!session.vm.busy()){pointerKey=quickHit(x,y);if(pointerKey<0)pointerKey=layout.touchKey(x,y);press(pointerKey);}else if((screen==OFFER||screen==INFO)&&y>H-30)pointerKey=x<W/4?0:x<W/2?2:x<W*3/4?8:5;else pointerKey=x<W/3&&y>H-30?0:5;
     }
     protected synchronized void pointerDragged(int px,int py){
         if(!touch||screen!=PLAY||session.vm.busy()||pointerKey<0)return;int n=layout.touchKey(px/layout.scale,py/layout.scale);if(n!=pointerKey){input&=~bit(pointerKey);fireHeld=false;pointerKey=n;press(n);}
@@ -253,7 +273,8 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
             label("$T00001$S000000"+item(start+i),left+6,y+(layout.rowHeight-12)/2,W-2*left-12,selected?0xffff00:0xffffff);}
         if(count()==0)label("EMPTY - FIND A WEAPON FIRST",8,H/2,W-16,0xffff00);
         label("0 BACK",2,H-16,W/4-2,0x00ff00);label("2 UP",W/4+2,H-16,W/4-2,0x00ff00);label("8 DOWN",W/2+2,H-16,W/4-2,0x00ff00);label("5 OK",W*3/4+2,H-16,W/4-2,0x00ff00);
-        if(title==0)label(notice.length()>0?notice:"$"+sessionMoney()+"  "+(selection+1)+"/"+count(),5,5,W-10,0x00ff00);
+        if(screen==SETTINGS)label((touchConfigured?"手动设置 ":"自动设置 ")+getWidth()+"x"+getHeight(),5,5,W-10,0x00ff00);
+        else if(title==0)label(notice.length()>0?notice:"$"+sessionMoney()+"  "+(selection+1)+"/"+count(),5,5,W-10,0x00ff00);
         else label(notice.length()>0?notice:"金钱 "+sessionMoney(),5,H-33,W-10,0x00ff00);
     }
     private int sessionMoney(){return session==null?0:session.player.money;}
@@ -311,6 +332,12 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         dialogRows=Math.max(1,(height-2)/16);
         dialogLines=font.drawSpaced(frame,W,H,message,x,top+3,wrap,0xffffff,dialogPage,dialogRows,2,16);
     }
+    private void measureDialogue(){
+        OriginalVM v=session.vm;int mode=v.dialogMode;
+        int width=mode==3?W/2:W,inset=OriginalDialogue.inset(mode,W);
+        dialogRows=Math.max(1,(OriginalDialogue.textHeight(mode,v.speaker>0)-2)/16);
+        dialogLines=font.drawSpaced(frame,W,H,OriginalDialogue.message(v,text),0,0,Math.max(14,width-2*inset),0xffffff,0,0,2,16);
+    }
     private void world()throws IOException{
         renderer.render(session,this);System.arraycopy(renderer.pixels,0,frame,W*layout.hud,renderer.pixels.length);OriginalPlayer p=session.player;OriginalCombat c=session.combat;
         if(p.current>=0){data.resolve(p,p.current,c.weapon);OriginalRenderer.Picture weapon=get(data.effectImage(c.weapon[11]));
@@ -346,6 +373,13 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         if(v.action.kind==21)dialog("进入下一关？","0 BACK     5 CONTINUE");
         if(v.action.kind==22)dialog("OFFLINE ITEM OFFER$n"+text.get(bio.original.Binary.u16(data.weapons,2+20*v.offer)),"0 SKIP     5 VIEW");
         if(v.unsupported>=0)dialog("SCRIPT ERROR "+v.unsupported,"* SYSTEM");
+        if(hint.active){
+            int top=layout.hud+3;
+            // 0x1D040: RGB565 0x41c7, flags 0x1302 (19/32 alpha), border 0x8cb3.
+            for(int y=top;y<top+20&&y<H;y++)for(int x=0;x<W;x++)frame[y*W+x]=OriginalMaterials.fog(frame[y*W+x],0x41c7,19);
+            rect(0,top,W,1,rgb565(0x8cb3));rect(0,top+20,W,1,rgb565(0x8cb3));
+            font.drawSpaced(frame,W,H,"$T00001$S000000"+hint.message,hint.x,top+4,Math.max(1,hint.width),0x00ff00,0,1,2,16);
+        }
     }
     private void hud()throws IOException{
         OriginalPlayer p=session.player;OriginalCombat c=session.combat;
@@ -427,7 +461,7 @@ final class OriginalCanvas extends Canvas implements Runnable,CommandListener,Or
         try{
             if(screen==COVER||screen==MENU){backdrop();if(screen==COVER)label(text.get(5000),Math.max(4,(W-156)/2),H-26,W-8,0x00ff00);else menu();}
             else if(screen==PLAY)world();
-            else if(screen==INFO||screen==ERROR){font.draw(frame,W,H,info,8,24,W-16,screen==ERROR?0xff5555:0xffffff,0,(H-50)/14);label("0 BACK",8,H-20,W-16,0x00ff00);}
+            else if(screen==INFO||screen==ERROR){font.draw(frame,W,H,info,8,24,W-16,screen==ERROR?0xff5555:0xffffff,screen==INFO?infoLine:0,(H-50)/14);label("0 BACK  2/8 TEXT",8,H-20,W-16,0x00ff00);}
             else if(screen==OVERWRITE)dialog("REPLACE SLOT "+(pendingSlot+1)+"?","0 CANCEL   5 SAVE");
             else if(screen==OFFER){int p=2+20*offerItem;dialog("OFFLINE / NO SMS$n"+text.get(bio.original.Binary.u16(data.weapons,p))+"$n"+text.get(bio.original.Binary.u16(data.weapons,p+2)),"2/8 TEXT  0 BACK  5 GET");if(notice.length()>0)label(notice,4,4,W-8,0xffff00);}
             else menu();

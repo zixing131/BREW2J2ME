@@ -10,6 +10,7 @@ public final class OriginalCombat {
     public final int[] weapon=new int[12];
     public int ticks,randomState=2211133,cooldown,reload,switchFrame=-1,nextSlot,zoom,target=-1,targetMode,targetDistance,shots,hurt,pendingEvent=-1;
     public boolean fireRequested;
+    public int pendingNotice;
     private final int[] xy=new int[2];
     public OriginalCombat(OriginalPlayer player,OriginalLevel level){
         this.player=player;this.level=level;data=player.data;actors=new int[level.actorCount][11];
@@ -111,8 +112,8 @@ public final class OriginalCombat {
             if(kind==0||id<100||id>=500||player.variables[id]==1)continue;
             int dx=player.x-Binary.s16(level.objects,p+4),dy=player.y-Binary.s16(level.objects,p+6);
             if(dx>=-23&&dx<24&&dy>=-23&&dy<24){player.variables[id]=1;
-                if(kind==1){player.reserve=Math.min(99999,player.reserve+10);player.tutorials[1]=1;}
-                if(kind==2){player.medicines=Math.min(999,player.medicines+2);player.tutorials[0]=1;}return;}
+                if(kind==1){player.reserve=Math.min(99999,player.reserve+10);pendingNotice=player.tutorials[1]==0?6305:8960;player.tutorials[1]=1;}
+                if(kind==2){player.medicines=Math.min(999,player.medicines+2);pendingNotice=player.tutorials[0]==0?6302:8961;player.tutorials[0]=1;}return;}
         }
     }
     public void rebuildOccupancy(){

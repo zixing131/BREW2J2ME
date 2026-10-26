@@ -11,10 +11,43 @@ public final class DesktopCanvasTest {
  static void key(OriginalCanvas c,int key){c.keyPressed(key);c.keyReleased(key);}
  static void tick(OriginalCanvas c)throws Exception{Method m=OriginalCanvas.class.getDeclaredMethod("tick");m.setAccessible(true);m.invoke(c);}
  static void capture(OriginalCanvas c,String file)throws Exception{Graphics g=new Graphics(c.getWidth(),c.getHeight());c.paint(g);check(screen(c)!=5,"Canvas error: "+field("info").get(c));ImageIO.write(g.image,"png",new File(output,file+".png"));}
- static void toggleTouch(OriginalCanvas c)throws Exception{int old=screen(c);field("screen").setInt(c,1);field("selection").setInt(c,2);key(c,53);field("screen").setInt(c,old);}
+ static void toggleTouch(OriginalCanvas c)throws Exception{int old=screen(c);field("screen").setInt(c,1);field("selection").setInt(c,2);key(c,53);key(c,53);field("screen").setInt(c,old);}
+ static final class LabelProbe implements OriginalRenderer.Images,OriginalRenderer.Labels {
+  final OriginalCanvas canvas;final java.util.Vector ids=new java.util.Vector();
+  LabelProbe(OriginalCanvas c){canvas=c;}
+  public OriginalRenderer.Picture get(int id)throws IOException{return canvas.get(id);}
+  public void drawLabel(int[] pixels,int w,int h,int id,int x,int y){ids.addElement(new Integer(id));canvas.drawLabel(pixels,w,h,id,x,y);}
+  boolean has(int id){return ids.contains(new Integer(id));}
+ }
+ static void hints(OriginalCanvas c,OriginalData data)throws Exception{
+  field("touchConfigured").setBoolean(c,false);c.resizeTest(240,320);field("screen").setInt(c,2);
+  OriginalSession s=new OriginalSession(data,c);field("session").set(c,s);s.vm.running=false;s.vm.action.kind=0;s.player.variables[0]=2;
+  s.player.x=912;s.player.y=80;s.player.angle=0;s.combat.rebuildOccupancy();
+  OriginalRenderer r=(OriginalRenderer)field("renderer").get(c);LabelProbe probe=new LabelProbe(c);r.render(s,probe);
+  check(probe.has(6000)&&probe.has(6001),"Axe label and invisible stair-door label both reach renderer");
+  int[] labeled=(int[])r.pixels.clone();final OriginalCanvas images=c;
+  r.render(s,new OriginalRenderer.Images(){public OriginalRenderer.Picture get(int id)throws IOException{return images.get(id);}});
+  check(!Arrays.equals(labeled,r.pixels),"Floating labels change visible production world pixels");capture(c,"labels-axe-240x320");
+  s.player.variables[20]=1;probe.ids.removeAllElements();r.render(s,probe);check(!probe.has(6000)&&probe.has(6001),"Original story flag hides axe label but preserves door label");
+  int ammo=-1;for(int i=0;i<s.level.objectCount;i++)if(s.level.objects[8*i+1]==1){ammo=8*i;break;}
+  check(ammo>=0,"Hospital ammo fixture");int ox=Binary.s16(s.level.objects,ammo+4),oy=Binary.s16(s.level.objects,ammo+6),id=Binary.u16(s.level.objects,ammo+2);
+  s.player.x=ox;s.player.y=oy+64;s.player.angle=270;probe.ids.removeAllElements();r.render(s,probe);check(probe.has(6071),"Ammo resource label rendered");capture(c,"labels-ammo-240x320");
+  s.player.x=ox;s.player.y=oy;s.combat.tick(0);tick(c);OriginalNotice hint=(OriginalNotice)field("hint").get(c);
+  check(hint.active&&hint.message.indexOf("子弹")>=0,"Production Canvas consumes first ammo tutorial");
+  for(int i=0;i<30;i++)hint.tick(240);capture(c,"pickup-ammo-guide-240x320");
+  check(s.player.variables[id]==1,"Ammo pickup remembered");
+  s.player.medicines=0;key(c,48);check(hint.active&&hint.message.indexOf("药品已用完")>=0,"Medicine failure visible in world");capture(c,"medicine-empty-guide");
+  s.player.medicines=1;s.player.hp=10;key(c,48);check(hint.message.indexOf("成功使用")>=0,"Medicine success visible in world");
+  field("screen").setInt(c,1);field("selection").setInt(c,2);key(c,53);key(c,53);check(field("touch").getBoolean(c),"Explicit keypad enable");
+  key(c,56);key(c,53);check(!field("touch").getBoolean(c)&&!field("touchConfigured").getBoolean(c),"Restore automatic setting removes QVGA keypad");
+  c.resizeTest(320,240);check(!field("touch").getBoolean(c),"Automatic landscape QVGA has no keypad");
+  c.resizeTest(360,640);check(field("touch").getBoolean(c),"Automatic high resolution enables keypad");
+ }
  public static void main(String[] args)throws Exception{
   output=new File(args[0]);output.mkdirs();OriginalCanvas c=new OriginalCanvas(new BioMIDlet());field("running").setBoolean(c,false);field("active").setBoolean(c,false);check(screen(c)==0,"Canvas initialized");
   check(!field("touch").getBoolean(c),"QVGA starts with touch disabled");c.pointerPressed(100,100);c.pointerReleased(100,100);check(screen(c)==0,"Disabled touch ignores cover tap");
+  key(c,53);field("selection").setInt(c,2);key(c,53);check(screen(c)==15&&!field("touch").getBoolean(c),"Opening settings does not enable virtual keypad");capture(c,"settings-240x320");key(c,48);
+  field("selection").setInt(c,3);key(c,53);capture(c,"help-240x320");c.resizeTest(176,220);key(c,56);check(field("infoLine").getInt(c)>0,"Original Chinese help scrolls to remaining controls");capture(c,"help-last-page");c.resizeTest(240,320);key(c,48);field("screen").setInt(c,0);
   capture(c,"cover-240x320");key(c,53);capture(c,"menu-240x320");key(c,53);OriginalSession s=(OriginalSession)field("session").get(c);check(screen(c)==2&&s!=null,"Start new game");
   for(int i=0;i<1000;i++){if(s.vm.action.kind==18)break;if(s.vm.action.kind==4||s.vm.action.kind==17)s.vm.acknowledge();tick(c);}
   check(s.vm.action.kind==18,"Original save prompt");capture(c,"save-prompt");key(c,53);check(screen(c)==6,"Prompt opens records");key(c,53);check(screen(c)==2&&s.vm.action.kind==0,"Save acknowledges original prompt");
@@ -23,10 +56,22 @@ public final class DesktopCanvasTest {
   RecordStore r=RecordStore.openRecordStore("bio-original-v3-0",false);byte[] b=r.getRecord(1);b[b.length/2]^=1;r.setRecord(1,b,0,b.length);check(OriginalSaves.load(0,s.data,c).player.money==111,"Corrupt latest falls back to previous");
   RecordStore.failWrites=true;try{OriginalSaves.save(0,s);throw new Exception("Write failure hidden");}catch(Exception expected){check(expected.getMessage().equals("Disk full"),"RMS disk error propagated");}finally{RecordStore.failWrites=false;}
   check(OriginalSaves.load(0,s.data,c).player.money==111,"Failed write preserves prior save");
+  OriginalSession guided=new OriginalSession(s.data,c);field("session").set(c,guided);boolean radarGuide=false,markerGuide=false;
+  for(int i=0;i<3000&&guided.vm.action.kind!=18;i++){
+   tick(c);int id=guided.vm.textId;
+   if(guided.vm.action.kind==4){
+    if(id==6300)radarGuide=true;if(id==6301)markerGuide=true;
+    // Deliberately confirm before paint: stale geometry must not skip a long new guide.
+    if((id==6300||id==6301)&&field("dialogPage").getInt(c)==0){key(c,53);check(guided.vm.action.kind==4,"Long original guide survives first confirm before paint");capture(c,"guide-"+id);}
+    else key(c,53);
+   }else if(guided.vm.action.kind==17)key(c,53);
+  }
+  check(radarGuide&&markerGuide&&guided.vm.action.kind==18,"New game reaches both original guides and save prompt through real input");
+  field("session").set(c,s);
   s.vm.action.kind=0;s.vm.running=false;s.vm.variables[0]=2;s.player.x=889;s.player.y=105;s.player.angle=50;s.combat.rebuildOccupancy();s.player.addWeapon(2);s.player.slots[7]=6;s.player.reserve=50;
   int[][] sizes={{176,220},{240,320},{320,240},{360,640},{640,360}};
   for(int i=0;i<sizes.length;i++){int w=sizes[i][0],h=sizes[i][1];field("touchConfigured").setBoolean(c,false);c.resizeTest(w,h);check(field("touch").getBoolean(c)==(i>=3),"Resolution default "+w+"x"+h);field("screen").setInt(c,2);capture(c,"world-"+w+"x"+h);
-   if(i<3){int before=screen(c);c.pointerPressed(w-3,3);c.pointerReleased(w-3,3);check(screen(c)==before,"Disabled HUD ignores touch");toggleTouch(c);check(field("touch").getBoolean(c),"Settings enable touch on QVGA");}
+   if(i<3){ScreenLayout noPad=(ScreenLayout)field("layout").get(c);check(noPad.touchHeight==0&&noPad.hud==47,"Default low resolution reserves no virtual keypad area");int before=screen(c);c.pointerPressed(w-3,3);c.pointerReleased(w-3,3);check(screen(c)==before,"Disabled HUD ignores touch");toggleTouch(c);check(field("touch").getBoolean(c),"Settings enable touch on QVGA");}
    ScreenLayout l=new ScreenLayout(w,h,true);int x=(l.width-3)*l.scale,y=(l.height-l.touchHeight+3)*l.scale;int shots=s.combat.shots;s.combat.reload=0;s.combat.cooldown=0;
    c.pointerPressed(x,y);tick(c);c.pointerReleased(x,y);check(s.combat.shots>shots,"Touch fire "+w+"x"+h);
    x=(l.width-3)*l.scale;y=3;c.pointerPressed(x,y);c.pointerReleased(x,y);check(screen(c)==3,"Touch HUD pause");capture(c,"system-"+w+"x"+h);int previous=field("selection").getInt(c);c.pointerPressed(w*5/8,h-10);c.pointerReleased(w*5/8,h-10);check(field("selection").getInt(c)==previous+1,"Touch menu scroll");field("selection").setInt(c,0);key(c,53);check(screen(c)==2,"Resume from system");
@@ -78,6 +123,7 @@ public final class DesktopCanvasTest {
   for(int level=1;level<=16;level++){OriginalSession levelSession=new OriginalSession(s.data,c);levelSession.load(level,80,80,0);field("session").set(c,levelSession);field("screen").setInt(c,2);capture(c,"level-"+level);
    byte[] snapshot=SaveCodec.encode(levelSession,1L,1);check(Arrays.equals(snapshot,SaveCodec.encode(SaveCodec.decode(snapshot,s.data,c),1L,1)),"Every level save roundtrip "+level);
   }
+  hints(c,s.data);
   System.out.println("PASS production Canvas/RMS via desktop adapters: "+checks+" assertions; previews "+output);
  }
 }

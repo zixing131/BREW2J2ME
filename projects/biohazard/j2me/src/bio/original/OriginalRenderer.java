@@ -8,6 +8,7 @@ public final class OriginalRenderer implements OriginalSky.Sink {
         public Picture(int w,int h,int[] p){width=w;height=h;pixels=p;}
     }
     public interface Images {Picture get(int id)throws IOException;}
+    public interface Labels {void drawLabel(int[] dest,int w,int h,int textId,int centerX,int centerY);}
     public final int width,height;
     public final int[] pixels,depth;
     private final byte[] metadata;
@@ -28,6 +29,7 @@ public final class OriginalRenderer implements OriginalSky.Sink {
     private final double[] rowDistance;
     private final int[] rowFog;
     private Images backgroundImages;
+    private int[] labelBand;
     public OriginalRenderer(int w,int h,byte[] metadata,int[][] tiles,int[] atlas){
         width=w;height=h;pixels=new int[w*h];depth=new int[w*h];rowDistance=new double[h];rowFog=new int[h];this.metadata=metadata;this.tiles=tiles;this.atlas=atlas;
         spriteBase=8;int p=8+36*Binary.i32(metadata,4);boxBase=p+4;p+=4+32*Binary.i32(metadata,p);actorBase=p+4;
@@ -83,11 +85,27 @@ public final class OriginalRenderer implements OriginalSky.Sink {
         world(session.level,x,y,p.angle,c.zoom!=0?2:1);
         for(int i=0;i<session.level.objectCount;i++){
             int at=i*8,kind=session.level.objects[at+1]&255,var=Binary.u16(session.level.objects,at+2),idx=session.level.objects[at]&255;
-            if(kind!=0&&var<500&&p.variables[var]==1)continue;int d=spriteBase+36*idx;if(metadata[d+30]!=0)continue;
-            sprite(images,d,Binary.s16(session.level.objects,at+4),Binary.s16(session.level.objects,at+6),0,session);
+            if(kind!=0&&var<500&&p.variables[var]==1)continue;int d=spriteBase+36*idx;
+            int flag=metadata[d+29];if(metadata[d+28]!=0&&flag>=0&&flag<p.variables.length&&p.variables[flag]==1)continue;
+            int ox=Binary.s16(session.level.objects,at+4),oy=Binary.s16(session.level.objects,at+6);
+            if(metadata[d+30]==0)sprite(images,d,ox,oy,0,session);
+            if(metadata[d+31]==1&&images instanceof Labels)objectLabel((Labels)images,Binary.s16(metadata,d+32),ox,oy,p.angle);
         }
         for(int i=0;i<session.combat.actors.length;i++){
             int[] a=session.combat.actors[i];sprite(images,actorBase+84*session.combat.type(i),a[OriginalCombat.X],a[OriginalCombat.Y],a[OriginalCombat.STATE],session);
+        }
+    }
+    private void objectLabel(Labels labels,int id,int x,int y,int angle){
+        double cs=OriginalTrig.cos(angle)/65536.0,sn=OriginalTrig.sin(angle)/65536.0;
+        double vx=x-viewX,vy=y-viewY,d=vx*cs+vy*sn;if(d<=0||d>=1000)return;
+        int cx=width/2+(int)((cs*vy-sn*vx)*camera.focal/d),top=(int)camera.horizon-7,dist=(int)(d*256);
+        if(labelBand==null)labelBand=new int[width*14];
+        for(int i=0;i<labelBand.length;i++)labelBand[i]=0x80000000;
+        // 0x9990: text is centered on projected X at the view horizon, not the sprite top.
+        labels.drawLabel(labelBand,width,14,id,cx,7);
+        for(int yy=0;yy<14;yy++)if(top+yy>=0&&top+yy<height)for(int xx=0;xx<width;xx++){
+            int color=labelBand[yy*width+xx],at=(top+yy)*width+xx;
+            if(color!=0x80000000&&dist<=depth[at]){pixels[at]=color;depth[at]=dist;}
         }
     }
     public void rectangle(int x,int y,int w,int h,int flags,int first,int last){

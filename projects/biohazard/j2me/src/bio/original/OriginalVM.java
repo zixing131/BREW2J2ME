@@ -12,6 +12,8 @@ public final class OriginalVM {
     public int unsupported=-1,transitionLevel,transitionX,transitionY,transitionAngle;
     public boolean running,condition,ended;
     public int offer=-1;
+    public int pendingNotice;
+    private boolean insideRegion;
     int cellX,cellY;
     public OriginalVM(OriginalScript script){this(script,null);}
     public OriginalVM(OriginalScript script,OriginalPlayer player){this.script=script;this.player=player;variables=player==null?new byte[500]:player.variables;fired=new boolean[script.count];}
@@ -34,7 +36,11 @@ public final class OriginalVM {
     public int region(int x,int y,boolean activate){
         if(busy())return -1;
         for(int i=0;i<script.count;i++)if(script.headers[i][1]==1){int[] r=script.regions[i];
-            if(x>r[0]&&y>=r[1]&&x<r[2]&&y<r[3]){if(activate)start(i);return i;}}
+            if(x>r[0]&&y>=r[1]&&x<r[2]&&y<r[3]){
+                if(activate)start(i);
+                else if(!insideRegion){insideRegion=true;int hint=(short)(script.headers[i][2]>>>16);if(hint>0)pendingNotice=hint;}
+                return i;}}
+        insideRegion=false;
         return -1;
     }
     public void transition(boolean accept){

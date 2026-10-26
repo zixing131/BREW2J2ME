@@ -18,6 +18,11 @@ public final class OriginalFont {
         if(c!='\u2026')return slot('\u2026');return 0;
     }
     public int advance(char c){return c>=32&&c<=126?6:12;}
+    public int measure(String s,int spacing){
+        s=OriginalText.plain(s);int width=0,max=0;
+        for(int i=0;i<s.length();i++){char c=s.charAt(i);if(c=='\n'){max=Math.max(max,width);width=0;}else width+=advance(c)+spacing;}
+        return Math.max(max,width);
+    }
     public void glyph(int[] pixels,int w,int h,char c,int x,int y,int color){
         boolean ascii=c>=32&&c<=126;int base=ascii?asciiBase+12*(c-32):glyphBase+24*slot(c),width=ascii?6:12;
         for(int j=0;j<12;j++){

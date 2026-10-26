@@ -35,6 +35,9 @@ public final class OriginalSystemsTest {
         s.player.x=31*32+16;s.player.y=2*32+16;s.combat.rebuildOccupancy();settle(s);
         check(s.player.count==1&&s.player.slots[0]==1&&s.player.variables[0]==2,"Original axe acquisition");
         check(s.vm.region(880,50,false)==6&&s.vm.region(930,50,false)==-1,"Region uses two corners, not width/height");
+        s.vm.pendingNotice=0;s.vm.region(880,50,false);int regionHint=(short)(s.vm.script.headers[6][2]>>>16);
+        check(regionHint>0&&s.vm.pendingNotice==regionHint,"Entering original interaction region announces its resource hint");
+        s.vm.pendingNotice=0;s.vm.region(880,50,false);check(s.vm.pendingNotice==0,"Standing in a region does not restart scrolling text");
         // Hit original story-bound actor and verify death event leads to the original next objective.
         int enemy=-1;for(int i=0;i<s.level.actorCount;i++)if(s.level.actors[20*i+16]!=0&&Binary.u16(s.level.actors,20*i+18)==2){enemy=i;break;}
         check(enemy>=0,"Original death event actor");s.player.x=700;s.player.y=400;s.player.angle=0;actor(s,enemy,745,400,50);s.combat.aim();
@@ -64,6 +67,23 @@ public final class OriginalSystemsTest {
         int[][] sizes={{176,220},{240,320},{320,240},{360,640},{640,360}};
         for(int k=0;k<sizes.length;k++){ScreenLayout layout=new ScreenLayout(sizes[k][0],sizes[k][1],true);for(int i=0;i<6;i++)check(layout.menuHit(layout.width/2,layout.menuTop(6)+i*layout.rowHeight+5,6,0,6)==i,"Menu draw/hit parity");check(layout.touchKey(1,1)==0&&layout.touchKey(layout.width-1,1)==11,"HUD touch");check(layout.touchKey(layout.width-1,layout.height-layout.touchHeight+2)==5,"Fire touch");check(layout.touchKey(-1,100)==-1,"Outside touch");}
         check(OriginalRenderer.textureU(.2,0)==.8&&OriginalRenderer.textureU(.2,1)==.2,"Wall U orientation flag");
+        OriginalSession pickups=arena();
+        for(int kind=1;kind<=2;kind++){
+            int found=-1;for(int i=0;i<pickups.level.objectCount;i++)if((pickups.level.objects[8*i+1]&255)==kind){found=i*8;break;}
+            check(found>=0,"Original hospital contains pickup kind "+kind);
+            int id=Binary.u16(pickups.level.objects,found+2);pickups.player.x=Binary.s16(pickups.level.objects,found+4);pickups.player.y=Binary.s16(pickups.level.objects,found+6);
+            pickups.combat.tick(0);check(pickups.combat.pendingNotice==(kind==1?6305:6302),"First pickup emits original teaching text");
+            check(pickups.player.variables[id]==1&&pickups.player.tutorials[kind==1?1:0]==1,"Pickup collected and tutorial remembered");
+            pickups.combat.pendingNotice=0;pickups.combat.tick(0);check(pickups.combat.pendingNotice==0,"Collected pickup does not repeat");
+            OriginalSession loadedPickup=SaveCodec.decode(SaveCodec.encode(pickups,9,1),data,resources);
+            loadedPickup.player.variables[id]=0;loadedPickup.combat.tick(0);
+            check(loadedPickup.combat.pendingNotice==(kind==1?8960:8961),"Loaded tutorial flag selects short repeat message");
+        }
+        in=fixture(args[0],"arm-notice");int noticeStreams=in.readInt(),noticeFrames=0;
+        for(int i=0;i<noticeStreams;i++){
+            int w=in.readInt(),textWidth=in.readInt(),frames=in.readInt();OriginalNotice hint=new OriginalNotice();hint.show("test",textWidth,w);
+            for(int j=0;j<frames;j++){hint.tick(w);check(hint.x==in.readInt(),"ARM notice scroll position");check(hint.active==(in.readInt()!=0),"ARM notice expiry");}noticeFrames+=frames;
+        }in.close();System.out.println("PASS original ARM scrolling notices: "+noticeFrames+" frames");
         OriginalCamera camera=new OriginalCamera(176,173,1);
         // Original ARM 0x17858 executed in Unicorn: eye210, focal170, offset114.
         // A wall 100 map units away projects through a 400-unit original depth.

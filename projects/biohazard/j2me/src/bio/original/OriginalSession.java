@@ -28,6 +28,7 @@ public final class OriginalSession {
             combat.tick(input);
             if(combat.pendingEvent>=0){vm.explicit(combat.pendingEvent);combat.pendingEvent=-1;}
             vm.trigger(2,player.x,player.y);vm.trigger(0,player.x,player.y);
+            vm.region(player.x,player.y,false);
         }else combat.ticks++;
         if(vm.action.kind==17&&vm.narration!=null){vm.narration.tick();if(!vm.narration.active)vm.action.kind=0;}
         vm.action.x=player.x;vm.action.y=player.y;vm.action.angle=player.angle;vm.step();ensureNarration();

@@ -17,14 +17,22 @@ source=[root/'src/bio'/n for n in ('GameState.java','Trig.java','RayRenderer.jav
 subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(out)]+list(map(str,source))+[str(root/'tests/CoreTest.java')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(out),'bio.CoreTest',str(root/'resources'),str(root/'build/render-preview.png')],check=True)
 original=list((root/'src/bio/original').glob('*.java'))
-subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(out)]+list(map(str,original))+[str(root/'tests/OriginalTest.java'),str(root/'tests/OriginalPreview.java'),str(root/'tests/OriginalSystemsTest.java')],check=True)
+subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(out)]+list(map(str,original))+[str(root/'tests/OriginalTest.java'),str(root/'tests/OriginalPreview.java'),str(root/'tests/OriginalSystemsTest.java'),str(root/'tests/FullCampaignTest.java')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-cp',str(out),'bio.original.OriginalTest',str(root/'tests/fixtures'),str(root/'build/extracted/mbx')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-cp',str(out),'bio.original.OriginalSystemsTest',str(root/'tests/fixtures'),str(root/'resources/original'),str(root.parent/'originals/1073745158/save.dat')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(out),'bio.original.OriginalPreview',str(root/'build/extracted/mbx'),str(root/'resources'),str(root/'build/original-preview.png')],check=True)
 desktop=root/'build/desktop-tests';desktop.mkdir(exist_ok=True)
-subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(desktop)]+list(map(str,original))+list(map(str,(root/'tests/midp').rglob('*.java')))+[str(root/'src/bio/OriginalCanvas.java'),str(root/'src/bio/OriginalSaves.java'),str(root/'src/bio/OriginalAudio.java'),str(root/'src/bio/SupplementalAudio.java'),str(root/'tests/OriginalAudioTest.java'),str(root/'tests/DesktopCanvasTest.java')],check=True)
+subprocess.run([str(java_executable(jdk,'javac')),'-encoding','UTF-8','-d',str(desktop)]+list(map(str,original))+list(map(str,(root/'tests/midp').rglob('*.java')))+[str(root/'src/bio/OriginalCanvas.java'),str(root/'src/bio/OriginalSaves.java'),str(root/'src/bio/OriginalAudio.java'),str(root/'src/bio/SupplementalAudio.java'),str(root/'tests/OriginalAudioTest.java'),str(root/'tests/DesktopCanvasTest.java'),str(root/'tests/CampaignCanvasTest.java')],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.OriginalAudioTest'],check=True)
 subprocess.run([str(java_executable(jdk,'java')),'-Djava.awt.headless=true','-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.DesktopCanvasTest',str(root/'build/ui-previews')],check=True)
+# Continuous campaign uses the accessible offline mall; it does not establish no-mall balance.
+campaign=root/'build/full-campaign-shop.log'
+resumed=root/'build/full-campaign-shop-resume.log'
+for log,extra in ((campaign,[]),(resumed,['resume'])):
+    subprocess.run([str(java_executable(jdk,'java')),'-Xmx512m','-cp',str(out),'bio.original.FullCampaignTest',str(root/'resources/original'),str(log),'shop']+extra,check=True)
+assert Path(str(campaign)+'.inputs').read_bytes()==Path(str(resumed)+'.inputs').read_bytes(),'Reload changed campaign actions or snapshots'
+for width,height in ((240,320),(320,240),(360,640)):
+    subprocess.run([str(java_executable(jdk,'java')),'-Xmx512m','-Djava.awt.headless=true','-cp',str(desktop)+os.pathsep+str(root/'resources'),'bio.CampaignCanvasTest',str(campaign)+'.inputs',str(root/'build/campaign-ui'/('%dx%d'%(width,height))),str(width),str(height)],check=True)
 jar=root/'dist/BiohazardDemo.jar';jad=(root/'dist/BiohazardDemo.jad').read_text()
 assert 'MIDlet-Jar-Size: %d'%jar.stat().st_size in jad
 with zipfile.ZipFile(jar) as z:

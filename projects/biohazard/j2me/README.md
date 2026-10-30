@@ -2,6 +2,8 @@
 
 版本 **0.3.10**。默认入口运行原地图、剧情、武器/敌人参数；已恢复相机、界面资源、材质、对白/旁白、室外背景、枪口遮罩、悬浮名称及教学提示。本版恢复命中动画、投射物、弹道和受伤红屏、原版循环音乐，并补充授权枪声及丧尸声音，见[音乐与战斗特效](../docs/08-audio-and-combat-effects.md)。安装图标、中文操作界面和商城见[中文界面与商城](../docs/07-chinese-ui-and-shop.md)。原版证据和未完成范围见 [视频对照记录](../docs/06-video-fidelity.md)；战斗、存档、触屏基础见 [0.3移植记录](../docs/05-combat-save-resolution-port.md)。
 
+全主线已完成商城补给辅助的自动验证：同一角色连续经过16地图到原版结局、81检查点恢复、三分辨率完整Canvas按键回放及结局存档重载通过；普通经济难度和真机人工通关仍待验证。见[验证条件与证据](../docs/09-full-campaign-validation.md)。
+
 ## 运行
 
 产物：`dist/BiohazardDemo.jar` / `.jad`。
@@ -53,7 +55,7 @@ python3 tools/reverse/material_oracle.py
 
 也可从仓库根目录执行 `python3 tools/project.py test biohazard`，它会先构建。公共工具链配置见 [根说明](../../../README.md)。
 
-使用本机JDK7、KEmulator UEI API、ProGuard4.7；可用 `J2ME_JDK_HOME`、`J2ME_API_HOME`、`PROGUARD_JAR` 覆盖。目标CLDC1.1/MIDP2.0。测试包含原ARM移动/动作/武器/数学/视线/价格对照、剧情战斗、存档恢复和损坏回退、生产Canvas多尺寸触控。`build/ui-previews/` 是桌面测试适配器调用生产代码生成的图，不是模拟器截图。
+使用本机JDK7、KEmulator UEI API、ProGuard4.7；可用 `J2ME_JDK_HOME`、`J2ME_API_HOME`、`PROGUARD_JAR` 覆盖。目标CLDC1.1/MIDP2.0。测试包含原ARM移动/动作/武器/数学/视线/价格对照、剧情战斗、存档恢复和损坏回退、生产Canvas多尺寸触控，以及商城辅助的两轮全主线和三尺寸完整界面回放。`build/ui-previews/` 是桌面测试适配器调用生产代码生成的图，不是模拟器截图。
 
 ## 实现入口与边界
 
